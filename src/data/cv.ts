@@ -1,9 +1,12 @@
 /**
- * Career dataset behind the experience matrix.
+ * Career data behind the trajectory matrix.
  *
- * Every fact here is derived from the CV copy already published on the site
- * (src/pages/index.astro) and from docs/idea/prd_data_architecture_matrix_engine.md.
- * `startYear`/`endYear` are the precision the CV states: the tenure of each role.
+ * Every fact comes from the published CV copy (src/pages/index.astro before the
+ * restyle) and from docs/idea/prd_data_architecture_matrix_engine.md.
+ *
+ * Periods are the precise thing to edit: a role owns its years, and its projects
+ * inherit them unless a project sets its own `startYear`/`endYear`. The timeline
+ * range is derived from the roles, so extending a period widens the matrix.
  */
 
 export type Pillar =
@@ -18,12 +21,44 @@ export type Pillar =
 
 export type Domain = "financial" | "public" | "product" | "health" | "logistics";
 
+export type Accent = "cobalt" | "sage" | "terracotta";
+
+export interface Role {
+	id: string;
+	company: string;
+	title: string;
+	startYear: number;
+	endYear: number;
+	accent: Accent;
+	/** One factual line about what this stage is about. */
+	focus: string;
+	summary: string;
+	achievements: string[];
+	/** Empty when the CV names the work but not the tooling. */
+	stack: string[];
+}
+
+export interface ProjectSeed {
+	id: string;
+	roleId: string;
+	project: string;
+	/** Compact label used inside narrow timeline bars. */
+	short: string;
+	startYear?: number;
+	endYear?: number;
+	domain: Domain;
+	pillars: Pillar[];
+	summary: string;
+	achievements: string[];
+	stack?: string[];
+}
+
 export interface Project {
 	id: string;
+	roleId: string;
 	company: string;
 	role: string;
 	project: string;
-	/** Compact label used inside narrow timeline bars. */
 	short: string;
 	startYear: number;
 	endYear: number;
@@ -31,12 +66,14 @@ export interface Project {
 	pillars: Pillar[];
 	summary: string;
 	achievements: string[];
-	/** Omitted when the CV only names the project. */
 	stack?: string[];
 }
 
-export const MIN_YEAR = 2011;
-export const MAX_YEAR = 2026;
+export interface Education {
+	year: string;
+	title: string;
+	org: string;
+}
 
 export const PILLAR_LABEL: Record<Pillar, string> = {
 	web: "web y desktop",
@@ -76,35 +113,84 @@ export const DOMAIN_ORDER: Domain[] = [
 	"logistics",
 ];
 
-const STAGE_NOTE =
-	"Etapa full stack: proyectos web, mobile y desktop, con IA aplicada, IoT y gamificación.";
-
-export const PROJECTS: Project[] = [
+export const ROLES: Role[] = [
 	{
-		id: "acd-concursal",
+		id: "acd",
 		company: "ACD Sistemes SL",
-		role: "Software Developer",
-		project: "ACDConcursal Web",
-		short: "concursal",
+		title: "Software Developer",
 		startYear: 2011,
 		endYear: 2017,
-		domain: "financial",
-		pillars: ["web", "data"],
+		accent: "terracotta",
+		focus: "auditoría contable y gestión concursal",
 		summary:
-			"Solución web del producto de gestión concursal de ACD Sistemes. Entré participando en todas las fases del ciclo de vida del software y fui asumiendo la responsabilidad técnica de varias de las soluciones web.",
+			"Participé en todas las fases del ciclo de vida del software y asumí progresivamente la responsabilidad técnica de varias soluciones web de la suite.",
 		achievements: [
 			"Todas las fases del ciclo de vida: análisis, desarrollo, implantación y soporte.",
-			"Responsabilidad técnica progresiva sobre varias soluciones web de la suite.",
+			"Responsabilidad técnica progresiva sobre varias soluciones web.",
+			"Implantación y despliegue en cliente en Brasil y Angola.",
 		],
+		stack: [],
 	},
 	{
+		id: "basetis-fullstack",
+		company: "BaseTIS S.L.",
+		title: "Full Stack Developer",
+		startYear: 2017,
+		endYear: 2021,
+		accent: "sage",
+		focus: "producto web, mobile y desktop",
+		summary:
+			"Evolucioné a un perfil full stack participando en proyectos web, mobile y desktop, con componentes de IA aplicada, IoT y gamificación.",
+		achievements: [
+			"Desarrollo full stack de punta a punta.",
+			"Componentes de IA aplicada, IoT y gamificación.",
+			"Proyectos de sector público y de producto.",
+		],
+		stack: [],
+	},
+	{
+		id: "basetis-lead",
+		company: "BaseTIS S.L.",
+		title: "Technical Team Lead",
+		startYear: 2021,
+		endYear: 2024,
+		accent: "sage",
+		focus: "liderazgo técnico, prds y seguridad",
+		summary:
+			"Lideré el equipo y el análisis de viabilidad de los requerimientos: definía las PRDs, revisaba las PRs, mentorizaba al equipo y desarrollaba los componentes más críticos del sistema.",
+		achievements: [
+			"PRDs y análisis de viabilidad de los requerimientos con negocio.",
+			"Revisión de PRs y mentoría del equipo.",
+			"Componentes críticos, con seguridad, rendimiento y escalabilidad como requisito.",
+		],
+		stack: ["OAuth2", "JWT", "API Gateway", "UML", "ITIL"],
+	},
+	{
+		id: "quabu",
+		company: "Quabu SL",
+		title: "Solutions Architect",
+		startYear: 2024,
+		endYear: 2026,
+		accent: "cobalt",
+		focus: "eda + ddd + tdd sobre robótica industrial",
+		summary:
+			"Diseñé la arquitectura y monté los microservicios que la sostienen, con la escalabilidad como requisito de diseño, y orquesté la automatización de almacenes donde la IA vive en los propios procesos del sistema.",
+		achievements: [
+			"Arquitectura orientada a eventos para el sistema transaccional y la automatización de almacén.",
+			"Microservicios contenerizados (Docker/Kubernetes) en AWS y Azure.",
+			"Pipelines de CI/CD (Jenkins/Bitbucket) con QA gates y observabilidad.",
+			"Persistencia heterogénea: time-series para métricas, PostgreSQL y Redis para transacciones.",
+		],
+		stack: ["EDA", "DDD", "TDD", "Kafka", "Kubernetes", "AWS", "Redis"],
+	},
+];
+
+const PROJECT_SEEDS: ProjectSeed[] = [
+	{
 		id: "acd-auditor",
-		company: "ACD Sistemes SL",
-		role: "Software Developer",
+		roleId: "acd",
 		project: "ACDAuditor",
 		short: "auditor",
-		startYear: 2011,
-		endYear: 2017,
 		domain: "financial",
 		pillars: ["data", "web"],
 		summary:
@@ -115,13 +201,24 @@ export const PROJECTS: Project[] = [
 		],
 	},
 	{
+		id: "acd-concursal",
+		roleId: "acd",
+		project: "ACDConcursal Web",
+		short: "concursal",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary:
+			"Solución web del producto de gestión concursal de ACD Sistemes.",
+		achievements: [
+			"Todas las fases del ciclo de vida: análisis, desarrollo, implantación y soporte.",
+			"Responsabilidad técnica progresiva sobre la solución.",
+		],
+	},
+	{
 		id: "acd-circularizacion",
-		company: "ACD Sistemes SL",
-		role: "Software Developer",
+		roleId: "acd",
 		project: "ACDCircularización Web",
 		short: "circularización",
-		startYear: 2011,
-		endYear: 2017,
 		domain: "financial",
 		pillars: ["web", "data"],
 		summary:
@@ -133,12 +230,9 @@ export const PROJECTS: Project[] = [
 	},
 	{
 		id: "acd-importador",
-		company: "ACD Sistemes SL",
-		role: "Software Developer",
+		roleId: "acd",
 		project: "ACDImportador v2",
 		short: "importador",
-		startYear: 2011,
-		endYear: 2017,
 		domain: "financial",
 		pillars: ["data"],
 		summary:
@@ -150,105 +244,72 @@ export const PROJECTS: Project[] = [
 	},
 	{
 		id: "shelter-gencat",
-		company: "BaseTIS S.L.",
-		role: "Full Stack Developer",
+		roleId: "basetis-fullstack",
 		project: "Shelter Gencat",
 		short: "shelter",
-		startYear: 2017,
-		endYear: 2021,
 		domain: "public",
 		pillars: ["web"],
 		summary:
-			"Proyecto web para la Generalitat dentro de mi primera etapa en BaseTIS, donde pasé de developer a full stack.",
+			"Proyecto web para la Generalitat dentro de mi primera etapa en BaseTIS.",
 		achievements: [
 			"Desarrollo full stack de punta a punta.",
-			STAGE_NOTE,
+			"Proyecto para el sector público catalán.",
 		],
 	},
 	{
 		id: "aca-csv",
-		company: "BaseTIS S.L.",
-		role: "Full Stack Developer",
+		roleId: "basetis-fullstack",
 		project: "ACA CSV",
 		short: "aca csv",
-		startYear: 2017,
-		endYear: 2021,
 		domain: "public",
 		pillars: ["web"],
 		summary: "Proyecto web para el ACA dentro de la etapa full stack en BaseTIS.",
-		achievements: ["Desarrollo full stack de punta a punta.", STAGE_NOTE],
+		achievements: [
+			"Desarrollo full stack de punta a punta.",
+			"Proyecto para el sector público catalán.",
+		],
 	},
 	{
 		id: "mambo-supply",
-		company: "BaseTIS S.L.",
-		role: "Full Stack Developer",
+		roleId: "basetis-fullstack",
 		project: "Mambo Supply",
 		short: "mambo",
-		startYear: 2017,
-		endYear: 2021,
 		domain: "product",
 		pillars: ["web"],
 		summary: "Producto digital dentro de la etapa full stack en BaseTIS.",
-		achievements: ["Desarrollo full stack de punta a punta.", STAGE_NOTE],
+		achievements: ["Desarrollo full stack de punta a punta."],
 	},
 	{
 		id: "ema",
-		company: "BaseTIS S.L.",
-		role: "Full Stack Developer",
+		roleId: "basetis-fullstack",
 		project: "EMA",
 		short: "ema",
-		startYear: 2017,
-		endYear: 2021,
 		domain: "product",
 		pillars: ["web"],
 		summary: "Producto digital dentro de la etapa full stack en BaseTIS.",
-		achievements: ["Desarrollo full stack de punta a punta.", STAGE_NOTE],
+		achievements: ["Desarrollo full stack de punta a punta."],
 	},
 	{
 		id: "love-isdin-pin",
-		company: "BaseTIS S.L.",
-		role: "Technical Team Lead",
+		roleId: "basetis-lead",
 		project: "Love ISDIN PIN",
 		short: "love isdin pin",
-		startYear: 2021,
-		endYear: 2024,
 		domain: "health",
 		pillars: ["security", "micro", "lead"],
 		summary:
-			"Lideré el equipo y el análisis de viabilidad de los requerimientos: definía las PRDs, revisaba las PRs, mentorizaba al equipo y desarrollaba los componentes más críticos del sistema, donde la seguridad, el rendimiento y la escalabilidad no se negociaban.",
+			"Plataforma de marca para ISDIN donde lideré el equipo y el análisis de viabilidad, con seguridad, rendimiento y escalabilidad como requisito.",
 		achievements: [
 			"PRDs y análisis de viabilidad con negocio.",
 			"Revisión de PRs y mentoría del equipo.",
-			"Desarrollo de los componentes críticos del sistema.",
+			"Componentes críticos con seguridad desde el diseño.",
 		],
 		stack: ["OAuth2", "JWT", "API Gateway", "UML", "ITIL"],
 	},
 	{
-		id: "coleo",
-		company: "Quabu SL",
-		role: "Solutions Architect",
-		project: "Coleo",
-		short: "coleo",
-		startYear: 2024,
-		endYear: 2026,
-		domain: "product",
-		pillars: ["micro", "cloud"],
-		summary:
-			"Diseñé la arquitectura y monté los microservicios que la sostienen, con la escalabilidad como requisito de diseño.",
-		achievements: [
-			"Arquitectura de microservicios con la escalabilidad como requisito de diseño.",
-			"Pipelines de CI/CD (Jenkins/Bitbucket), QA gates e infraestructura cloud.",
-		],
-		stack: ["Microservicios", "Docker", "AWS", "CI/CD"],
-	},
-	{
 		id: "bodega-digital",
-		company: "Quabu SL",
-		role: "Solutions Architect",
+		roleId: "quabu",
 		project: "Bodega Digital",
 		short: "bodega digital",
-		startYear: 2024,
-		endYear: 2026,
 		domain: "logistics",
 		pillars: ["eda", "robotics", "cloud", "data"],
 		summary:
@@ -262,12 +323,9 @@ export const PROJECTS: Project[] = [
 	},
 	{
 		id: "nakire-tps",
-		company: "Quabu SL",
-		role: "Solutions Architect",
+		roleId: "quabu",
 		project: "Nakire TPS",
 		short: "nakire tps",
-		startYear: 2024,
-		endYear: 2026,
 		domain: "logistics",
 		pillars: ["eda", "micro", "cloud", "data"],
 		summary:
@@ -291,13 +349,25 @@ export const PROJECTS: Project[] = [
 		],
 	},
 	{
+		id: "coleo",
+		roleId: "quabu",
+		project: "Coleo",
+		short: "coleo",
+		domain: "product",
+		pillars: ["micro", "cloud"],
+		summary:
+			"Producto donde diseñé la arquitectura y monté los microservicios que la sostienen, con la escalabilidad como requisito de diseño.",
+		achievements: [
+			"Arquitectura de microservicios con la escalabilidad como requisito de diseño.",
+			"Pipelines de CI/CD (Jenkins/Bitbucket), QA gates e infraestructura cloud.",
+		],
+		stack: ["Microservicios", "Docker", "AWS", "CI/CD"],
+	},
+	{
 		id: "jira-addons",
-		company: "Quabu SL",
-		role: "Solutions Architect",
+		roleId: "quabu",
 		project: "Jira Addons",
 		short: "jira addons",
-		startYear: 2024,
-		endYear: 2026,
 		domain: "product",
 		pillars: ["micro", "cloud"],
 		summary: "Addons de Jira dentro del ecosistema de herramientas de Quabu.",
@@ -306,5 +376,136 @@ export const PROJECTS: Project[] = [
 			"Automatización de procesos operativos.",
 		],
 		stack: ["Jira", "Microservicios", "AWS"],
+	},
+];
+
+/**
+ * Resolves every project against its role: the role owns the company, the title
+ * and the period, and a project only carries years when it needs its own.
+ */
+export function resolveProjects(
+	roles: Role[],
+	seeds: ProjectSeed[],
+): Project[] {
+	return seeds.map((seed) => {
+		const role = roles.find((item) => item.id === seed.roleId);
+		if (!role) {
+			throw new Error(`project "${seed.id}" points at unknown role "${seed.roleId}"`);
+		}
+
+		const startYear = seed.startYear ?? role.startYear;
+		const endYear = seed.endYear ?? role.endYear;
+
+		if (startYear < role.startYear || endYear > role.endYear) {
+			throw new Error(
+				`project "${seed.id}" (${startYear}–${endYear}) leaves role "${role.id}" (${role.startYear}–${role.endYear})`,
+			);
+		}
+		if (endYear < startYear) {
+			throw new Error(`project "${seed.id}" ends before it starts`);
+		}
+
+		return {
+			id: seed.id,
+			roleId: seed.roleId,
+			company: role.company,
+			role: role.title,
+			project: seed.project,
+			short: seed.short,
+			startYear,
+			endYear,
+			domain: seed.domain,
+			pillars: seed.pillars,
+			summary: seed.summary,
+			achievements: seed.achievements,
+			stack: seed.stack,
+		};
+	});
+}
+
+export const PROJECTS: Project[] = resolveProjects(ROLES, PROJECT_SEEDS);
+
+export const MIN_YEAR = Math.min(...ROLES.map((role) => role.startYear));
+export const MAX_YEAR = Math.max(...ROLES.map((role) => role.endYear));
+
+export const YEAR_RANGE = { from: MIN_YEAR, to: MAX_YEAR };
+
+export const STACK_GROUPS: { label: string; items: string[] }[] = [
+	{
+		label: "front",
+		items: ["React", "React Native", "Next.js", "Flutter"],
+	},
+	{
+		label: "back",
+		items: ["Symfony", "ElysiaJS", "TypeScript", "Dart"],
+	},
+	{
+		label: "datos",
+		items: ["MySQL", "MongoDB", "PostgreSQL", "Redis"],
+	},
+	{
+		label: "prácticas",
+		items: [
+			"TDD",
+			"BDD",
+			"DDD",
+			"SDD",
+			"Clean Arch",
+			"Hexagonal",
+			"Event Arch",
+		],
+	},
+	{
+		label: "infra",
+		items: ["AWS Services", "Docker", "SSE", "JIRA", "Agile · Scrum"],
+	},
+];
+
+export const SOFT_SKILLS: string[] = [
+	"Resiliente",
+	"Autodidacta",
+	"Autogestión del tiempo",
+	"Comunicación activa",
+	"Trabajo en equipo",
+	"Enfoque en el outcome",
+	"Curioso",
+	"Diseño al fallo",
+];
+
+export const EDUCATION: Education[] = [
+	{
+		year: "2026",
+		title: "Grado en Ing. Informática",
+		org: "Universitat Oberta de Catalunya",
+	},
+	{
+		year: "Actualidad",
+		title: "Desarrollo Agéntico",
+		org: "Canales oficiales de Anthropic, Google, OpenAI",
+	},
+	{
+		year: "2021",
+		title: "Desarrollo Seguro",
+		org: "CyberAcademy",
+	},
+	{
+		year: "2021",
+		title: "Introducción a la Seguridad Informática",
+		org: "Udemy Alumni",
+	},
+	{
+		year: "2018",
+		title: "ISTQB® Certified Tester, Foundation Level",
+		org: "ISTQB Certification Institute · 18-CTFL-145497-09",
+	},
+	{
+		year: "2018",
+		title: "ITIL Foundation certificate in IT Service Management",
+		org: "APMG International & AXELOS Global Best Practice",
+	},
+	{
+		year: "2017",
+		title: "Introducción a Machine Learning",
+		org: "Universidad de Stanford — Coursera",
 	},
 ];

@@ -9,8 +9,14 @@ import {
 	PILLAR_LABEL,
 	PILLAR_ORDER,
 	PROJECTS,
+	ROLES,
+	YEAR_RANGE,
+	resolveProjects,
+	type ProjectSeed,
+	type Role,
 } from "../src/data/cv.ts";
 import {
+	DEFAULT_RANGE,
 	axesAreValid,
 	axisValues,
 	barGeometry,
@@ -35,15 +41,21 @@ const projectById = (id: string) => {
 	return project;
 };
 
+const role = (id: string) => {
+	const found = ROLES.find((item) => item.id === id);
+	assert.ok(found, `missing fixture role ${id}`);
+	return found;
+};
+
 describe("axes", () => {
 	it("rejects the same dimension on both axes and accepts distinct ones", () => {
 		assert.equal(axesAreValid("time", "time"), false);
 		assert.equal(axesAreValid("company", "project"), true);
-		assert.equal(axesAreValid("pillar", "domain"), true);
+		assert.equal(axesAreValid("pillar", "role"), true);
 	});
 
 	it("recognises only the offered dimensions", () => {
-		assert.equal(isAxisId("company"), true);
+		assert.equal(isAxisId("role"), true);
 		assert.equal(isAxisId("salary"), false);
 	});
 
@@ -61,6 +73,23 @@ describe("axes", () => {
 		assert.deepEqual(
 			values.map((value) => value.id),
 			["ACD Sistemes SL", "BaseTIS S.L.", "Quabu SL"],
+		);
+	});
+
+	it("lists one value per stage, oldest first", () => {
+		const values = axisValues("role", PROJECTS, config);
+		assert.deepEqual(
+			values.map((value) => value.id),
+			["acd", "basetis-fullstack", "basetis-lead", "quabu"],
+		);
+		assert.deepEqual(
+			values.map((value) => value.label),
+			[
+				"Software Developer",
+				"Full Stack Developer",
+				"Technical Team Lead",
+				"Solutions Architect",
+			],
 		);
 	});
 
@@ -95,10 +124,12 @@ describe("matching", () => {
 		assert.equal(matchesValue(project, "time", "2016"), false);
 	});
 
-	it("matches company, project, domain and pillar by identity", () => {
+	it("matches company, stage, project, domain and pillar by identity", () => {
 		const project = projectById("love-isdin-pin");
 		assert.equal(matchesValue(project, "company", "BaseTIS S.L."), true);
 		assert.equal(matchesValue(project, "company", "Quabu SL"), false);
+		assert.equal(matchesValue(project, "role", "basetis-lead"), true);
+		assert.equal(matchesValue(project, "role", "basetis-fullstack"), false);
 		assert.equal(matchesValue(project, "project", "love-isdin-pin"), true);
 		assert.equal(matchesValue(project, "domain", "health"), true);
 		assert.equal(matchesValue(project, "pillar", "lead"), true);
@@ -135,6 +166,16 @@ describe("bar geometry", () => {
 		assert.equal(yearPct(MAX_YEAR), 100);
 		assert.equal(yearPct(2018), 46.67);
 	});
+
+	it("follows a range that does not start at the first role", () => {
+		assert.equal(yearPct(2015, { from: 2011, to: 2021 }), 40);
+		assert.deepEqual(
+			axisValues("time", PROJECTS, config, { from: 2015, to: 2016 }).map(
+				(value) => value.id,
+			),
+			["2015", "2016"],
+		);
+	});
 });
 
 describe("matrix cells", () => {
@@ -161,6 +202,16 @@ describe("matrix cells", () => {
 		);
 	});
 
+	it("crosses stage and project", () => {
+		assert.deepEqual(
+			cellBars(PROJECTS, "role", "quabu", "project", "coleo").map(
+				(bar) => bar.id,
+			),
+			["coleo"],
+		);
+		assert.deepEqual(cellBars(PROJECTS, "role", "acd", "project", "coleo"), []);
+	});
+
 	it("fills a year column for every project alive that year", () => {
 		const bars = cellBars(PROJECTS, "time", "2018", "company", "BaseTIS S.L.");
 		assert.equal(bars.length, 4);
@@ -175,6 +226,96 @@ describe("matrix cells", () => {
 		assert.deepEqual(
 			rowBars(PROJECTS, "pillar", "eda").map((bar) => bar.id),
 			["bodega-digital", "nakire-tps"],
+		);
+		assert.deepEqual(
+			rowBars(PROJECTS, "role", "basetis-lead").map((bar) => bar.id),
+			["love-isdin-pin"],
+		);
+	});
+});
+
+describe("periods", () => {
+	it("derives the timeline range from the roles", () => {
+		assert.equal(MIN_YEAR, 2011);
+		assert.equal(MAX_YEAR, 2026);
+		assert.deepEqual(DEFAULT_RANGE, YEAR_RANGE);
+	});
+
+	it("gives every project the period and owner of its stage", () => {
+		for (const project of PROJECTS) {
+			const stage = role(project.roleId);
+			assert.equal(project.startYear, stage.startYear);
+			assert.equal(project.endYear, stage.endYear);
+			assert.equal(project.company, stage.company);
+			assert.equal(project.role, stage.title);
+		}
+	});
+
+	it("lets a project carry its own years inside the stage", () => {
+		const roles: Role[] = [
+			{
+				id: "r",
+				company: "C",
+				title: "T",
+				startYear: 2010,
+				endYear: 2020,
+				accent: "cobalt",
+				focus: "",
+				summary: "",
+				achievements: [],
+				stack: [],
+			},
+		];
+		const seeds: ProjectSeed[] = [
+			{
+				id: "p",
+				roleId: "r",
+				project: "P",
+				short: "p",
+				startYear: 2012,
+				endYear: 2015,
+				domain: "product",
+				pillars: ["web"],
+				summary: "",
+				achievements: [],
+			},
+		];
+		const [project] = resolveProjects(roles, seeds);
+		assert.deepEqual([project?.startYear, project?.endYear], [2012, 2015]);
+		assert.equal(project?.company, "C");
+	});
+
+	it("refuses a project that leaves its stage", () => {
+		const roles: Role[] = [
+			{
+				id: "r",
+				company: "C",
+				title: "T",
+				startYear: 2010,
+				endYear: 2020,
+				accent: "cobalt",
+				focus: "",
+				summary: "",
+				achievements: [],
+				stack: [],
+			},
+		];
+		const seed: ProjectSeed = {
+			id: "p",
+			roleId: "r",
+			project: "P",
+			short: "p",
+			startYear: 2012,
+			endYear: 2025,
+			domain: "product",
+			pillars: ["web"],
+			summary: "",
+			achievements: [],
+		};
+		assert.throws(() => resolveProjects(roles, [seed]), /leaves role/);
+		assert.throws(
+			() => resolveProjects(roles, [{ ...seed, roleId: "nope" }]),
+			/unknown role/,
 		);
 	});
 });

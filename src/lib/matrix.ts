@@ -1,13 +1,28 @@
 import type { Domain, Pillar, Project } from "../data/cv";
 
-export const MIN_YEAR = 2011;
-export const MAX_YEAR = 2026;
+export interface YearRange {
+	from: number;
+	to: number;
+}
 
-export type AxisId = "time" | "company" | "project" | "domain" | "pillar";
+/**
+ * Fallback range for callers that do not pass one. The site passes the range
+ * derived from the data, so editing a role period moves the timeline with it.
+ */
+export const DEFAULT_RANGE: YearRange = { from: 2011, to: 2026 };
+
+export type AxisId =
+	| "time"
+	| "company"
+	| "role"
+	| "project"
+	| "domain"
+	| "pillar";
 
 export const AXIS_ORDER: AxisId[] = [
 	"time",
 	"company",
+	"role",
 	"project",
 	"domain",
 	"pillar",
@@ -16,6 +31,7 @@ export const AXIS_ORDER: AxisId[] = [
 export const AXIS_LABEL: Record<AxisId, string> = {
 	time: "año",
 	company: "empresa",
+	role: "rol",
 	project: "proyecto",
 	domain: "dominio",
 	pillar: "pilar técnico",
@@ -57,19 +73,22 @@ export function axesAreValid(x: AxisId, y: AxisId): boolean {
 	return x !== y;
 }
 
-export function yearPct(year: number): number {
-	return round(((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100);
+export function yearPct(year: number, range: YearRange = DEFAULT_RANGE): number {
+	const span = range.to - range.from;
+	if (span <= 0) return 0;
+	return round(((year - range.from) / span) * 100);
 }
 
 export function axisValues(
 	axis: AxisId,
 	projects: Project[],
 	config: AxisConfig,
+	range: YearRange = DEFAULT_RANGE,
 ): AxisValue[] {
 	switch (axis) {
 		case "time": {
 			const values: AxisValue[] = [];
-			for (let year = MIN_YEAR; year <= MAX_YEAR; year += 1) {
+			for (let year = range.from; year <= range.to; year += 1) {
 				values.push({ id: String(year), label: String(year) });
 			}
 			return values;
@@ -85,6 +104,23 @@ export function axisValues(
 			return [...firstYear.entries()]
 				.sort(([a, aYear], [b, bYear]) => aYear - bYear || a.localeCompare(b))
 				.map(([company]) => ({ id: company, label: company }));
+		}
+		case "role": {
+			const firstYear = new Map<string, number>();
+			const titles = new Map<string, string>();
+			for (const project of projects) {
+				const known = firstYear.get(project.roleId);
+				if (known === undefined || project.startYear < known) {
+					firstYear.set(project.roleId, project.startYear);
+				}
+				titles.set(project.roleId, project.role);
+			}
+			return [...firstYear.entries()]
+				.sort(([, aYear], [, bYear]) => aYear - bYear)
+				.map(([roleId]) => ({
+					id: roleId,
+					label: titles.get(roleId) ?? roleId,
+				}));
 		}
 		case "project":
 			return [...projects]
@@ -118,6 +154,8 @@ export function matchesValue(
 		}
 		case "company":
 			return project.company === value;
+		case "role":
+			return project.roleId === value;
 		case "project":
 			return project.id === value;
 		case "domain":
@@ -134,12 +172,13 @@ export function matchesValue(
 export function trackBounds(
 	axis: AxisId,
 	value: string,
-): { from: number; to: number } {
+	range: YearRange = DEFAULT_RANGE,
+): YearRange {
 	if (axis === "time") {
 		const year = Number(value);
 		return { from: year, to: year };
 	}
-	return { from: MIN_YEAR, to: MAX_YEAR };
+	return { from: range.from, to: range.to };
 }
 
 export function barGeometry(
@@ -163,16 +202,17 @@ export function cellBars(
 	xValue: string,
 	yAxis: AxisId,
 	yValue: string,
+	range: YearRange = DEFAULT_RANGE,
 ): Bar[] {
-	const { from, to } = trackBounds(xAxis, xValue);
+	const bounds = trackBounds(xAxis, xValue, range);
 	return toBars(
 		projects.filter(
 			(project) =>
 				matchesValue(project, xAxis, xValue) &&
 				matchesValue(project, yAxis, yValue),
 		),
-		from,
-		to,
+		bounds.from,
+		bounds.to,
 	);
 }
 
@@ -181,11 +221,12 @@ export function rowBars(
 	projects: Project[],
 	yAxis: AxisId,
 	yValue: string,
+	range: YearRange = DEFAULT_RANGE,
 ): Bar[] {
 	return toBars(
 		projects.filter((project) => matchesValue(project, yAxis, yValue)),
-		MIN_YEAR,
-		MAX_YEAR,
+		range.from,
+		range.to,
 	);
 }
 
