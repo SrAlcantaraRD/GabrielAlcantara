@@ -1,0 +1,933 @@
+---
+import {
+	AXIS_LABEL,
+	AXIS_ORDER,
+	MAX_YEAR,
+	MIN_YEAR,
+	type AxisId,
+} from "../lib/matrix";
+import {
+	DOMAIN_LABEL,
+	DOMAIN_ORDER,
+	PILLAR_LABEL,
+	PILLAR_ORDER,
+	PROJECTS,
+} from "../data/cv";
+
+const defaultX: AxisId = "time";
+const defaultY: AxisId = "company";
+
+const payload = {
+	projects: PROJECTS,
+	config: {
+		pillar: PILLAR_LABEL,
+		domain: DOMAIN_LABEL,
+		pillarOrder: PILLAR_ORDER,
+		domainOrder: DOMAIN_ORDER,
+	},
+};
+
+const pillarsInUse = PILLAR_ORDER.filter((pillar) =>
+	PROJECTS.some((project) => project.pillars.includes(pillar)),
+);
+---
+
+<div class="matrix" id="matriz">
+  <div class="matrix-controls">
+    {
+      (["x", "y"] as const).map((axis) => (
+        <div class="picker" role="group" aria-label={`eje ${axis}`}>
+          <span class="picker-name" aria-hidden="true">{axis}</span>
+          {AXIS_ORDER.map((axisId) => (
+            <button
+              type="button"
+              class="chip"
+              data-axis={axis}
+              data-value={axisId}
+              aria-pressed={String(axisId === (axis === "x" ? defaultX : defaultY))}
+            >
+              {AXIS_LABEL[axisId]}
+            </button>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <ul class="legend" aria-label="pilares técnicos">
+    {
+      pillarsInUse.map((pillar) => (
+        <li>
+          <span class="legend-dot" data-pillar={pillar} aria-hidden="true" />
+          {PILLAR_LABEL[pillar]}
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="matrix-hint" id="matrix-hint">
+    columnas: año · filas: empresa · {MIN_YEAR}–{MAX_YEAR}
+  </p>
+
+  <div class="matrix-surface" id="matrix-surface">
+    <div class="matrix-grid" id="matrix-grid" data-mode="timeline"></div>
+  </div>
+
+  <aside class="matrix-detail" id="matrix-detail"></aside>
+
+  <noscript>
+    <p class="matrix-hint">
+      activa javascript para recorrer la matriz; la trayectoria completa está en
+      texto más abajo.
+    </p>
+  </noscript>
+
+  <script type="application/json" id="matrix-data" set:html={JSON.stringify(payload)} />
+</div>
+
+<script>
+  import {
+    AXIS_LABEL,
+    MAX_YEAR,
+    MIN_YEAR,
+    axesAreValid,
+    axisValues,
+    cellBars,
+    isAxisId,
+    packLanes,
+    rowBars,
+    yearPct,
+    type AxisConfig,
+    type AxisId,
+    type AxisValue,
+    type Bar,
+  } from "../lib/matrix";
+  import type { Project } from "../data/cv";
+
+  interface Payload {
+    projects: Project[];
+    config: AxisConfig;
+  }
+
+  const MAX_CELL_LANES = 3;
+  const MIN_LABEL_PX = 54;
+  const MIN_YEAR_SPACING_PX = 38;
+  const STEP_PCT = `${(100 / (MAX_YEAR - MIN_YEAR)).toFixed(4)}%`;
+
+  const root = document.querySelector<HTMLElement>("#matriz");
+
+  if (root) {
+    boot(root);
+  }
+
+  function boot(host: HTMLElement) {
+    const surface = must<HTMLElement>("#matrix-surface", host);
+    const grid = must<HTMLElement>("#matrix-grid", host);
+    const hint = must<HTMLElement>("#matrix-hint", host);
+    const detail = must<HTMLElement>("#matrix-detail", host);
+    const dataScript = must<HTMLScriptElement>("#matrix-data", host);
+
+    const payload = JSON.parse(dataScript.textContent ?? "{}") as Payload;
+    const projects = payload.projects;
+    const config = payload.config;
+    const projectById = new Map(projects.map((project) => [project.id, project]));
+    const state = readState();
+
+    bindChips();
+    showHint();
+    render();
+
+    new ResizeObserver(() => measure()).observe(surface);
+
+    function readState(): { x: AxisId; y: AxisId } {
+      const params = new URLSearchParams(window.location.search);
+      const x = params.get("x") ?? "";
+      const y = params.get("y") ?? "";
+      if (isAxisId(x) && isAxisId(y) && axesAreValid(x, y)) {
+        return { x, y };
+      }
+      return { x: "time", y: "company" };
+    }
+
+    function bindChips() {
+      for (const chip of host.querySelectorAll<HTMLButtonElement>(".chip")) {
+        chip.addEventListener("click", () => {
+          const axis = chip.dataset.axis;
+          const value = chip.dataset.value ?? "";
+          if ((axis !== "x" && axis !== "y") || !isAxisId(value)) return;
+          if (!axesAreValid(value, axis === "x" ? state.y : state.x)) return;
+          if (axis === "x") state.x = value;
+          else state.y = value;
+          render();
+        });
+      }
+    }
+
+    function render() {
+      const xValues = axisValues(state.x, projects, config);
+      const yValues = axisValues(state.y, projects, config);
+
+      grid.dataset.mode = state.x === "time" ? "timeline" : "matrix";
+      grid.style.setProperty("--cols", String(xValues.length));
+      grid.style.setProperty("--step", STEP_PCT);
+      grid.replaceChildren(
+        state.x === "time"
+          ? renderTimeline(yValues)
+          : renderMatrix(xValues, yValues),
+      );
+
+      hint.textContent = `columnas: ${AXIS_LABEL[state.x]} · filas: ${AXIS_LABEL[state.y]} · ${MIN_YEAR}–${MAX_YEAR}`;
+      syncChips();
+      syncUrl();
+      requestAnimationFrame(measure);
+    }
+
+    function syncChips() {
+      for (const chip of host.querySelectorAll<HTMLButtonElement>(".chip")) {
+        const current = chip.dataset.axis === "x" ? state.x : state.y;
+        const pressed = chip.dataset.value === current;
+        chip.setAttribute("aria-pressed", String(pressed));
+        const other = chip.dataset.axis === "x" ? state.y : state.x;
+        const value = chip.dataset.value ?? "";
+        const blocked = !pressed && (!isAxisId(value) || !axesAreValid(value, other));
+        chip.setAttribute("aria-disabled", String(blocked));
+      }
+    }
+
+    function syncUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.set("x", state.x);
+      url.searchParams.set("y", state.y);
+      window.history.replaceState(null, "", url);
+    }
+
+    function ruler(): HTMLElement {
+      const track = element("div", "ruler-track");
+      track.style.gridColumn = "2 / -1";
+      for (let year = MIN_YEAR; year <= MAX_YEAR; year += 1) {
+        const label = element("span", "ruler-year", String(year));
+        label.dataset.year = String(year);
+        label.style.left = `${yearPct(year)}%`;
+        if (year === MIN_YEAR) label.style.transform = "none";
+        if (year === MAX_YEAR) label.style.transform = "translateX(-100%)";
+        track.append(label);
+      }
+      return track;
+    }
+
+    function renderTimeline(yValues: AxisValue[]): DocumentFragment {
+      const fragment = document.createDocumentFragment();
+      fragment.append(element("div", "ruler-corner"), ruler());
+
+      for (const yValue of yValues) {
+        const bars = rowBars(projects, state.y, yValue.id);
+        const lanes = packLanes(bars);
+        const laneCount = bars.length ? Math.max(...lanes) + 1 : 1;
+
+        const row = element("div", "gantt-row");
+        row.style.setProperty("--lanes", String(laneCount));
+
+        const label = element("div", "row-label", yValue.label);
+        label.title = yValue.label;
+
+        const track = element("div", "track");
+        for (const [index, bar] of bars.entries()) {
+          const project = projectById.get(bar.id);
+          if (project) track.append(makeBar(project, bar, lanes[index] ?? 0));
+        }
+
+        row.append(label, track);
+        fragment.append(row);
+      }
+
+      return fragment;
+    }
+
+    function renderMatrix(
+      xValues: AxisValue[],
+      yValues: AxisValue[],
+    ): DocumentFragment {
+      const fragment = document.createDocumentFragment();
+      fragment.append(element("div", "ruler-corner"), ruler());
+      fragment.append(element("div", "head-corner"));
+
+      for (const xValue of xValues) {
+        const head = element("div", "col-head", xValue.label);
+        head.title = xValue.label;
+        fragment.append(head);
+      }
+
+      for (const yValue of yValues) {
+        const label = element("div", "row-label", yValue.label);
+        label.title = yValue.label;
+        fragment.append(label);
+        for (const xValue of xValues) {
+          fragment.append(makeCell(xValue, yValue));
+        }
+      }
+
+      return fragment;
+    }
+
+    function makeCell(xValue: AxisValue, yValue: AxisValue): HTMLElement {
+      const bars = cellBars(projects, state.x, xValue.id, state.y, yValue.id);
+      const lanes = packLanes(bars);
+      const cell = element("div", "cell");
+      cell.dataset.x = xValue.id;
+      cell.dataset.y = yValue.id;
+
+      const visible = bars.filter((_, index) => (lanes[index] ?? 0) < MAX_CELL_LANES);
+      const laneCount = new Set(
+        bars.flatMap((_, index) => {
+          const lane = lanes[index] ?? 0;
+          return lane < MAX_CELL_LANES ? [lane] : [];
+        }),
+      ).size;
+
+      cell.style.setProperty("--lanes", String(Math.max(1, laneCount)));
+
+      for (const [index, bar] of bars.entries()) {
+        if ((lanes[index] ?? 0) >= MAX_CELL_LANES) continue;
+        const project = projectById.get(bar.id);
+        if (project) cell.append(makeBar(project, bar, lanes[index] ?? 0));
+      }
+
+      const hidden = bars.length - visible.length;
+      if (hidden > 0) {
+        const more = element("button", "cell-more", `+${hidden}`);
+        more.type = "button";
+        more.title = `ver los ${bars.length} proyectos de ${xValue.label} × ${yValue.label}`;
+        more.setAttribute("aria-label", more.title);
+        more.addEventListener("click", () =>
+          showList(`${xValue.label} × ${yValue.label}`, bars.map((bar) => bar.id)),
+        );
+        cell.append(more);
+      }
+
+      return cell;
+    }
+
+    function makeBar(project: Project, bar: Bar, lane: number): HTMLButtonElement {
+      const button = element("button", "bar");
+      button.type = "button";
+      button.dataset.project = project.id;
+      button.dataset.pillar = project.pillars[0] ?? "web";
+      button.style.setProperty("--left", String(bar.leftPct));
+      button.style.setProperty("--w", String(bar.widthPct));
+      button.style.setProperty("--lane", String(lane));
+
+      const description = `${project.project} · ${project.company} · ${bar.startYear}–${bar.endYear}`;
+      button.title = description;
+      button.setAttribute("aria-label", description);
+      button.append(element("span", "bar-label", project.short));
+
+      button.addEventListener("click", () => showDetail(project.id));
+      button.addEventListener("mouseenter", () => highlight(project.id));
+      button.addEventListener("focus", () => highlight(project.id));
+      button.addEventListener("mouseleave", clearHighlight);
+      button.addEventListener("blur", clearHighlight);
+
+      return button;
+    }
+
+    function highlight(id: string) {
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        bar.classList.toggle("is-dim", bar.dataset.project !== id);
+      }
+    }
+
+    function clearHighlight() {
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        bar.classList.remove("is-dim");
+      }
+    }
+
+    function measure() {
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        const fits = bar.scrollWidth <= bar.clientWidth + 1;
+        bar.classList.toggle("is-labeled", fits && bar.clientWidth >= MIN_LABEL_PX);
+      }
+      thinRuler();
+    }
+
+    /** Keeps the year ruler readable: drop labels that no longer fit. */
+    function thinRuler() {
+      const track = grid.querySelector<HTMLElement>(".ruler-track");
+      const labels = grid.querySelectorAll<HTMLElement>(".ruler-year");
+      if (!track || labels.length === 0) return;
+      const spacing = track.clientWidth / (MAX_YEAR - MIN_YEAR);
+      const stride = spacing > 0 ? Math.max(1, Math.ceil(MIN_YEAR_SPACING_PX / spacing)) : 1;
+      for (const label of labels) {
+        const year = Number(label.dataset.year);
+        const keep =
+          year === MAX_YEAR ||
+          ((year - MIN_YEAR) % stride === 0 && MAX_YEAR - year >= stride);
+        label.classList.toggle("is-hidden", !keep);
+      }
+    }
+
+    function showHint() {
+      const paragraph = element("p", "detail-hint");
+      paragraph.textContent =
+        "cada barra es un proyecto: pasa el cursor para aislarlo y haz clic para leer el detalle.";
+      detail.replaceChildren(paragraph);
+    }
+
+    function showDetail(id: string) {
+      const project = projectById.get(id);
+      if (!project) return;
+
+      const fragment = document.createDocumentFragment();
+      const head = element("div", "detail-head");
+      const heading = element("div");
+      heading.append(
+        element(
+          "p",
+          "detail-meta",
+          `${project.company} · ${project.role} · ${project.startYear}–${project.endYear}`,
+        ),
+        element("h3", "detail-title", project.project),
+      );
+      head.append(heading, closeButton(() => showHint()));
+      fragment.append(head, element("p", "detail-summary", project.summary));
+
+      if (project.achievements.length > 0) {
+        const list = element("ul", "detail-achievements");
+        for (const achievement of project.achievements) {
+          list.append(element("li", undefined, achievement));
+        }
+        fragment.append(list);
+      }
+
+      if (project.stack && project.stack.length > 0) {
+        const stack = element("p", "detail-line");
+        stack.append(
+          element("span", "detail-key", "stack"),
+          element("span", undefined, project.stack.join(" · ")),
+        );
+        fragment.append(stack);
+      }
+
+      const tags = element("p", "detail-line");
+      tags.append(element("span", "tag", config.domain[project.domain]));
+      for (const pillar of project.pillars) {
+        tags.append(element("span", "tag", config.pillar[pillar]));
+      }
+      fragment.append(tags);
+
+      detail.replaceChildren(fragment);
+    }
+
+    function showList(cellLabel: string, ids: string[]) {
+      const fragment = document.createDocumentFragment();
+      const head = element("div", "detail-head");
+      const heading = element("div");
+      heading.append(
+        element("p", "detail-meta", cellLabel),
+        element("h3", "detail-title", `${ids.length} proyectos`),
+      );
+      head.append(heading, closeButton(() => showHint()));
+      fragment.append(head);
+
+      const list = element("ul", "detail-list");
+      for (const id of ids) {
+        const project = projectById.get(id);
+        if (!project) continue;
+        const item = element("li");
+        const link = element("button", "detail-link", project.project);
+        link.type = "button";
+        link.addEventListener("click", () => showDetail(id));
+        item.append(
+          link,
+          element(
+            "span",
+            "detail-list-meta",
+            `${project.company} · ${project.startYear}–${project.endYear}`,
+          ),
+        );
+        list.append(item);
+      }
+      fragment.append(list);
+
+      detail.replaceChildren(fragment);
+    }
+
+    function closeButton(onClick: () => void): HTMLButtonElement {
+      const button = element("button", "detail-close", "cerrar");
+      button.type = "button";
+      button.addEventListener("click", onClick);
+      return button;
+    }
+  }
+
+  function element<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className?: string,
+    text?: string,
+  ): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function must<T extends Element>(selector: string, parent: ParentNode): T {
+    const node = parent.querySelector<T>(selector);
+    if (!node) throw new Error(`matrix markup is missing ${selector}`);
+    return node;
+  }
+</script>
+
+<style is:global>
+  .matrix {
+    --label-col: 9rem;
+    --bar-h: 13px;
+    --bar-gap: 5px;
+    --lane-h: calc(var(--bar-h) + var(--bar-gap));
+    --step: 6.6667%;
+    --pillar-web: #8b93a1;
+    --pillar-micro: #7b7ce0;
+    --pillar-eda: #5b8def;
+    --pillar-cloud: #4aa8dd;
+    --pillar-data: #9a7ee0;
+    --pillar-robotics: #45b8a5;
+    --pillar-security: #d8a04a;
+    --pillar-lead: #d97aa8;
+  }
+
+  .matrix-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.5rem;
+  }
+
+  .picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .picker-name {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+  }
+
+  .chip {
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--color-stroke);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease,
+      background 120ms ease;
+  }
+
+  .chip:hover:not([aria-disabled="true"]):not([aria-pressed="true"]) {
+    border-color: var(--color-text-muted);
+    color: var(--color-text-primary);
+  }
+
+  .chip[aria-pressed="true"] {
+    background: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+    color: #fff;
+  }
+
+  .chip[aria-disabled="true"] {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.85rem;
+    list-style: none;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .legend-dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--pillar-color);
+  }
+
+  .matrix [data-pillar="web"] {
+    --pillar-color: var(--pillar-web);
+  }
+  .matrix [data-pillar="micro"] {
+    --pillar-color: var(--pillar-micro);
+  }
+  .matrix [data-pillar="eda"] {
+    --pillar-color: var(--pillar-eda);
+  }
+  .matrix [data-pillar="cloud"] {
+    --pillar-color: var(--pillar-cloud);
+  }
+  .matrix [data-pillar="data"] {
+    --pillar-color: var(--pillar-data);
+  }
+  .matrix [data-pillar="robotics"] {
+    --pillar-color: var(--pillar-robotics);
+  }
+  .matrix [data-pillar="security"] {
+    --pillar-color: var(--pillar-security);
+  }
+  .matrix [data-pillar="lead"] {
+    --pillar-color: var(--pillar-lead);
+  }
+
+  .matrix-hint {
+    margin: 0.8rem 0 0.5rem;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .matrix-surface {
+    overflow-x: auto;
+    border-block: 1px solid var(--color-stroke);
+  }
+
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: var(--label-col) repeat(var(--cols, 1), minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .matrix-grid[data-mode="matrix"] {
+    grid-template-columns: var(--label-col)
+      repeat(var(--cols, 1), minmax(6.5rem, 1fr));
+  }
+
+  .ruler-track {
+    position: relative;
+    block-size: 1.5rem;
+    margin-inline-end: 0.4rem;
+  }
+
+  .ruler-year {
+    position: absolute;
+    inset-block-end: 0.35rem;
+    transform: translateX(-50%);
+    font-size: 0.64rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ruler-year.is-hidden {
+    display: none;
+  }
+
+  .matrix-grid[data-mode="timeline"] .gantt-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: var(--label-col) minmax(0, 1fr);
+    border-block-start: 1px solid var(--color-stroke);
+  }
+
+  .row-label {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    align-self: center;
+    background: var(--color-bg);
+    padding: 0.45rem 0.6rem 0.45rem 0;
+    font-size: 0.76rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .matrix-grid[data-mode="matrix"] .row-label {
+    padding-block: 0.55rem;
+  }
+
+  .col-head {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    align-self: end;
+    justify-self: center;
+    max-inline-size: 14rem;
+    padding-block: 0.5rem 0.35rem;
+    font-size: 0.72rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .track,
+  .cell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .track {
+    min-block-size: calc(var(--lanes, 1) * var(--lane-h) + 6px);
+    margin: 0.25rem 0.4rem 0.25rem 0;
+  }
+
+  .track::before,
+  .cell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-stroke) 0 1px,
+      transparent 1px var(--step)
+    );
+    opacity: 0.75;
+  }
+
+  .cell {
+    min-block-size: calc(var(--lanes, 1) * var(--lane-h) + 6px);
+    padding-block: 3px;
+    border-block-start: 1px solid var(--color-stroke);
+    border-inline-start: 1px solid var(--color-stroke);
+  }
+
+  .bar {
+    position: absolute;
+    inset-inline-start: calc(var(--left) * 1%);
+    inline-size: max(calc(var(--w) * 1%), 5px);
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 3px);
+    block-size: var(--bar-h);
+    display: flex;
+    align-items: center;
+    padding: 0 0.3rem;
+    border: 0;
+    border-radius: 3px;
+    font: inherit;
+    font-size: 0.66rem;
+    line-height: 1;
+    text-align: start;
+    color: #16202b;
+    background: color-mix(in srgb, var(--pillar-color) 52%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pillar-color) 72%, #fff);
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    transition:
+      opacity 120ms ease,
+      background 120ms ease;
+  }
+
+  .bar:hover,
+  .bar:focus-visible {
+    background: color-mix(in srgb, var(--pillar-color) 70%, #fff);
+  }
+
+  .bar:focus-visible {
+    outline: 2px solid var(--color-text-primary);
+    outline-offset: 1px;
+  }
+
+  .bar.is-dim {
+    opacity: 0.25;
+  }
+
+  .bar-label {
+    visibility: hidden;
+  }
+
+  .bar.is-labeled .bar-label {
+    visibility: visible;
+  }
+
+  .cell-more {
+    display: block;
+    margin-block-start: calc(var(--lanes, 1) * var(--lane-h));
+    margin-inline-start: 2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.62rem;
+    line-height: 1.2;
+    color: var(--color-text-muted);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .cell-more:hover {
+    color: var(--color-text-primary);
+  }
+
+  .matrix-detail {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--color-stroke);
+    font-size: 0.85rem;
+    min-block-size: 4.5rem;
+  }
+
+  .detail-hint {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+  }
+
+  .detail-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .detail-meta {
+    margin: 0;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  .detail-title {
+    margin: 0.1rem 0 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .detail-close {
+    flex-shrink: 0;
+    font: inherit;
+    font-size: 0.68rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--color-stroke);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+
+  .detail-close:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-muted);
+  }
+
+  .detail-close:focus-visible,
+  .detail-link:focus-visible,
+  .cell-more:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .detail-summary {
+    margin: 0.6rem 0 0;
+  }
+
+  .detail-achievements {
+    margin: 0.6rem 0 0;
+    padding-inline-start: 1.1rem;
+    color: var(--color-text-secondary);
+  }
+
+  .detail-achievements li {
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-achievements li:last-child {
+    margin-bottom: 0;
+  }
+
+  .detail-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin: 0.6rem 0 0;
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+  }
+
+  .detail-key {
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+  }
+
+  .tag {
+    font-size: 0.66rem;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--color-stroke);
+    border-radius: 999px;
+    color: var(--color-text-secondary);
+  }
+
+  .detail-list {
+    list-style: none;
+    display: grid;
+    gap: 0.3rem;
+    margin: 0.6rem 0 0;
+    padding: 0;
+  }
+
+  .detail-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .detail-link {
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+    cursor: pointer;
+  }
+
+  .detail-list-meta {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .matrix {
+      --label-col: 5.5rem;
+    }
+
+    .matrix-grid[data-mode="matrix"] {
+      grid-template-columns: var(--label-col)
+        repeat(var(--cols, 1), minmax(7rem, 1fr));
+    }
+
+    .col-head {
+      max-inline-size: 8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ruler-year {
+      font-size: 0.58rem;
+    }
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import ExperienceMatrix from "../components/ExperienceMatrix.astro";
 
 const jobs = [
 	{
@@ -113,6 +114,8 @@ const education = [
 
     <section>
       <h2>Experiencia</h2>
+      <ExperienceMatrix />
+      <p class="list-caption">la misma trayectoria, en texto</p>
       {
         jobs.map((job) => (
           <article class="job">
@@ -244,9 +247,16 @@ const education = [
   .job {
     margin-bottom: 1.75rem;
   }
-
   .job:last-child {
     margin-bottom: 0;
+  }
+
+  .list-caption {
+    margin: 0 0 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-stroke);
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
   }
 
   .job-meta {

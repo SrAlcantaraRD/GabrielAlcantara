@@ -33,6 +33,7 @@ All commands are run from the root of the project, from a terminal:
 | :--------------------- | :----------------------------------------------- |
 | `pnpm install`         | Installs dependencies                            |
 | `pnpm dev`             | Starts local dev server at `localhost:4321`      |
+| `pnpm test`            | Runs the timeline engine tests (`node --test`)   |
 | `pnpm build`           | Build your production site to `./dist/`          |
 | `pnpm preview`         | Preview your build locally, before deploying     |
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
