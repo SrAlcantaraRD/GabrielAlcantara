@@ -1,0 +1,69 @@
+/* Design tokens — styled after sanyam.sh */
+:root {
+	--color-bg: #fff;
+	--color-surface: #fafafa;
+	--color-text-primary: #1a1a1a;
+	--color-text-secondary: #6b6b6b;
+	--color-text-muted: #9b9b9b;
+	--color-accent: #3b82f6;
+	--color-selection: #34d399;
+	--color-stroke: #ebebeb;
+
+	--font-sans:
+		"Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, sans-serif;
+	--font-hand: "Caveat", cursive;
+
+	--text-body: 0.9rem;
+	--text-body-lh: 1.75;
+	--container-prose: 42rem;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	tab-size: 4;
+}
+
+body {
+	margin: 0;
+	background: var(--color-bg);
+	color: var(--color-text-primary);
+	font-family: var(--font-sans);
+	font-size: var(--text-body);
+	line-height: var(--text-body-lh);
+	text-transform: lowercase;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+/* Keep literals verbatim, like sanyam.sh does */
+code,
+pre,
+kbd,
+samp {
+	text-transform: none;
+}
+
+::selection {
+	background: var(--color-selection);
+	color: #0a0a0a;
+}
+
+a {
+	color: var(--color-accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.15em;
+	text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+	transition: text-decoration-color 120ms ease;
+}
+
+a:hover {
+	text-decoration-color: currentColor;
+}
