@@ -1,20 +1,26 @@
 /**
  * Career data behind the trajectory matrix.
  *
- * Every fact comes from the published CV copy (src/pages/index.astro before the
- * restyle) and from docs/idea/prd_data_architecture_matrix_engine.md.
+ * Source: the owner's LinkedIn export (dates, titles, places, skills) plus the
+ * published CV copy. Nothing here is inferred: if a fact is not in either
+ * source it is not in this file.
  *
- * Periods are the precise thing to edit: a role owns its years, and its projects
- * inherit them unless a project sets its own `startYear`/`endYear`. The timeline
- * range is derived from the roles, so extending a period widens the matrix.
+ * Periods are the thing to edit. A position owns its months (`from`/`to`, both
+ * inclusive, written as YYYY-MM) and its projects inherit them unless a project
+ * sets its own. The timeline range is derived, so moving a period moves the
+ * matrix with it.
  */
+
+import { currentMonth, monthLabel, parseMonth } from "../lib/period.ts";
 
 export type Pillar =
 	| "web"
+	| "mobile"
+	| "data"
+	| "integration"
 	| "micro"
 	| "eda"
 	| "cloud"
-	| "data"
 	| "robotics"
 	| "security"
 	| "lead";
@@ -23,29 +29,47 @@ export type Domain = "financial" | "public" | "product" | "health" | "logistics"
 
 export type Accent = "cobalt" | "sage" | "terracotta";
 
-export interface Role {
+export interface Company {
 	id: string;
-	company: string;
-	title: string;
-	startYear: number;
-	endYear: number;
+	name: string;
+	short: string;
 	accent: Accent;
-	/** One factual line about what this stage is about. */
+}
+
+export interface Position {
+	id: string;
+	companyId: string;
+	title: string;
+	/** First month worked, inclusive: YYYY-MM. */
+	from: string;
+	/** Last month worked, inclusive: YYYY-MM. */
+	to: string;
+	place?: string;
+	mode?: string;
 	focus: string;
 	summary: string;
 	achievements: string[];
-	/** Empty when the CV names the work but not the tooling. */
 	stack: string[];
+}
+
+export interface PositionView extends Position {
+	company: string;
+	companyShort: string;
+	accent: Accent;
+	startMonth: number;
+	/** Exclusive, so endMonth - startMonth is the worked months. */
+	endMonth: number;
+	months: number;
 }
 
 export interface ProjectSeed {
 	id: string;
-	roleId: string;
-	project: string;
+	positionId: string;
+	name: string;
 	/** Compact label used inside narrow timeline bars. */
 	short: string;
-	startYear?: number;
-	endYear?: number;
+	from?: string;
+	to?: string;
 	domain: Domain;
 	pillars: Pillar[];
 	summary: string;
@@ -55,13 +79,16 @@ export interface ProjectSeed {
 
 export interface Project {
 	id: string;
-	roleId: string;
+	positionId: string;
+	position: string;
+	companyId: string;
 	company: string;
-	role: string;
-	project: string;
+	companyShort: string;
+	accent: Accent;
+	name: string;
 	short: string;
-	startYear: number;
-	endYear: number;
+	startMonth: number;
+	endMonth: number;
 	domain: Domain;
 	pillars: Pillar[];
 	summary: string;
@@ -77,29 +104,33 @@ export interface Education {
 
 export const PILLAR_LABEL: Record<Pillar, string> = {
 	web: "web y desktop",
-	micro: "microservicios y apis",
+	mobile: "mobile",
+	data: "datos y sql",
+	integration: "integración y crm",
+	micro: "microservicios",
 	eda: "eventos (eda)",
 	cloud: "cloud y ci/cd",
-	data: "datos y persistencia",
 	robotics: "iot y robótica",
-	security: "seguridad y calidad",
-	lead: "liderazgo técnico",
+	security: "seguridad y rbac",
+	lead: "liderazgo",
 };
 
 export const DOMAIN_LABEL: Record<Domain, string> = {
 	financial: "plataforma financiera y concursal",
 	public: "sector público",
-	product: "producto web y mobile",
+	product: "producto digital",
 	health: "salud y marca",
 	logistics: "logística y automatización",
 };
 
 export const PILLAR_ORDER: Pillar[] = [
 	"web",
+	"mobile",
+	"data",
+	"integration",
 	"micro",
 	"eda",
 	"cloud",
-	"data",
 	"robotics",
 	"security",
 	"lead",
@@ -113,307 +144,569 @@ export const DOMAIN_ORDER: Domain[] = [
 	"logistics",
 ];
 
-export const ROLES: Role[] = [
+export const COMPANIES: Company[] = [
+	{ id: "acd", name: "ACD Sistemes SL", short: "acd", accent: "terracotta" },
+	{ id: "basetis", name: "Basetis", short: "basetis", accent: "sage" },
+	{ id: "quabu", name: "Quabu Solutions", short: "quabu", accent: "cobalt" },
+];
+
+export const POSITIONS: Position[] = [
 	{
-		id: "acd",
-		company: "ACD Sistemes SL",
-		title: "Software Developer",
-		startYear: 2011,
-		endYear: 2017,
-		accent: "terracotta",
-		focus: "auditoría contable y gestión concursal",
+		id: "acd-junior",
+		companyId: "acd",
+		title: "Junior Software Developer",
+		from: "2011-12",
+		to: "2013-09",
+		place: "Igualada",
+		focus: "primer producto: auditoría contable",
 		summary:
-			"Participé en todas las fases del ciclo de vida del software y asumí progresivamente la responsabilidad técnica de varias soluciones web de la suite.",
+			"Primeros años en el producto de auditoría contable: SQL de Fazenda do São Paulo, el importador de datos y el auditor migrando de Delphi a Velneo con sus gráficas.",
 		achievements: [
-			"Todas las fases del ciclo de vida: análisis, desarrollo, implantación y soporte.",
-			"Responsabilidad técnica progresiva sobre varias soluciones web.",
-			"Implantación y despliegue en cliente en Brasil y Angola.",
+			"Migración de ACDAuditor desde Velasquez y Delphi hacia Velneo.",
+			"Primeras gráficas del producto sobre Velneo.",
+			"Consultas SQL de la implantación de Fazenda do São Paulo.",
 		],
-		stack: [],
+		stack: ["SQL", "Delphi", "Velneo"],
 	},
 	{
-		id: "basetis-fullstack",
-		company: "BaseTIS S.L.",
+		id: "acd-web-suite",
+		companyId: "acd",
 		title: "Full Stack Developer",
-		startYear: 2017,
-		endYear: 2021,
-		accent: "sage",
-		focus: "producto web, mobile y desktop",
+		from: "2013-09",
+		to: "2015-09",
+		place: "Igualada",
+		focus: "suite web del producto concursal",
 		summary:
-			"Evolucioné a un perfil full stack participando en proyectos web, mobile y desktop, con componentes de IA aplicada, IoT y gamificación.",
+			"Desarrollo de las soluciones web del producto: concursal, circularización y web comercial, asumiendo responsabilidad técnica progresiva sobre ellas.",
 		achievements: [
-			"Desarrollo full stack de punta a punta.",
-			"Componentes de IA aplicada, IoT y gamificación.",
-			"Proyectos de sector público y de producto.",
+			"ACDConcursalWeb y ACDCircularizacionWeb de principio a fin.",
+			"Web comercial del producto.",
 		],
-		stack: [],
+		stack: ["Web", "SQL"],
+	},
+	{
+		id: "acd-concursal-modulo",
+		companyId: "acd",
+		title: "Full Stack Developer",
+		from: "2015-09",
+		to: "2016-04",
+		place: "Igualada",
+		focus: "validación de datos de auditoría",
+		summary:
+			"Nuevo módulo de ACD Concursal para validar los datos de auditoría antes de consolidarlos.",
+		achievements: [],
+		stack: ["Web", "SQL"],
+	},
+	{
+		id: "acd-igf",
+		companyId: "acd",
+		title: "Product Owner & Developer",
+		from: "2016-04",
+		to: "2016-07",
+		place: "Barcelona",
+		focus: "entrega internacional y web grids",
+		summary:
+			"Product owner y desarrollo de la entrega para el IGF de Angola, con ACDWebGrids (AngularJS y jQuery) y un rediseño del importador.",
+		achievements: [
+			"Rol de product owner además del desarrollo.",
+			"Entrega para el Instituto de Gestão de Fundos de Angola.",
+			"ACDWebGrids sobre AngularJS y jQuery.",
+		],
+		stack: ["AngularJS", "jQuery", "SQL"],
+	},
+	{
+		id: "acd-charts",
+		companyId: "acd",
+		title: "Full Stack Developer",
+		from: "2016-07",
+		to: "2016-09",
+		place: "Barcelona",
+		focus: "gráficas dinámicas en javascript",
+		summary:
+			"ACDCharts: gráficas dinámicas y personalizables en JavaScript para el producto de auditoría.",
+		achievements: [],
+		stack: ["JavaScript"],
+	},
+	{
+		id: "acd-importador2",
+		companyId: "acd",
+		title: "Full Stack Developer",
+		from: "2016-09",
+		to: "2017-04",
+		place: "Barcelona",
+		focus: "nueva versión del importador",
+		summary:
+			"Nueva versión del importador de datos contables del producto ACD.",
+		achievements: [],
+		stack: ["Web", "SQL"],
+	},
+	{
+		id: "basetis-shelter",
+		companyId: "basetis",
+		title: "Web Software Developer",
+		from: "2017-08",
+		to: "2017-12",
+		place: "Barcelona",
+		focus: "primer proyecto en consultora",
+		summary:
+			"ShelterGencat: desarrollo web con React y React Native para la Generalitat, con Jenkins en el pipeline.",
+		achievements: [],
+		stack: ["React", "React Native", "CSS", "MySQL", "Jenkins"],
+	},
+	{
+		id: "basetis-siebel",
+		companyId: "basetis",
+		title: "Siebel Developer",
+		from: "2017-12",
+		to: "2018-06",
+		place: "Barcelona",
+		focus: "crm enterprise para aca csv",
+		summary: "Desarrollo Siebel para ACA CSV: CRM y Oracle PL/SQL.",
+		achievements: [],
+		stack: ["Siebel", "CRM", "Oracle PL/SQL"],
+	},
+	{
+		id: "basetis-msupply",
+		companyId: "basetis",
+		title: "Full Stack Developer",
+		from: "2018-06",
+		to: "2019-10",
+		place: "Barcelona",
+		focus: "producto con equipo y cliente propio",
+		summary:
+			"MSyupply: desarrollo full stack con AngularJS, Redux y Sass, y Mulesoft como capa de integración. Asumí además gestión de equipo, análisis funcional y trato directo con cliente.",
+		achievements: [
+			"Gestión de equipo y planificación con Jira y Jenkins.",
+			"Análisis funcional y gestión de cliente.",
+		],
+		stack: [
+			"AngularJS",
+			"Redux",
+			"Sass",
+			"CSS",
+			"SQL",
+			"MySQL",
+			"Mulesoft",
+			"Jira",
+			"Jenkins",
+		],
+	},
+	{
+		id: "basetis-ema",
+		companyId: "basetis",
+		title: "Full Stack Developer",
+		from: "2019-10",
+		to: "2020-09",
+		place: "Barcelona",
+		focus: "mantenimiento de aplicaciones",
+		summary:
+			"EMA (Equipo de Mantenimiento de Aplicaciones): mantenimiento y evolución de aplicaciones sobre Amazon EC2.",
+		achievements: [],
+		stack: ["Amazon EC2"],
+	},
+	{
+		id: "basetis-isdin-pro",
+		companyId: "basetis",
+		title: "Full Stack Developer",
+		from: "2020-09",
+		to: "2021-03",
+		place: "Barcelona",
+		focus: "producto de marca sobre node",
+		summary:
+			"LoveISDIN Proyect: desarrollo full stack con Node.js, MySQL y React, y Redis para estado y caché.",
+		achievements: [],
+		stack: ["NodeJS", "MySQL", "JavaScript", "ReactJS", "Redis"],
 	},
 	{
 		id: "basetis-lead",
-		company: "BaseTIS S.L.",
-		title: "Technical Team Lead",
-		startYear: 2021,
-		endYear: 2024,
-		accent: "sage",
-		focus: "liderazgo técnico, prds y seguridad",
+		companyId: "basetis",
+		title: "Senior Technical Team Lead",
+		from: "2021-03",
+		to: "2024-04",
+		place: "Barcelona",
+		focus: "liderazgo técnico en loveisdin",
 		summary:
-			"Lideré el equipo y el análisis de viabilidad de los requerimientos: definía las PRDs, revisaba las PRs, mentorizaba al equipo y desarrollaba los componentes más críticos del sistema.",
+			"Lideré técnicamente LoveISDIN: PRDs y análisis de viabilidad, revisión de PRs, mentoría del equipo y los componentes más críticos sobre AWS, Node.js, Next.js y React.",
 		achievements: [
 			"PRDs y análisis de viabilidad de los requerimientos con negocio.",
 			"Revisión de PRs y mentoría del equipo.",
 			"Componentes críticos, con seguridad, rendimiento y escalabilidad como requisito.",
 		],
-		stack: ["OAuth2", "JWT", "API Gateway", "UML", "ITIL"],
+		stack: ["AWS", "NodeJS", "NextJS", "React", "Technical Leadership"],
 	},
 	{
-		id: "quabu",
-		company: "Quabu SL",
-		title: "Solutions Architect",
-		startYear: 2024,
-		endYear: 2026,
-		accent: "cobalt",
-		focus: "eda + ddd + tdd sobre robótica industrial",
+		id: "quabu-architect",
+		companyId: "quabu",
+		title: "Arquitecto de soluciones de software",
+		from: "2024-01",
+		to: "2026-08",
+		place: "Vilanova i la Geltrù",
+		mode: "híbrido",
+		focus: "automatización de almacenes con robótica",
 		summary:
-			"Diseñé la arquitectura y monté los microservicios que la sostienen, con la escalabilidad como requisito de diseño, y orquesté la automatización de almacenes donde la IA vive en los propios procesos del sistema.",
+			"Diseñé e implementé un sistema orientado a eventos sobre DDD, TDD y microservicios para la automatización de almacenes inteligentes: un monolito agrupado en frontend, backend, core y un subconjunto de dispositivos.",
 		achievements: [
-			"Arquitectura orientada a eventos para el sistema transaccional y la automatización de almacén.",
-			"Microservicios contenerizados (Docker/Kubernetes) en AWS y Azure.",
-			"Pipelines de CI/CD (Jenkins/Bitbucket) con QA gates y observabilidad.",
-			"Persistencia heterogénea: time-series para métricas, PostgreSQL y Redis para transacciones.",
+			"DDD y TDD para absorber las reglas de negocio, mapas y versiones de robot distintas de cada almacén.",
+			"Core orientado a agentes: dictator ordena, ranker prioriza y distributor delega, maximizando la disponibilidad de los dispositivos y minimizando movimientos.",
+			"Cada familia de dispositivo (carretilla, PLC, LED, picking, cámara…) es su propio microservicio, con adaptadores según modelo, versión y protocolo.",
+			"Frontend reactivo por WebSocket y RBAC: la interfaz se adapta al rol (admin u operador) y al tipo de operador.",
+			"Docker en cloud bajo VPN, con CI/CD y QA gates deterministas sobre hardware físico real.",
+			"Documentación y comunicación técnica en inglés con fabricantes chinos.",
 		],
-		stack: ["EDA", "DDD", "TDD", "Kafka", "Kubernetes", "AWS", "Redis"],
+		stack: [
+			"EDA",
+			"DDD",
+			"TDD",
+			"Microservicios",
+			"WebSocket",
+			"RBAC",
+			"Docker",
+			"CI/CD",
+			"Cloud",
+			"English",
+		],
 	},
 ];
 
 const PROJECT_SEEDS: ProjectSeed[] = [
 	{
-		id: "acd-auditor",
-		roleId: "acd",
-		project: "ACDAuditor",
-		short: "auditor",
-		domain: "financial",
-		pillars: ["data", "web"],
-		summary:
-			"Herramienta de auditoría contable del producto de ACD, implantada en instituciones públicas.",
-		achievements: [
-			"Implantación y despliegue en cliente en Brasil y Angola.",
-			"Puesta en marcha trabajando hombro con hombro con el usuario final.",
-		],
-	},
-	{
-		id: "acd-concursal",
-		roleId: "acd",
-		project: "ACDConcursal Web",
-		short: "concursal",
-		domain: "financial",
-		pillars: ["web", "data"],
-		summary:
-			"Solución web del producto de gestión concursal de ACD Sistemes.",
-		achievements: [
-			"Todas las fases del ciclo de vida: análisis, desarrollo, implantación y soporte.",
-			"Responsabilidad técnica progresiva sobre la solución.",
-		],
-	},
-	{
-		id: "acd-circularizacion",
-		roleId: "acd",
-		project: "ACDCircularización Web",
-		short: "circularización",
-		domain: "financial",
-		pillars: ["web", "data"],
-		summary:
-			"Solución web para el proceso de circularización dentro de la suite de auditoría contable.",
-		achievements: [
-			"Desarrollo web dentro de la suite de auditoría.",
-			"Responsabilidad técnica progresiva sobre la solución.",
-		],
+		id: "fazenda-sao-paulo",
+		positionId: "acd-junior",
+		name: "Fazenda do São Paulo",
+		short: "fazenda",
+		domain: "public",
+		pillars: ["data"],
+		summary: "Implantación con consultas SQL para Fazenda do São Paulo.",
+		achievements: [],
 	},
 	{
 		id: "acd-importador",
-		roleId: "acd",
-		project: "ACDImportador v2",
+		positionId: "acd-junior",
+		name: "ACDImportador",
 		short: "importador",
 		domain: "financial",
 		pillars: ["data"],
 		summary:
 			"Importador de datos contables que alimenta al resto de la suite de auditoría.",
+		achievements: [],
+	},
+	{
+		id: "acd-auditor-delphi",
+		positionId: "acd-junior",
+		name: "ACDAuditor · Velasquez",
+		short: "auditor",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary:
+			"Auditor contable del producto, migrado desde Velasquez y Delphi hacia Velneo.",
 		achievements: [
-			"Segunda versión del importador de datos contables.",
-			"Integración con el resto de soluciones de la suite.",
+			"Implantación y despliegue en cliente en Brasil y Angola.",
 		],
+	},
+	{
+		id: "acd-auditor-charts",
+		positionId: "acd-junior",
+		name: "ACDAuditor · gráficas Velneo",
+		short: "gráficas",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary: "Gráficas del auditor sobre Velneo.",
+		achievements: [],
+	},
+	{
+		id: "acd-concursal-web",
+		positionId: "acd-web-suite",
+		name: "ACDConcursal Web",
+		short: "concursal",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary: "Solución web de gestión concursal del producto ACD.",
+		achievements: [
+			"Responsabilidad técnica progresiva sobre la solución.",
+		],
+	},
+	{
+		id: "acd-circularizacion",
+		positionId: "acd-web-suite",
+		name: "ACDCircularización Web",
+		short: "circularización",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary:
+			"Solución web para el proceso de circularización dentro de la suite de auditoría.",
+		achievements: [],
+	},
+	{
+		id: "acd-commercial-web",
+		positionId: "acd-web-suite",
+		name: "Web comercial",
+		short: "comercial",
+		domain: "financial",
+		pillars: ["web"],
+		summary: "Web comercial del producto.",
+		achievements: [],
+	},
+	{
+		id: "acd-concursal-modulo",
+		positionId: "acd-concursal-modulo",
+		name: "ACD Concursal · validación",
+		short: "validación",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary: "Módulo nuevo para validar los datos de auditoría.",
+		achievements: [],
+	},
+	{
+		id: "angola-igf",
+		positionId: "acd-igf",
+		name: "Angola · IGF",
+		short: "angola",
+		domain: "public",
+		pillars: ["web", "data"],
+		summary:
+			"Entrega para el Instituto de Gestão de Fundos de Angola, con rol de product owner además del desarrollo.",
+		achievements: [],
+	},
+	{
+		id: "acd-web-grids",
+		positionId: "acd-igf",
+		name: "ACDWebGrids",
+		short: "webgrids",
+		domain: "financial",
+		pillars: ["web"],
+		summary: "Rejilla web reutilizable sobre AngularJS y jQuery.",
+		achievements: [],
+		stack: ["AngularJS", "jQuery"],
+	},
+	{
+		id: "acd-charts",
+		positionId: "acd-charts",
+		name: "ACDCharts",
+		short: "charts",
+		domain: "financial",
+		pillars: ["web", "data"],
+		summary: "Gráficas dinámicas y personalizables en JavaScript.",
+		achievements: [],
+		stack: ["JavaScript"],
+	},
+	{
+		id: "acd-importador-v2",
+		positionId: "acd-importador2",
+		name: "ACDImportador · nueva versión",
+		short: "importador v2",
+		domain: "financial",
+		pillars: ["data"],
+		summary: "Segunda versión del importador de datos contables.",
+		achievements: [],
 	},
 	{
 		id: "shelter-gencat",
-		roleId: "basetis-fullstack",
-		project: "Shelter Gencat",
+		positionId: "basetis-shelter",
+		name: "ShelterGencat",
 		short: "shelter",
 		domain: "public",
-		pillars: ["web"],
+		pillars: ["web", "mobile"],
 		summary:
-			"Proyecto web para la Generalitat dentro de mi primera etapa en BaseTIS.",
-		achievements: [
-			"Desarrollo full stack de punta a punta.",
-			"Proyecto para el sector público catalán.",
-		],
+			"Proyecto web para la Generalitat con React y React Native.",
+		achievements: [],
+		stack: ["React", "React Native", "MySQL"],
 	},
 	{
 		id: "aca-csv",
-		roleId: "basetis-fullstack",
-		project: "ACA CSV",
+		positionId: "basetis-siebel",
+		name: "ACA CSV",
 		short: "aca csv",
 		domain: "public",
-		pillars: ["web"],
-		summary: "Proyecto web para el ACA dentro de la etapa full stack en BaseTIS.",
-		achievements: [
-			"Desarrollo full stack de punta a punta.",
-			"Proyecto para el sector público catalán.",
-		],
+		pillars: ["integration", "data"],
+		summary: "Desarrollo Siebel del CRM para ACA CSV.",
+		achievements: [],
+		stack: ["Siebel", "Oracle PL/SQL"],
 	},
 	{
-		id: "mambo-supply",
-		roleId: "basetis-fullstack",
-		project: "Mambo Supply",
-		short: "mambo",
+		id: "msupply",
+		positionId: "basetis-msupply",
+		name: "MSyupply",
+		short: "msyupply",
 		domain: "product",
-		pillars: ["web"],
-		summary: "Producto digital dentro de la etapa full stack en BaseTIS.",
-		achievements: ["Desarrollo full stack de punta a punta."],
+		pillars: ["web", "integration", "lead", "data"],
+		summary:
+			"Producto con AngularJS, Redux y Sass sobre una capa de integración Mulesoft, con gestión de equipo y de cliente.",
+		achievements: [
+			"Gestión de equipo y planificación con Jira y Jenkins.",
+			"Análisis funcional y trato directo con cliente.",
+		],
+		stack: ["AngularJS", "Redux", "Sass", "Mulesoft", "MySQL"],
 	},
 	{
 		id: "ema",
-		roleId: "basetis-fullstack",
-		project: "EMA",
+		positionId: "basetis-ema",
+		name: "EMA · mantenimiento de aplicaciones",
 		short: "ema",
 		domain: "product",
-		pillars: ["web"],
-		summary: "Producto digital dentro de la etapa full stack en BaseTIS.",
-		achievements: ["Desarrollo full stack de punta a punta."],
+		pillars: ["web", "cloud"],
+		summary:
+			"Mantenimiento y evolución de aplicaciones sobre Amazon EC2.",
+		achievements: [],
+		stack: ["Amazon EC2"],
 	},
 	{
-		id: "love-isdin-pin",
-		roleId: "basetis-lead",
-		project: "Love ISDIN PIN",
-		short: "love isdin pin",
+		id: "love-isdin-pro",
+		positionId: "basetis-isdin-pro",
+		name: "LoveISDIN Proyect",
+		short: "loveisdin pro",
 		domain: "health",
-		pillars: ["security", "micro", "lead"],
+		pillars: ["web", "data"],
 		summary:
-			"Plataforma de marca para ISDIN donde lideré el equipo y el análisis de viabilidad, con seguridad, rendimiento y escalabilidad como requisito.",
+			"Desarrollo full stack con Node.js, MySQL y React, y Redis para estado y caché.",
+		achievements: [],
+		stack: ["NodeJS", "MySQL", "ReactJS", "Redis"],
+	},
+	{
+		id: "love-isdin",
+		positionId: "basetis-lead",
+		name: "LoveISDIN",
+		short: "loveisdin",
+		domain: "health",
+		pillars: ["web", "cloud", "lead"],
+		summary:
+			"Plataforma de marca donde lideré el equipo técnico y los componentes críticos.",
 		achievements: [
 			"PRDs y análisis de viabilidad con negocio.",
 			"Revisión de PRs y mentoría del equipo.",
-			"Componentes críticos con seguridad desde el diseño.",
 		],
-		stack: ["OAuth2", "JWT", "API Gateway", "UML", "ITIL"],
+		stack: ["AWS", "NodeJS", "NextJS", "React"],
 	},
 	{
 		id: "bodega-digital",
-		roleId: "quabu",
-		project: "Bodega Digital",
+		positionId: "quabu-architect",
+		name: "Bodega Digital",
 		short: "bodega digital",
 		domain: "logistics",
-		pillars: ["eda", "robotics", "cloud", "data"],
+		pillars: ["eda", "micro", "robotics", "cloud", "data", "security"],
 		summary:
-			"Arquitectura por eventos (EDA + DDD + TDD) para la automatización de almacenes con robots, PLC, LEDs y sonidos, donde la IA no solo vive en el desarrollo, sino en los propios procesos del sistema: priorizar tareas y ejecutarlas, como mover un pallet de x1,y1,z1 a x2,y2,z2.",
+			"Sistema event-driven para automatizar almacenes con robots, PLC, LEDs, cámaras y sonido en tiempo real, con un core de tareas atómicas que prioriza y reparte el trabajo entre dispositivos.",
 		achievements: [
-			"Arquitectura orientada a eventos con DDD y TDD como base del diseño.",
-			"Orquestación de robots, PLC, LEDs y sonidos desde los procesos del sistema.",
-			"IA dentro de los procesos: priorizar y ejecutar tareas de movimiento de pallets.",
+			"Abstracción por casos de uso, puertos y adaptadores: cambiar una API o un dispositivo no arrastra al dominio.",
+			"Tareas con distinto nivel de detalle, desde el dispositivo concreto hasta solo la familia y la acción.",
+			"Administración por rol y tipo de operador con RBAC y WebSocket.",
 		],
-		stack: ["EDA", "DDD", "TDD", "Kafka", "Kubernetes"],
+		stack: [
+			"EDA",
+			"DDD",
+			"TDD",
+			"Kafka",
+			"Kubernetes",
+			"Docker",
+			"WebSocket",
+		],
 	},
 	{
 		id: "nakire-tps",
-		roleId: "quabu",
-		project: "Nakire TPS",
+		positionId: "quabu-architect",
+		name: "Nakire TPS",
 		short: "nakire tps",
 		domain: "logistics",
 		pillars: ["eda", "micro", "cloud", "data"],
 		summary:
-			"Diseño integral de la arquitectura del sistema transaccional, orquestando robótica en tiempo real y eventos de alto rendimiento.",
+			"Sistema transaccional con eventos de alto rendimiento y orquestación de robótica en tiempo real.",
 		achievements: [
 			"EDA para la comunicación asíncrona con el middleware robótico.",
-			"Microservicios contenerizados (Docker/Kubernetes) en AWS y Azure.",
 			"Persistencia heterogénea: time-series para métricas, PostgreSQL y Redis para transacciones.",
-			"QA gates y observabilidad dentro de los pipelines de CI/CD.",
 		],
-		stack: [
-			"Kafka",
-			"Microservicios",
-			"Docker",
-			"Kubernetes",
-			"AWS",
-			"Azure",
-			"PostgreSQL",
-			"Redis",
-			"ElysiaJS",
-		],
+		stack: ["Kafka", "Microservicios", "AWS", "Azure", "PostgreSQL", "Redis"],
 	},
 	{
 		id: "coleo",
-		roleId: "quabu",
-		project: "Coleo",
+		positionId: "quabu-architect",
+		name: "Coleo",
 		short: "coleo",
 		domain: "product",
 		pillars: ["micro", "cloud"],
 		summary:
-			"Producto donde diseñé la arquitectura y monté los microservicios que la sostienen, con la escalabilidad como requisito de diseño.",
+			"Producto donde diseñé la arquitectura y monté los microservicios que la sostienen.",
 		achievements: [
-			"Arquitectura de microservicios con la escalabilidad como requisito de diseño.",
-			"Pipelines de CI/CD (Jenkins/Bitbucket), QA gates e infraestructura cloud.",
+			"Escalabilidad como requisito de diseño.",
+			"Pipelines de CI/CD, QA gates e infraestructura cloud.",
 		],
-		stack: ["Microservicios", "Docker", "AWS", "CI/CD"],
+		stack: ["Microservicios", "Docker", "AWS"],
 	},
 	{
 		id: "jira-addons",
-		roleId: "quabu",
-		project: "Jira Addons",
+		positionId: "quabu-architect",
+		name: "Jira Addons",
 		short: "jira addons",
 		domain: "product",
 		pillars: ["micro", "cloud"],
 		summary: "Addons de Jira dentro del ecosistema de herramientas de Quabu.",
-		achievements: [
-			"Extensiones sobre la plataforma Jira.",
-			"Automatización de procesos operativos.",
-		],
+		achievements: ["Automatización de procesos operativos."],
 		stack: ["Jira", "Microservicios", "AWS"],
 	},
 ];
 
-/**
- * Resolves every project against its role: the role owns the company, the title
- * and the period, and a project only carries years when it needs its own.
- */
+export function resolvePositions(
+	companies: Company[],
+	positions: Position[],
+): PositionView[] {
+	return positions.map((position) => {
+		const company = companies.find((item) => item.id === position.companyId);
+		if (!company) {
+			throw new Error(
+				`position "${position.id}" points at unknown company "${position.companyId}"`,
+			);
+		}
+		const startMonth = parseMonth(position.from);
+		const endMonth = parseMonth(position.to) + 1;
+		if (endMonth <= startMonth) {
+			throw new Error(`position "${position.id}" ends before it starts`);
+		}
+		return {
+			...position,
+			company: company.name,
+			companyShort: company.short,
+			accent: company.accent,
+			startMonth,
+			endMonth,
+			months: endMonth - startMonth,
+		};
+	});
+}
+
 export function resolveProjects(
-	roles: Role[],
+	positions: PositionView[],
 	seeds: ProjectSeed[],
 ): Project[] {
 	return seeds.map((seed) => {
-		const role = roles.find((item) => item.id === seed.roleId);
-		if (!role) {
-			throw new Error(`project "${seed.id}" points at unknown role "${seed.roleId}"`);
-		}
-
-		const startYear = seed.startYear ?? role.startYear;
-		const endYear = seed.endYear ?? role.endYear;
-
-		if (startYear < role.startYear || endYear > role.endYear) {
+		const position = positions.find((item) => item.id === seed.positionId);
+		if (!position) {
 			throw new Error(
-				`project "${seed.id}" (${startYear}–${endYear}) leaves role "${role.id}" (${role.startYear}–${role.endYear})`,
+				`project "${seed.id}" points at unknown position "${seed.positionId}"`,
 			);
 		}
-		if (endYear < startYear) {
+
+		const startMonth = seed.from ? parseMonth(seed.from) : position.startMonth;
+		const endMonth = seed.to ? parseMonth(seed.to) + 1 : position.endMonth;
+
+		if (startMonth < position.startMonth || endMonth > position.endMonth) {
+			throw new Error(
+				`project "${seed.id}" leaves position "${position.id}"`,
+			);
+		}
+		if (endMonth <= startMonth) {
 			throw new Error(`project "${seed.id}" ends before it starts`);
 		}
 
 		return {
 			id: seed.id,
-			roleId: seed.roleId,
-			company: role.company,
-			role: role.title,
-			project: seed.project,
+			positionId: seed.positionId,
+			position: position.title,
+			companyId: position.companyId,
+			company: position.company,
+			companyShort: position.companyShort,
+			accent: position.accent,
+			name: seed.name,
 			short: seed.short,
-			startYear,
-			endYear,
+			startMonth,
+			endMonth,
 			domain: seed.domain,
 			pillars: seed.pillars,
 			summary: seed.summary,
@@ -423,25 +716,55 @@ export function resolveProjects(
 	});
 }
 
-export const PROJECTS: Project[] = resolveProjects(ROLES, PROJECT_SEEDS);
+export const POSITION_VIEWS: PositionView[] = resolvePositions(
+	COMPANIES,
+	POSITIONS,
+);
 
-export const MIN_YEAR = Math.min(...ROLES.map((role) => role.startYear));
-export const MAX_YEAR = Math.max(...ROLES.map((role) => role.endYear));
+export const PROJECTS: Project[] = resolveProjects(
+	POSITION_VIEWS,
+	PROJECT_SEEDS,
+);
 
-export const YEAR_RANGE = { from: MIN_YEAR, to: MAX_YEAR };
+/** The timeline runs from the first month worked to the current one. */
+export const TODAY_MONTH = currentMonth();
+export const FIRST_MONTH = Math.min(
+	...POSITION_VIEWS.map((position) => position.startMonth),
+);
+export const LAST_MONTH = Math.max(
+	...POSITION_VIEWS.map((position) => position.endMonth),
+);
+export const MONTH_RANGE = {
+	from: FIRST_MONTH,
+	to: Math.max(LAST_MONTH, TODAY_MONTH + 1),
+};
+
+/** Server-rendered label for the whole timeline. */
+export const YEAR_LABEL = `${monthLabel(MONTH_RANGE.from)} — ${monthLabel(MONTH_RANGE.to - 1)}`;
 
 export const STACK_GROUPS: { label: string; items: string[] }[] = [
 	{
 		label: "front",
-		items: ["React", "React Native", "Next.js", "Flutter"],
+		items: ["React", "React Native", "Next.js", "AngularJS", "Redux", "Sass"],
 	},
 	{
 		label: "back",
-		items: ["Symfony", "ElysiaJS", "TypeScript", "Dart"],
+		items: ["Node.js", "TypeScript", "Symfony", "ElysiaJS", "Mulesoft"],
 	},
 	{
 		label: "datos",
-		items: ["MySQL", "MongoDB", "PostgreSQL", "Redis"],
+		items: [
+			"PostgreSQL",
+			"MySQL",
+			"Oracle PL/SQL",
+			"MongoDB",
+			"Redis",
+			"Kafka",
+		],
+	},
+	{
+		label: "enterprise",
+		items: ["Siebel CRM", "Velneo", "Delphi", "Jira", "Jenkins"],
 	},
 	{
 		label: "prácticas",
@@ -449,15 +772,15 @@ export const STACK_GROUPS: { label: string; items: string[] }[] = [
 			"TDD",
 			"BDD",
 			"DDD",
-			"SDD",
 			"Clean Arch",
 			"Hexagonal",
 			"Event Arch",
+			"CI/CD",
 		],
 	},
 	{
 		label: "infra",
-		items: ["AWS Services", "Docker", "SSE", "JIRA", "Agile · Scrum"],
+		items: ["AWS", "Amazon EC2", "Docker", "Kubernetes", "VPN", "SSE"],
 	},
 ];
 
