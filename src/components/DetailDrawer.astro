@@ -1,17 +1,11 @@
 ---
-import {
-	DOMAIN_LABEL,
-	PILLAR_LABEL,
-	PROJECTS,
-	YEAR_RANGE,
-} from "../data/cv";
+import { DOMAIN_LABEL, PILLAR_LABEL, PROJECTS } from "../data/cv";
 import { openDrawer } from "../lib/open-drawer";
 
 const payload = {
 	projects: PROJECTS,
 	domain: DOMAIN_LABEL,
 	pillar: PILLAR_LABEL,
-	range: YEAR_RANGE,
 };
 ---
 
@@ -58,6 +52,7 @@ const payload = {
 <script>
   import type { DrawerRequest } from "../lib/open-drawer";
   import type { Project } from "../data/cv";
+  import { durationLabel, spanLabel } from "../lib/period";
 
   interface Payload {
     projects: Project[];
@@ -105,8 +100,8 @@ const payload = {
         const project = projectById.get(request.id);
         if (!project) return;
         meta.textContent = `proyecto · ${project.role}`;
-        title.textContent = project.project;
-        role.textContent = `${project.company} · ${project.startYear}–${project.endYear}`;
+        title.textContent = project.name;
+        role.textContent = `${project.company} · ${project.position} · ${spanLabel(project.startMonth, project.endMonth)} (${durationLabel(project.endMonth - project.startMonth)})`;
         body.replaceChildren(projectBody(project));
         return;
       }
@@ -165,7 +160,7 @@ const payload = {
         const project = projectById.get(id);
         if (!project) continue;
         const item = element("li");
-        const button = element("button", "drawer-pick", project.project);
+        const button = element("button", "drawer-pick", project.name);
         button.type = "button";
         button.addEventListener("click", () => {
           render({ kind: "project", id });
@@ -176,7 +171,7 @@ const payload = {
           element(
             "span",
             "drawer-pick-meta",
-            `${project.company} · ${project.startYear}–${project.endYear}`,
+            `${project.company} · ${spanLabel(project.startMonth, project.endMonth)}`,
           ),
         );
         list.append(item);

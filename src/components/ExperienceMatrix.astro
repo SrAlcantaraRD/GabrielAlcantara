@@ -1,12 +1,15 @@
 ---
 import { AXIS_LABEL, AXIS_ORDER, type AxisId } from "../lib/matrix";
 import {
-	YEAR_RANGE,
+	COMPANIES,
+	MONTH_RANGE,
+	POSITION_VIEWS,
+	PROJECTS,
+	YEAR_LABEL,
 	DOMAIN_LABEL,
 	DOMAIN_ORDER,
 	PILLAR_LABEL,
 	PILLAR_ORDER,
-	PROJECTS,
 } from "../data/cv";
 
 const defaultX: AxisId = "time";
@@ -14,7 +17,9 @@ const defaultY: AxisId = "company";
 
 const payload = {
 	projects: PROJECTS,
-	range: YEAR_RANGE,
+	positions: POSITION_VIEWS,
+	companies: COMPANIES,
+	range: MONTH_RANGE,
 	config: {
 		pillar: PILLAR_LABEL,
 		domain: DOMAIN_LABEL,
@@ -22,12 +27,6 @@ const payload = {
 		domainOrder: DOMAIN_ORDER,
 	},
 };
-
-const pillarsInUse = PILLAR_ORDER.filter((pillar) =>
-	PROJECTS.some((project) => project.pillars.includes(pillar)),
-);
-
-const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${YEAR_RANGE.from}–${YEAR_RANGE.to}`;
 ---
 
 <div class="matrix" id="matriz">
@@ -53,64 +52,95 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
   </div>
 
   <div class="matrix-panel">
+    <div class="panel-head">
+      <span class="panel-range" id="matrix-range">{YEAR_LABEL}</span>
+      <div class="window" role="group" aria-label="ventana temporal">
+        <span class="window-name" aria-hidden="true">ventana</span>
+        <button type="button" class="wchip" data-window="all" aria-pressed="true">
+          todo
+        </button>
+        {
+          COMPANIES.map((company) => (
+            <button
+              type="button"
+              class="wchip"
+              data-window={company.id}
+              aria-pressed="false"
+            >
+              {company.short}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
     <div class="matrix-surface">
       <div class="matrix-grid" id="matrix-grid" data-mode="timeline"></div>
     </div>
   </div>
 
   <div class="matrix-foot">
-    <ul class="legend" aria-label="pilares técnicos">
+    <ul class="legend" aria-label="empresas">
       {
-        pillarsInUse.map((pillar) => (
+        COMPANIES.map((company) => (
           <li>
-            <span class="legend-dot" data-pillar={pillar} aria-hidden="true" />
-            {PILLAR_LABEL[pillar]}
+            <span
+              class="legend-dot"
+              data-accent={company.accent}
+              aria-hidden="true"
+            />
+            {company.name}
           </li>
         ))
       }
     </ul>
-    <p class="matrix-hint" id="matrix-hint">{hint}</p>
+    <p class="matrix-hint">
+      haz clic en una barra para abrir la ficha del proyecto
+    </p>
   </div>
 
   <noscript>
     <p class="matrix-hint">
-      activa javascript para recorrer la matriz; las fichas de etapa de abajo
-      cuentan la misma trayectoria en texto.
+      activa javascript para recorrer la matriz; las fichas de abajo cuentan la
+      misma trayectoria en texto.
     </p>
   </noscript>
+
+  <div class="matrix-tip" id="matrix-tip" role="tooltip" hidden></div>
 
   <script type="application/json" id="matrix-data" set:html={JSON.stringify(payload)} />
 </div>
 
 <script>
   import {
-    AXIS_LABEL,
-    DEFAULT_RANGE,
     axesAreValid,
     axisValues,
     cellBars,
     isAxisId,
+    monthPct,
     packLanes,
     rowBars,
-    yearPct,
     type AxisConfig,
     type AxisId,
     type AxisValue,
     type Bar,
-    type YearRange,
+    type MonthRange,
   } from "../lib/matrix";
-  import type { Project } from "../data/cv";
+  import type { Company, PositionView, Project } from "../data/cv";
+  import { durationLabel, monthLabel, spanLabel } from "../lib/period";
   import { openDrawer } from "../lib/open-drawer";
 
   interface Payload {
     projects: Project[];
+    positions: PositionView[];
+    companies: Company[];
     config: AxisConfig;
-    range: YearRange;
+    range: MonthRange;
   }
 
   const MAX_CELL_LANES = 3;
   const MIN_LABEL_PX = 54;
-  const MIN_YEAR_SPACING_PX = 38;
+  const MIN_YEAR_SPACING_PX = 42;
 
   const root = document.querySelector<HTMLElement>("#matriz");
 
@@ -121,29 +151,56 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
   function boot(host: HTMLElement) {
     const surface = must<HTMLElement>(".matrix-surface", host);
     const grid = must<HTMLElement>("#matrix-grid", host);
-    const hint = must<HTMLElement>("#matrix-hint", host);
+    const rangeLabel = must<HTMLElement>("#matrix-range", host);
+    const tip = must<HTMLElement>("#matrix-tip", host);
     const dataScript = must<HTMLScriptElement>("#matrix-data", host);
 
     const payload = JSON.parse(dataScript.textContent ?? "{}") as Payload;
     const projects = payload.projects;
-    const config = payload.config;
-    const range = payload.range ?? DEFAULT_RANGE;
-    const span = range.to - range.from;
+    const positions = payload.positions;
     const projectById = new Map(projects.map((project) => [project.id, project]));
     const state = readState();
 
     bindChips();
+    bindWindows();
     render();
     new ResizeObserver(() => measure()).observe(surface);
 
-    function readState(): { x: AxisId; y: AxisId } {
+    function readState(): { x: AxisId; y: AxisId; window: string } {
       const params = new URLSearchParams(window.location.search);
-      const x = params.get("x") ?? "";
-      const y = params.get("y") ?? "";
-      if (isAxisId(x) && isAxisId(y) && axesAreValid(x, y)) {
-        return { x, y };
-      }
-      return { x: "time", y: "company" };
+      const rawX = params.get("x") ?? "";
+      const rawY = params.get("y") ?? "";
+      const rawWindow = params.get("w") ?? "all";
+      const fallback = { x: "time" as AxisId, y: "company" as AxisId };
+      const x = isAxisId(rawX) ? rawX : fallback.x;
+      const y = isAxisId(rawY) ? rawY : fallback.y;
+      const valid = axesAreValid(x, y);
+      const known = payload.companies.some((company) => company.id === rawWindow);
+      return {
+        x: valid ? x : fallback.x,
+        y: valid ? y : fallback.y,
+        window: rawWindow === "all" || known ? rawWindow : "all",
+      };
+    }
+
+    /** Zooming to one company gives the short stints room to be read. */
+    function rangeFor(windowId: string): MonthRange {
+      if (windowId === "all") return payload.range;
+      const own = positions.filter(
+        (position) => position.companyId === windowId,
+      );
+      if (own.length === 0) return payload.range;
+      const from = Math.min(...own.map((position) => position.startMonth));
+      const to = Math.max(...own.map((position) => position.endMonth));
+      return { from, to };
+    }
+
+    /** Drawing range: whole years, so every year line lands on a label. */
+    function chartRange(range: MonthRange): MonthRange {
+      return {
+        from: Math.floor(range.from / 12) * 12,
+        to: (Math.floor((range.to - 1) / 12) + 1) * 12,
+      };
     }
 
     function bindChips() {
@@ -160,22 +217,44 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       }
     }
 
+    function bindWindows() {
+      for (const chip of host.querySelectorAll<HTMLButtonElement>(".wchip")) {
+        chip.addEventListener("click", () => {
+          const value = chip.dataset.window ?? "all";
+          if (state.window === value) return;
+          state.window = value;
+          render();
+        });
+      }
+    }
+
     function render() {
-      const xValues = axisValues(state.x, projects, config, range);
-      const yValues = axisValues(state.y, projects, config, range);
+      const range = rangeFor(state.window);
+      const chart = chartRange(range);
+      const chartSpan = chart.to - chart.from;
+      const xValues = axisValues(state.x, projects, payload.config, range);
+      const yValues = axisValues(state.y, projects, payload.config, range);
 
       grid.dataset.mode = state.x === "time" ? "timeline" : "matrix";
       grid.style.setProperty("--cols", String(xValues.length));
-      grid.style.setProperty("--step", `${(100 / Math.max(1, span)).toFixed(4)}%`);
+      grid.style.setProperty(
+        "--year-step",
+        `${((12 / Math.max(1, chartSpan)) * 100).toFixed(4)}%`,
+      );
+      grid.style.setProperty("--year-offset", "0%");
+
       grid.replaceChildren(
         state.x === "time"
-          ? renderTimeline(yValues)
-          : renderMatrix(xValues, yValues),
+          ? renderTimeline(yValues, chart)
+          : renderMatrix(xValues, yValues, chart),
       );
 
-      hint.textContent = `columnas: ${AXIS_LABEL[state.x]} · filas: ${AXIS_LABEL[state.y]} · ${range.from}–${range.to}`;
+      rangeLabel.textContent = `${monthLabel(range.from)} — ${monthLabel(range.to - 1)} · ${durationLabel(range.to - range.from)}`;
+
       syncChips();
+      syncWindows();
       syncUrl();
+      measure();
       requestAnimationFrame(measure);
     }
 
@@ -191,30 +270,72 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       }
     }
 
+    function syncWindows() {
+      for (const chip of host.querySelectorAll<HTMLButtonElement>(".wchip")) {
+        chip.setAttribute(
+          "aria-pressed",
+          String((chip.dataset.window ?? "all") === state.window),
+        );
+      }
+    }
+
     function syncUrl() {
       const url = new URL(window.location.href);
       url.searchParams.set("x", state.x);
       url.searchParams.set("y", state.y);
+      if (state.window === "all") url.searchParams.delete("w");
+      else url.searchParams.set("w", state.window);
       window.history.replaceState(null, "", url);
     }
 
-    function ruler(): HTMLElement {
+    function accentFor(axis: AxisId, value: string): string | null {
+      const match = projects.find((project) => {
+        if (axis === "company") return project.companyId === value;
+        if (axis === "position") return project.positionId === value;
+        if (axis === "project") return project.id === value;
+        return false;
+      });
+      return match?.accent ?? null;
+    }
+
+    function nowMonth(): number {
+      const now = new Date();
+      return now.getFullYear() * 12 + now.getMonth() + 1;
+    }
+
+    function ruler(range: MonthRange): HTMLElement {
       const track = element("div", "ruler-track");
       track.style.gridColumn = "2 / -1";
-      for (let year = range.from; year <= range.to; year += 1) {
+
+      const firstYear = Math.floor(range.from / 12);
+      const lastYear = Math.floor(Math.max(range.from, range.to - 1) / 12);
+
+      for (let year = firstYear; year <= lastYear; year += 1) {
+        const boundary = Math.max(year * 12, range.from);
         const label = element("span", "ruler-year", String(year));
         label.dataset.year = String(year);
-        label.style.left = `${yearPct(year, range)}%`;
-        if (year === range.from) label.style.transform = "none";
-        if (year === range.to) label.style.transform = "translateX(-100%)";
+        label.style.left = `${monthPct(boundary, range)}%`;
+        if (boundary === range.from) label.style.transform = "none";
         track.append(label);
       }
+
+      // "hoy" only belongs on a window that reaches the present.
+      if (range.to >= chartRange(payload.range).to) {
+        const today = element("span", "ruler-today", "hoy");
+        today.style.left = `${monthPct(nowMonth(), range)}%`;
+        today.style.transform = "translateX(-100%)";
+        track.append(today);
+      }
+
       return track;
     }
 
-    function renderTimeline(yValues: AxisValue[]): DocumentFragment {
+    function renderTimeline(
+      yValues: AxisValue[],
+      range: MonthRange,
+    ): DocumentFragment {
       const fragment = document.createDocumentFragment();
-      fragment.append(element("div", "ruler-corner"), ruler());
+      fragment.append(element("div", "ruler-corner"), ruler(range));
 
       for (const yValue of yValues) {
         const bars = rowBars(projects, state.y, yValue.id, range);
@@ -223,9 +344,13 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
 
         const row = element("div", "gantt-row");
         row.style.setProperty("--lanes", String(laneCount));
+        const accent = accentFor(state.y, yValue.id);
+        if (accent) row.dataset.accent = accent;
 
-        const label = element("div", "row-label", yValue.label);
+        const label = element("div", "row-label");
+        const name = element("span", "row-name", yValue.label);
         label.title = yValue.label;
+        label.append(name);
 
         const track = element("div", "track");
         for (const [index, bar] of bars.entries()) {
@@ -243,30 +368,42 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     function renderMatrix(
       xValues: AxisValue[],
       yValues: AxisValue[],
+      range: MonthRange,
     ): DocumentFragment {
       const fragment = document.createDocumentFragment();
-      fragment.append(element("div", "ruler-corner"), ruler());
+      fragment.append(element("div", "ruler-corner"), ruler(range));
       fragment.append(element("div", "head-corner"));
 
       for (const xValue of xValues) {
-        const head = element("div", "col-head", xValue.label);
+        const head = element("div", "col-head");
+        const accent = accentFor(state.x, xValue.id);
+        if (accent) head.style.setProperty("--head-accent", `var(--${accent})`);
+        const label = element("span", "col-name", xValue.label);
         head.title = xValue.label;
+        head.append(label);
         fragment.append(head);
       }
 
       for (const yValue of yValues) {
-        const label = element("div", "row-label", yValue.label);
+        const label = element("div", "row-label");
+        const accent = accentFor(state.y, yValue.id);
+        if (accent) label.dataset.accent = accent;
+        label.append(element("span", "row-name", yValue.label));
         label.title = yValue.label;
         fragment.append(label);
         for (const xValue of xValues) {
-          fragment.append(makeCell(xValue, yValue));
+          fragment.append(makeCell(xValue, yValue, range));
         }
       }
 
       return fragment;
     }
 
-    function makeCell(xValue: AxisValue, yValue: AxisValue): HTMLElement {
+    function makeCell(
+      xValue: AxisValue,
+      yValue: AxisValue,
+      range: MonthRange,
+    ): HTMLElement {
       const bars = cellBars(
         projects,
         state.x,
@@ -278,6 +415,7 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       const lanes = packLanes(bars);
       const cell = element("div", "cell");
 
+      const visible = bars.filter((_, index) => (lanes[index] ?? 0) < MAX_CELL_LANES);
       const visibleLanes = new Set(
         bars.flatMap((_, index) => {
           const lane = lanes[index] ?? 0;
@@ -293,10 +431,7 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
         if (project) cell.append(makeBar(project, bar, lanes[index] ?? 0));
       }
 
-      const hidden = bars.length - visibleLanes.size
-        ? bars.filter((_, index) => (lanes[index] ?? 0) >= MAX_CELL_LANES).length
-        : 0;
-
+      const hidden = bars.length - visible.length;
       if (hidden > 0) {
         const more = element("button", "cell-more", `+${hidden}`);
         more.type = "button";
@@ -319,25 +454,85 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       const button = element("button", "bar");
       button.type = "button";
       button.dataset.project = project.id;
-      button.dataset.pillar = project.pillars[0] ?? "web";
+      button.dataset.accent = project.accent;
       button.style.setProperty("--left", String(bar.leftPct));
       button.style.setProperty("--w", String(bar.widthPct));
       button.style.setProperty("--lane", String(lane));
 
-      const description = `${project.project} · ${project.company} · ${bar.startYear}–${bar.endYear}`;
-      button.title = description;
-      button.setAttribute("aria-label", description);
       button.append(element("span", "bar-label", project.short));
+      button.setAttribute("aria-label", ariaFor(project, bar));
 
       button.addEventListener("click", () =>
         openDrawer({ kind: "project", id: project.id }),
       );
-      button.addEventListener("mouseenter", () => highlight(project.id));
-      button.addEventListener("focus", () => highlight(project.id));
-      button.addEventListener("mouseleave", clearHighlight);
-      button.addEventListener("blur", clearHighlight);
+      button.addEventListener("mouseenter", (event) => {
+        highlight(project.id);
+        showTip(project, bar, event);
+      });
+      button.addEventListener("mousemove", (event) => placeTip(event));
+      button.addEventListener("mouseleave", () => {
+        clearHighlight();
+        hideTip();
+      });
+      button.addEventListener("focus", () => {
+        highlight(project.id);
+        showTip(project, bar);
+      });
+      button.addEventListener("blur", () => {
+        clearHighlight();
+        hideTip();
+      });
 
       return button;
+    }
+
+    function ariaFor(project: Project, bar: Bar): string {
+      return `${project.name}, ${project.company}, ${spanLabel(bar.startMonth, bar.endMonth)}`;
+    }
+
+    function showTip(project: Project, bar: Bar, event?: MouseEvent) {
+      tip.replaceChildren(
+        element("span", "tip-title", project.name),
+        element("span", "tip-meta", `${project.company} · ${project.position}`),
+        element(
+          "span",
+          "tip-dates",
+          `${spanLabel(bar.startMonth, bar.endMonth)} · ${durationLabel(bar.endMonth - bar.startMonth)}`,
+        ),
+      );
+      tip.hidden = false;
+      if (event) placeTip(event);
+      else placeTipAtBar(bar);
+    }
+
+    function placeTipAtBar(bar: Bar) {
+      const target = grid.querySelector<HTMLElement>(
+        `.bar[data-project="${bar.id}"]`,
+      );
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      position(rect.left + rect.width / 2, rect.bottom + 8);
+    }
+
+    function placeTip(event: MouseEvent) {
+      position(event.clientX, event.clientY + 16);
+    }
+
+    function position(x: number, y: number) {
+      const margin = 12;
+      const width = tip.offsetWidth;
+      const height = tip.offsetHeight;
+      const left = Math.min(
+        Math.max(margin, x - width / 2),
+        window.innerWidth - width - margin,
+      );
+      const top = Math.min(y, window.innerHeight - height - margin);
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+    }
+
+    function hideTip() {
+      tip.hidden = true;
     }
 
     function highlight(id: string) {
@@ -365,14 +560,32 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       const track = grid.querySelector<HTMLElement>(".ruler-track");
       const labels = grid.querySelectorAll<HTMLElement>(".ruler-year");
       if (!track || labels.length === 0) return;
-      const spacing = track.clientWidth / Math.max(1, span);
+      const chart = chartRange(rangeFor(state.window));
+      const spanMonths = Math.max(1, chart.to - chart.from);
+      const years = spanMonths / 12;
+      const spacing = track.clientWidth / Math.max(1, years);
       const stride = spacing > 0 ? Math.max(1, Math.ceil(MIN_YEAR_SPACING_PX / spacing)) : 1;
-      for (const label of labels) {
-        const year = Number(label.dataset.year);
-        const keep =
-          year === range.to ||
-          ((year - range.from) % stride === 0 && range.to - year >= stride);
+      const last = labels.length - 1;
+      for (const [index, label] of [...labels].entries()) {
+        const keep = index === 0 || (last - index) % stride === 0;
         label.classList.toggle("is-hidden", !keep);
+      }
+      dropCollisions();
+    }
+
+    /** A partial first year or the "hoy" mark can still crowd the ruler. */
+    function dropCollisions() {
+      const today = grid.querySelector<HTMLElement>(".ruler-today");
+      const limit = today ? today.getBoundingClientRect().left - 4 : Infinity;
+      let lastRight = Number.NEGATIVE_INFINITY;
+      for (const label of grid.querySelectorAll<HTMLElement>(".ruler-year")) {
+        if (label.classList.contains("is-hidden")) continue;
+        const box = label.getBoundingClientRect();
+        if (box.left < lastRight + 4 || box.right > limit) {
+          label.classList.add("is-hidden");
+          continue;
+        }
+        lastRight = box.right;
       }
     }
   }
@@ -397,19 +610,15 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
 
 <style is:global>
   .matrix {
-    --label-col: 9.5rem;
-    --bar-h: 14px;
+    --label-col: 11.5rem;
+    --bar-h: 15px;
     --bar-gap: 5px;
     --lane-h: calc(var(--bar-h) + var(--bar-gap));
-    --step: 6.6667%;
-    --pillar-web: #8a8378;
-    --pillar-micro: #294c60;
-    --pillar-eda: #3e5c49;
-    --pillar-cloud: #4f6e8c;
-    --pillar-data: #6b5b85;
-    --pillar-robotics: #9e4e36;
-    --pillar-security: #8a6a2f;
-    --pillar-lead: #8c5570;
+    --step: 6.25%;
+    --offset: 0%;
+    --terracotta: #9e4e36;
+    --sage: #3e5c49;
+    --cobalt: #294c60;
   }
 
   .matrix-controls {
@@ -436,7 +645,8 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     color: var(--color-ink-faint);
   }
 
-  .chip {
+  .chip,
+  .wchip {
     padding: 0.15rem 0.5rem;
     border: 1px solid var(--color-border);
     border-radius: 4px;
@@ -452,12 +662,14 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
       background 140ms ease;
   }
 
-  .chip:hover:not([aria-disabled="true"]):not([aria-pressed="true"]) {
+  .chip:hover:not([aria-disabled="true"]):not([aria-pressed="true"]),
+  .wchip:hover:not([aria-pressed="true"]) {
     border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
     color: var(--color-ink);
   }
 
-  .chip[aria-pressed="true"] {
+  .chip[aria-pressed="true"],
+  .wchip[aria-pressed="true"] {
     background: var(--color-ink);
     border-color: var(--color-ink);
     color: var(--color-paper);
@@ -469,10 +681,50 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
   }
 
   .matrix-panel {
-    padding: 1.25rem;
+    padding: 1.1rem 1.25rem 1.25rem;
     border: 1px solid var(--color-border);
     border-radius: 12px;
     background: color-mix(in srgb, var(--color-paper-warm) 85%, transparent);
+  }
+
+  .panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  }
+
+  .panel-range {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .window {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .window-name {
+    margin-inline-end: 0.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .wchip {
+    font-size: 0.625rem;
+    padding: 0.05rem 0.4rem;
   }
 
   .matrix-surface {
@@ -492,18 +744,28 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
 
   .ruler-track {
     position: relative;
-    block-size: 1.6rem;
+    block-size: 1.5rem;
     margin-inline-end: 0.4rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
   }
 
-  .ruler-year {
+  .ruler-year,
+  .ruler-today {
     position: absolute;
-    inset-block-end: 0.4rem;
-    transform: translateX(-50%);
+    inset-block-end: 0.35rem;
     font-family: var(--font-mono);
     font-size: 0.625rem;
     color: var(--color-ink-faint);
+    white-space: nowrap;
+  }
+
+  .ruler-year {
+    transform: translateX(-50%);
+  }
+
+  .ruler-today {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-ink-muted);
   }
 
   .ruler-year.is-hidden {
@@ -514,23 +776,54 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: var(--label-col) minmax(0, 1fr);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
   }
 
   .row-label {
     position: sticky;
     left: 0;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     align-self: center;
     overflow: hidden;
     padding: 0.5rem 0.6rem 0.5rem 0;
     background: transparent;
     color: var(--color-ink);
     font-family: var(--font-mono);
-    font-size: 0.656rem;
-    letter-spacing: 0.08em;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  }
+
+  .row-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.35;
+    white-space: normal;
+  }
+
+  .row-label::before {
+    content: "";
+    flex: none;
+    inline-size: 0.35rem;
+    block-size: 0.35rem;
+    border-radius: 999px;
+    background: var(--bar-color, var(--color-ink-faint));
+  }
+
+  .matrix [data-accent="cobalt"] {
+    --bar-color: var(--cobalt);
+  }
+  .matrix [data-accent="sage"] {
+    --bar-color: var(--sage);
+  }
+  .matrix [data-accent="terracotta"] {
+    --bar-color: var(--terracotta);
   }
 
   .col-head {
@@ -544,6 +837,11 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     white-space: nowrap;
+  }
+
+  .col-name {
+    border-inline-start: 2px solid var(--head-accent, transparent);
+    padding-inline-start: 0.3rem;
   }
 
   .track,
@@ -560,13 +858,13 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
   .cell {
     min-block-size: calc(var(--lanes, 1) * var(--lane-h) + 8px);
     padding-block: 4px;
-    border-block-start: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-    border-inline-start: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+    border-inline-start: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
   }
 
   .matrix-grid[data-mode="matrix"] .row-label {
-    border-block-start: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-    padding-block: 0.7rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+    padding-block: 0.6rem;
   }
 
   .track::before,
@@ -577,43 +875,46 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     pointer-events: none;
     background-image: repeating-linear-gradient(
       to right,
-      color-mix(in srgb, var(--color-border) 75%, transparent) 0 1px,
-      transparent 1px var(--step)
+      color-mix(in srgb, var(--color-border) 80%, transparent) 0 1px,
+      transparent 1px var(--year-step)
     );
+    background-position-x: var(--year-offset);
   }
 
   .bar {
     position: absolute;
     inset-inline-start: calc(var(--left) * 1%);
-    inline-size: max(calc(var(--w) * 1%), 6px);
+    inline-size: max(calc(var(--w) * 1%), 7px);
     inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
     block-size: var(--bar-h);
     display: flex;
     align-items: center;
     overflow: hidden;
-    padding: 0 0.4rem;
+    padding: 0 0.45rem;
     border: 0;
-    border-radius: 4px;
+    border-radius: 3px;
     font-family: var(--font-mono);
     font-size: 0.656rem;
     line-height: 1;
     white-space: nowrap;
-    color: color-mix(in srgb, var(--pillar-color) 85%, #000);
-    background: color-mix(in srgb, var(--pillar-color) 24%, #fff);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pillar-color) 38%, #fff);
+    color: color-mix(in srgb, var(--bar-color) 85%, #000);
+    background: color-mix(in srgb, var(--bar-color) 36%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 58%, #fff);
     cursor: pointer;
     transition:
       opacity 140ms ease,
-      background 140ms ease;
+      background 140ms ease,
+      box-shadow 140ms ease;
   }
 
   .bar:hover,
   .bar:focus-visible {
-    background: color-mix(in srgb, var(--pillar-color) 34%, #fff);
+    background: color-mix(in srgb, var(--bar-color) 48%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 80%, #fff);
   }
 
   .bar.is-dim {
-    opacity: 0.25;
+    opacity: 0.22;
   }
 
   .bar-label {
@@ -625,29 +926,8 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     visibility: visible;
   }
 
-  .matrix [data-pillar="web"] {
-    --pillar-color: var(--pillar-web);
-  }
-  .matrix [data-pillar="micro"] {
-    --pillar-color: var(--pillar-micro);
-  }
-  .matrix [data-pillar="eda"] {
-    --pillar-color: var(--pillar-eda);
-  }
-  .matrix [data-pillar="cloud"] {
-    --pillar-color: var(--pillar-cloud);
-  }
-  .matrix [data-pillar="data"] {
-    --pillar-color: var(--pillar-data);
-  }
-  .matrix [data-pillar="robotics"] {
-    --pillar-color: var(--pillar-robotics);
-  }
-  .matrix [data-pillar="security"] {
-    --pillar-color: var(--pillar-security);
-  }
-  .matrix [data-pillar="lead"] {
-    --pillar-color: var(--pillar-lead);
+  .gantt-row:hover .row-name {
+    color: var(--bar-color);
   }
 
   .cell-more {
@@ -676,13 +956,13 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem 1.5rem;
-    margin-top: 0.9rem;
+    margin-top: 0.85rem;
   }
 
   .legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem 0.85rem;
+    gap: 0.3rem 0.9rem;
     color: var(--color-ink-faint);
     font-family: var(--font-mono);
     font-size: 0.625rem;
@@ -691,14 +971,14 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
   .legend li {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.32rem;
   }
 
   .legend-dot {
     inline-size: 0.4rem;
     block-size: 0.4rem;
     border-radius: 1px;
-    background: var(--pillar-color);
+    background: var(--bar-color);
   }
 
   .matrix-hint {
@@ -709,14 +989,46 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     font-style: italic;
   }
 
-  .matrix-hint:has(+ *) {
-    text-align: end;
+  .matrix-tip {
+    position: fixed;
+    z-index: 60;
+    display: grid;
+    gap: 0.15rem;
+    max-inline-size: 17rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-card);
+    box-shadow: 0 8px 24px rgb(26 26 26 / 0.09);
+    pointer-events: none;
+  }
+
+  .matrix-tip[hidden] {
+    display: none;
+  }
+
+  .tip-title {
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .tip-meta {
+    font-size: 0.6875rem;
+    color: var(--color-ink-muted);
+  }
+
+  .tip-dates {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
   }
 
   @media (max-width: 640px) {
     .matrix {
-      --label-col: 5.5rem;
-      --bar-h: 13px;
+      --label-col: 6rem;
+      --bar-h: 14px;
     }
 
     .matrix-panel {
@@ -738,10 +1050,6 @@ const hint = `columnas: ${AXIS_LABEL.time} · filas: ${AXIS_LABEL.company} · ${
     .matrix-foot {
       flex-direction: column;
       align-items: flex-start;
-    }
-
-    .matrix-hint {
-      text-align: start;
     }
   }
 </style>

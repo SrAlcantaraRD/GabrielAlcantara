@@ -4,13 +4,13 @@ import ExperienceMatrix from "../components/ExperienceMatrix.astro";
 import RoleTrajectory from "../components/RoleTrajectory.astro";
 import DetailDrawer from "../components/DetailDrawer.astro";
 import {
+	COMPANIES,
 	EDUCATION,
-	MAX_YEAR,
-	MIN_YEAR,
+	POSITION_VIEWS,
 	PROJECTS,
-	ROLES,
 	SOFT_SKILLS,
 	STACK_GROUPS,
+	YEAR_LABEL,
 } from "../data/cv";
 
 const updated = new Date().getFullYear();
@@ -51,8 +51,8 @@ const updated = new Date().getFullYear();
       </p>
       <div class="statement-body">
         <p>
-          Hasta julio de 2026 estuve en <strong>Quabu</strong> como solutions
-          architect. Casi todo lo que hago se resume en microservicios, sistemas
+          Hasta agosto de 2026 estuve en <strong>Quabu</strong> como
+          arquitecto de soluciones. Casi todo lo que hago se resume en microservicios, sistemas
           orientados a eventos (<code>EDA</code>) y APIs REST, con CI/CD y todo
           corriendo en cloud (AWS/Azure). La seguridad y la calidad entran en el
           diseño desde el principio.
@@ -80,7 +80,7 @@ const updated = new Date().getFullYear();
     <section class="section" id="trayectoria">
       <div class="section-head">
         <h2 class="section-title">Trayectoria &amp; foco longitudinal</h2>
-        <span class="section-meta">{MIN_YEAR} — {MAX_YEAR}</span>
+        <span class="section-meta">{YEAR_LABEL}</span>
       </div>
       <ExperienceMatrix />
     </section>
@@ -89,7 +89,8 @@ const updated = new Date().getFullYear();
       <div class="section-head">
         <h2 class="section-title">Experiencia principal</h2>
         <span class="section-meta">
-          {ROLES.length} etapas · {PROJECTS.length} proyectos
+          {COMPANIES.length} empresas · {POSITION_VIEWS.length} puestos ·{" "}
+          {PROJECTS.length} proyectos
         </span>
       </div>
       <RoleTrajectory />
