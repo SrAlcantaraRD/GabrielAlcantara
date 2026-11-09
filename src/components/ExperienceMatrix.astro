@@ -53,7 +53,12 @@ const payload = {
 
   <div class="matrix-panel">
     <div class="panel-head">
-      <span class="panel-range" id="matrix-range">{YEAR_LABEL}</span>
+      <span class="panel-range">
+        <span id="matrix-range">{YEAR_LABEL}</span>
+        <span class="panel-note" id="matrix-note" hidden>
+          cada celda recorre la línea temporal completa
+        </span>
+      </span>
       <div class="window" role="group" aria-label="ventana temporal">
         <span class="window-name" aria-hidden="true">ventana</span>
         <button type="button" class="wchip" data-window="all" aria-pressed="true">
@@ -152,6 +157,7 @@ const payload = {
     const surface = must<HTMLElement>(".matrix-surface", host);
     const grid = must<HTMLElement>("#matrix-grid", host);
     const rangeLabel = must<HTMLElement>("#matrix-range", host);
+    const note = must<HTMLElement>("#matrix-note", host);
     const tip = must<HTMLElement>("#matrix-tip", host);
     const dataScript = must<HTMLScriptElement>("#matrix-data", host);
 
@@ -242,12 +248,15 @@ const payload = {
         `${((12 / Math.max(1, chartSpan)) * 100).toFixed(4)}%`,
       );
       grid.style.setProperty("--year-offset", "0%");
+      grid.style.setProperty("--today", `${monthPct(nowMonth(), chart)}%`);
 
+      const timeline = state.x === "time";
       grid.replaceChildren(
-        state.x === "time"
+        timeline
           ? renderTimeline(yValues, chart)
           : renderMatrix(xValues, yValues, chart),
       );
+      note.hidden = timeline;
 
       rangeLabel.textContent = `${monthLabel(range.from)} — ${monthLabel(range.to - 1)} · ${durationLabel(range.to - range.from)}`;
 
@@ -286,6 +295,43 @@ const payload = {
       if (state.window === "all") url.searchParams.delete("w");
       else url.searchParams.set("w", state.window);
       window.history.replaceState(null, "", url);
+    }
+
+    /** The months a row actually covers, drawn as a soft band behind its bars. */
+    function bandFor(
+      axis: AxisId,
+      value: string,
+      range: MonthRange,
+    ): { leftPct: number; widthPct: number } | null {
+      let from: number | null = null;
+      let to: number | null = null;
+      if (axis === "position") {
+        const position = positions.find((item) => item.id === value);
+        if (position) {
+          from = position.startMonth;
+          to = position.endMonth;
+        }
+      } else if (axis === "company") {
+        const own = positions.filter((item) => item.companyId === value);
+        if (own.length > 0) {
+          from = Math.min(...own.map((item) => item.startMonth));
+          to = Math.max(...own.map((item) => item.endMonth));
+        }
+      }
+      if (from === null || to === null) return null;
+      const span = Math.max(1, range.to - range.from);
+      return {
+        leftPct: monthPct(from, range),
+        widthPct: ((to - from) / span) * 100,
+      };
+    }
+
+    function makeBand(band: { leftPct: number; widthPct: number }): HTMLElement {
+      const node = element("div", "band");
+      node.setAttribute("aria-hidden", "true");
+      node.style.setProperty("--left", String(band.leftPct));
+      node.style.setProperty("--w", String(band.widthPct));
+      return node;
     }
 
     function accentFor(axis: AxisId, value: string): string | null {
@@ -353,6 +399,8 @@ const payload = {
         label.append(name);
 
         const track = element("div", "track");
+        const band = bandFor(state.y, yValue.id, range);
+        if (band) track.append(makeBand(band));
         for (const [index, bar] of bars.entries()) {
           const project = projectById.get(bar.id);
           if (project) track.append(makeBar(project, bar, lanes[index] ?? 0));
@@ -371,7 +419,6 @@ const payload = {
       range: MonthRange,
     ): DocumentFragment {
       const fragment = document.createDocumentFragment();
-      fragment.append(element("div", "ruler-corner"), ruler(range));
       fragment.append(element("div", "head-corner"));
 
       for (const xValue of xValues) {
@@ -462,9 +509,11 @@ const payload = {
       button.append(element("span", "bar-label", project.short));
       button.setAttribute("aria-label", ariaFor(project, bar));
 
-      button.addEventListener("click", () =>
-        openDrawer({ kind: "project", id: project.id }),
-      );
+      button.addEventListener("click", () => {
+        hideTip();
+        clearHighlight();
+        openDrawer({ kind: "project", id: project.id });
+      });
       button.addEventListener("mouseenter", (event) => {
         highlight(project.id);
         showTip(project, bar, event);
@@ -552,19 +601,28 @@ const payload = {
         const fits = bar.scrollWidth <= bar.clientWidth + 1;
         bar.classList.toggle("is-labeled", fits && bar.clientWidth >= MIN_LABEL_PX);
       }
-      thinRuler();
+
+      // One stride for the ruler labels and the year lines, so they line up.
+      const chart = chartRange(rangeFor(state.window));
+      const years = Math.max(1, (chart.to - chart.from) / 12);
+      const sample =
+        grid.querySelector<HTMLElement>(".track") ??
+        grid.querySelector<HTMLElement>(".cell");
+      const pxPerYear = sample ? sample.clientWidth / years : 0;
+      const stride =
+        pxPerYear > 0 ? Math.max(1, Math.ceil(MIN_YEAR_SPACING_PX / pxPerYear)) : 1;
+      grid.style.setProperty(
+        "--year-step",
+        `${((100 / years) * stride).toFixed(4)}%`,
+      );
+
+      thinRuler(stride);
     }
 
     /** Keeps the year ruler readable: drop labels that no longer fit. */
-    function thinRuler() {
-      const track = grid.querySelector<HTMLElement>(".ruler-track");
+    function thinRuler(stride: number) {
       const labels = grid.querySelectorAll<HTMLElement>(".ruler-year");
-      if (!track || labels.length === 0) return;
-      const chart = chartRange(rangeFor(state.window));
-      const spanMonths = Math.max(1, chart.to - chart.from);
-      const years = spanMonths / 12;
-      const spacing = track.clientWidth / Math.max(1, years);
-      const stride = spacing > 0 ? Math.max(1, Math.ceil(MIN_YEAR_SPACING_PX / spacing)) : 1;
+      if (labels.length === 0) return;
       const last = labels.length - 1;
       for (const [index, label] of [...labels].entries()) {
         const keep = index === 0 || (last - index) % stride === 0;
@@ -610,8 +668,8 @@ const payload = {
 
 <style is:global>
   .matrix {
-    --label-col: 11.5rem;
-    --bar-h: 15px;
+    --label-col: 13rem;
+    --bar-h: 16px;
     --bar-gap: 5px;
     --lane-h: calc(var(--bar-h) + var(--bar-gap));
     --step: 6.25%;
@@ -699,11 +757,21 @@ const payload = {
   }
 
   .panel-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
     font-family: var(--font-mono);
     font-size: 0.656rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-ink-faint);
+  }
+
+  .panel-note {
+    color: var(--color-ink-muted);
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
 
   .window {
@@ -742,6 +810,13 @@ const payload = {
       repeat(var(--cols, 1), minmax(6.5rem, 1fr));
   }
 
+  .ruler-corner {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    background: color-mix(in srgb, var(--color-paper-warm) 85%, var(--color-paper));
+  }
+
   .ruler-track {
     position: relative;
     block-size: 1.5rem;
@@ -772,6 +847,17 @@ const payload = {
     display: none;
   }
 
+  .track::after,
+  .cell::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: var(--today, 100%);
+    z-index: 1;
+    border-inline-start: 1px dashed color-mix(in srgb, var(--color-ink) 28%, transparent);
+    pointer-events: none;
+  }
+
   .matrix-grid[data-mode="timeline"] .gantt-row {
     grid-column: 1 / -1;
     display: grid;
@@ -782,14 +868,14 @@ const payload = {
   .row-label {
     position: sticky;
     left: 0;
-    z-index: 1;
+    z-index: 5;
     display: flex;
     align-items: center;
     gap: 0.4rem;
     align-self: center;
     overflow: hidden;
     padding: 0.5rem 0.6rem 0.5rem 0;
-    background: transparent;
+    background: color-mix(in srgb, var(--color-paper-warm) 85%, var(--color-paper));
     color: var(--color-ink);
     font-family: var(--font-mono);
     font-size: 0.625rem;
@@ -810,6 +896,8 @@ const payload = {
   .row-label::before {
     content: "";
     flex: none;
+    align-self: flex-start;
+    margin-block-start: 0.42rem;
     inline-size: 0.35rem;
     block-size: 0.35rem;
     border-radius: 999px;
@@ -872,6 +960,7 @@ const payload = {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 1;
     pointer-events: none;
     background-image: repeating-linear-gradient(
       to right,
@@ -881,8 +970,19 @@ const payload = {
     background-position-x: var(--year-offset);
   }
 
+  .band {
+    position: absolute;
+    inset-block: 3px;
+    inset-inline-start: calc(var(--left) * 1%);
+    inline-size: calc(var(--w) * 1%);
+    z-index: 0;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--bar-color) 7%, transparent);
+  }
+
   .bar {
     position: absolute;
+    z-index: 2;
     inset-inline-start: calc(var(--left) * 1%);
     inline-size: max(calc(var(--w) * 1%), 7px);
     inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
@@ -897,9 +997,9 @@ const payload = {
     font-size: 0.656rem;
     line-height: 1;
     white-space: nowrap;
-    color: color-mix(in srgb, var(--bar-color) 85%, #000);
-    background: color-mix(in srgb, var(--bar-color) 36%, #fff);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 58%, #fff);
+    color: #fdfbf8;
+    background: color-mix(in srgb, var(--bar-color) 86%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 92%, #000);
     cursor: pointer;
     transition:
       opacity 140ms ease,
@@ -909,8 +1009,7 @@ const payload = {
 
   .bar:hover,
   .bar:focus-visible {
-    background: color-mix(in srgb, var(--bar-color) 48%, #fff);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 80%, #fff);
+    background: var(--bar-color);
   }
 
   .bar.is-dim {
@@ -928,6 +1027,10 @@ const payload = {
 
   .gantt-row:hover .row-name {
     color: var(--bar-color);
+  }
+
+  .gantt-row:hover .band {
+    background: color-mix(in srgb, var(--bar-color) 13%, transparent);
   }
 
   .cell-more {
@@ -1027,12 +1130,22 @@ const payload = {
 
   @media (max-width: 640px) {
     .matrix {
-      --label-col: 6rem;
-      --bar-h: 14px;
+      --label-col: 8rem;
+      --bar-h: 15px;
+    }
+
+    .row-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.02em;
     }
 
     .matrix-panel {
       padding: 0.85rem;
+    }
+
+    /* A timeline squeezed into 250px is unreadable: let it scroll sideways. */
+    .matrix-grid[data-mode="timeline"] {
+      min-inline-size: 32rem;
     }
 
     .matrix-grid[data-mode="matrix"] {
