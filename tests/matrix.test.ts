@@ -18,6 +18,7 @@ import {
 	resolveProjects,
 	type Company,
 	type Position,
+	type Project,
 	type ProjectSeed,
 } from "../src/data/cv.ts";
 import {
@@ -116,7 +117,7 @@ describe("axes", () => {
 			axisValues("position", PROJECTS, config, insideQuabu).map((value) => value.id),
 			["quabu-architect"],
 		);
-		assert.equal(axisValues("project", PROJECTS, config, insideQuabu).length, 4);
+		assert.equal(axisValues("project", PROJECTS, config, insideQuabu).length, 3);
 		assert.equal(axisValues("company", PROJECTS, config).length, 3);
 	});
 
@@ -156,29 +157,46 @@ describe("matching", () => {
 	});
 });
 
+const fakeProject = (from: string, to: string): Project => ({
+	id: "fake",
+	positionId: "fake",
+	position: "Fake",
+	companyId: "fake",
+	company: "Fake",
+	companyShort: "fake",
+	accent: "cobalt",
+	name: "Fake",
+	short: "fake",
+	startMonth: month(from),
+	endMonth: month(to) + 1,
+	domain: "product",
+	pillars: ["web"],
+	summary: "",
+	achievements: [],
+});
+
 describe("bar geometry", () => {
 	it("gives a three-month stint a quarter of a one-year window", () => {
 		assert.deepEqual(
-			barGeometry(projectById("acd-charts"), month("2016-01"), month("2017-01")),
+			barGeometry(fakeProject("2016-07", "2016-09"), month("2016-01"), month("2017-01")),
 			{ leftPct: 50, widthPct: 25 },
 		);
 	});
 
 	it("covers the whole track when the project spans it", () => {
 		assert.deepEqual(
-			barGeometry(
-				projectById("bodega-digital"),
-				month("2024-01"),
-				month("2026-09"),
-			),
+			barGeometry(fakeProject("2024-01", "2026-08"), month("2024-01"), month("2026-09")),
 			{ leftPct: 0, widthPct: 100 },
 		);
 	});
 
 	it("returns nothing when project and track do not intersect", () => {
-		assert.equal(barGeometry(projectById("coleo"), month("2011-01"), month("2022-01")), null);
 		assert.equal(
-			barGeometry(projectById("acd-charts"), month("2024-01"), month("2026-01")),
+			barGeometry(fakeProject("2024-01", "2026-08"), month("2011-01"), month("2022-01")),
+			null,
+		);
+		assert.equal(
+			barGeometry(fakeProject("2016-07", "2016-09"), month("2024-01"), month("2026-01")),
 			null,
 		);
 	});
@@ -239,12 +257,16 @@ describe("matrix cells", () => {
 
 	it("builds a timeline row with every project on one Y value", () => {
 		assert.deepEqual(
-			rowBars(PROJECTS, "position", "quabu-architect").map((bar) => bar.id),
+			rowBars(PROJECTS, "position", "quabu-architect")
+				.map((bar) => bar.id)
+				.sort(),
 			["bodega-digital", "coleo", "jira-addons", "nakire-tps"],
 		);
 		assert.equal(rowBars(PROJECTS, "company", "basetis").length, 6);
 		assert.deepEqual(
-			rowBars(PROJECTS, "pillar", "eda").map((bar) => bar.id),
+			rowBars(PROJECTS, "pillar", "eda")
+				.map((bar) => bar.id)
+				.sort(),
 			["bodega-digital", "nakire-tps"],
 		);
 	});
@@ -270,15 +292,48 @@ describe("periods", () => {
 		assert.equal(durations["acd-charts"], 3);
 	});
 
-	it("gives every project the company and months of its position", () => {
+	it("keeps every project inside the months of its position", () => {
 		for (const project of PROJECTS) {
 			const position = positionById(project.positionId);
 			assert.equal(project.companyId, position.companyId);
 			assert.equal(project.company, position.company);
 			assert.equal(project.position, position.title);
-			assert.equal(project.startMonth, position.startMonth);
-			assert.equal(project.endMonth, position.endMonth);
+			assert.ok(project.startMonth >= position.startMonth);
+			assert.ok(project.endMonth <= position.endMonth);
+			assert.ok(project.endMonth > project.startMonth);
 		}
+	});
+
+	it("spreads the undated projects of a stint one after another", () => {
+		const junior = [
+			"fazenda-sao-paulo",
+			"acd-importador",
+			"acd-auditor-delphi",
+			"acd-auditor-charts",
+		].map(projectById);
+		assert.deepEqual(
+			junior.map((project) => [project.startMonth, project.endMonth]),
+			[
+				[month("2011-12"), month("2012-06")],
+				[month("2012-06"), month("2012-12")],
+				[month("2012-12"), month("2013-05")],
+				[month("2013-05"), month("2013-09") + 1],
+			],
+		);
+		const covered = junior.reduce(
+			(sum, project) => sum + (project.endMonth - project.startMonth),
+			0,
+		);
+		assert.equal(covered, positionById("acd-junior").months);
+	});
+
+	it("keeps a project pinned to its own dates", () => {
+		const bodega = projectById("bodega-digital");
+		const quabu = positionById("quabu-architect");
+		assert.deepEqual(
+			[bodega.startMonth, bodega.endMonth],
+			[quabu.startMonth, quabu.endMonth],
+		);
 	});
 
 	it("lets a project carry its own months inside the position", () => {

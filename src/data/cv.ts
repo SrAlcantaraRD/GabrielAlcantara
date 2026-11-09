@@ -581,6 +581,8 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		positionId: "quabu-architect",
 		name: "Bodega Digital",
 		short: "bodega digital",
+		from: "2024-01",
+		to: "2026-08",
 		domain: "logistics",
 		pillars: ["eda", "micro", "robotics", "cloud", "data", "security"],
 		summary:
@@ -671,27 +673,75 @@ export function resolvePositions(
 	});
 }
 
+/**
+ * The export states the projects of each stint but not their dates, so the
+ * undated ones are spread across the stint in the order they are written, one
+ * after another, instead of all claiming the whole period. Pin a project with
+ * `from`/`to` when its real dates are known.
+ */
 export function resolveProjects(
 	positions: PositionView[],
 	seeds: ProjectSeed[],
 ): Project[] {
+	const byPosition = new Map<string, ProjectSeed[]>();
+	for (const seed of seeds) {
+		const group = byPosition.get(seed.positionId) ?? [];
+		group.push(seed);
+		byPosition.set(seed.positionId, group);
+	}
+
+	const spans = new Map<string, { startMonth: number; endMonth: number }>();
+
+	for (const [positionId, group] of byPosition) {
+		const position = positions.find((item) => item.id === positionId);
+		if (!position) {
+			throw new Error(
+				`project "${group[0]?.id ?? positionId}" points at unknown position "${positionId}"`,
+			);
+		}
+
+		const undated = group.filter((seed) => !seed.from && !seed.to);
+		if (undated.length > 0) {
+			const months = position.endMonth - position.startMonth;
+			if (undated.length > months) {
+				throw new Error(
+					`position "${position.id}" has more undated projects than months`,
+				);
+			}
+			const base = Math.floor(months / undated.length);
+			const extra = months % undated.length;
+			let cursor = position.startMonth;
+			for (const [index, seed] of undated.entries()) {
+				const size = base + (index < extra ? 1 : 0);
+				spans.set(seed.id, { startMonth: cursor, endMonth: cursor + size });
+				cursor += size;
+			}
+		}
+
+		for (const seed of group) {
+			if (!seed.from && !seed.to) continue;
+			spans.set(seed.id, {
+				startMonth: seed.from ? parseMonth(seed.from) : position.startMonth,
+				endMonth: seed.to ? parseMonth(seed.to) + 1 : position.endMonth,
+			});
+		}
+	}
+
 	return seeds.map((seed) => {
 		const position = positions.find((item) => item.id === seed.positionId);
+		const span = spans.get(seed.id);
 		if (!position) {
 			throw new Error(
 				`project "${seed.id}" points at unknown position "${seed.positionId}"`,
 			);
 		}
-
-		const startMonth = seed.from ? parseMonth(seed.from) : position.startMonth;
-		const endMonth = seed.to ? parseMonth(seed.to) + 1 : position.endMonth;
-
-		if (startMonth < position.startMonth || endMonth > position.endMonth) {
-			throw new Error(
-				`project "${seed.id}" leaves position "${position.id}"`,
-			);
+		if (!span) {
+			throw new Error(`project "${seed.id}" has no resolved months`);
 		}
-		if (endMonth <= startMonth) {
+		if (span.startMonth < position.startMonth || span.endMonth > position.endMonth) {
+			throw new Error(`project "${seed.id}" leaves position "${position.id}"`);
+		}
+		if (span.endMonth <= span.startMonth) {
 			throw new Error(`project "${seed.id}" ends before it starts`);
 		}
 
@@ -705,8 +755,8 @@ export function resolveProjects(
 			accent: position.accent,
 			name: seed.name,
 			short: seed.short,
-			startMonth,
-			endMonth,
+			startMonth: span.startMonth,
+			endMonth: span.endMonth,
 			domain: seed.domain,
 			pillars: seed.pillars,
 			summary: seed.summary,
