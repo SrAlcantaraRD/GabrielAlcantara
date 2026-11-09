@@ -1,0 +1,468 @@
+---
+import {
+	DOMAIN_LABEL,
+	PILLAR_LABEL,
+	PROJECTS,
+	YEAR_RANGE,
+} from "../data/cv";
+import { openDrawer } from "../lib/open-drawer";
+
+const payload = {
+	projects: PROJECTS,
+	domain: DOMAIN_LABEL,
+	pillar: PILLAR_LABEL,
+	range: YEAR_RANGE,
+};
+---
+
+<div class="drawer-backdrop" data-drawer-close></div>
+
+<aside
+  class="drawer"
+  id="project-drawer"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="drawer-title"
+  aria-hidden="true"
+  tabindex="-1"
+>
+  <header class="drawer-head">
+    <div>
+      <p class="drawer-meta" id="drawer-meta"></p>
+      <h2 class="drawer-title" id="drawer-title"></h2>
+      <p class="drawer-role" id="drawer-role"></p>
+    </div>
+    <button
+      type="button"
+      class="drawer-close"
+      id="drawer-close"
+      aria-label="cerrar ficha"
+      data-drawer-close
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="drawer-body" id="drawer-body"></div>
+
+  <footer class="drawer-foot">
+    <span class="drawer-hint" id="drawer-hint">presiona esc para cerrar</span>
+    <button type="button" class="drawer-ok" data-drawer-close>entendido</button>
+  </footer>
+</aside>
+
+<script type="application/json" id="drawer-data" set:html={JSON.stringify(payload)} />
+
+<script>
+  import type { DrawerRequest } from "../lib/open-drawer";
+  import type { Project } from "../data/cv";
+
+  interface Payload {
+    projects: Project[];
+    domain: Record<string, string>;
+    pillar: Record<string, string>;
+  }
+
+  const panel = document.querySelector<HTMLElement>("#project-drawer");
+
+  if (panel) {
+    init(panel);
+  }
+
+  function init(panel: HTMLElement) {
+    const backdrop = document.querySelector<HTMLElement>(".drawer-backdrop");
+    const meta = must<HTMLElement>("#drawer-meta");
+    const title = must<HTMLElement>("#drawer-title");
+    const role = must<HTMLElement>("#drawer-role");
+    const body = must<HTMLElement>("#drawer-body");
+    const dataScript = must<HTMLScriptElement>("#drawer-data");
+
+    const payload = JSON.parse(dataScript.textContent ?? "{}") as Payload;
+    const projectById = new Map(
+      payload.projects.map((project) => [project.id, project]),
+    );
+    let restoreFocus: HTMLElement | null = null;
+
+    window.addEventListener("cv:open", (event) => {
+      const request = (event as CustomEvent<DrawerRequest>).detail;
+      if (!request) return;
+      render(request);
+      open();
+    });
+
+    for (const closer of document.querySelectorAll("[data-drawer-close]")) {
+      closer.addEventListener("click", close);
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") close();
+    });
+
+    function render(request: DrawerRequest) {
+      if (request.kind === "project") {
+        const project = projectById.get(request.id);
+        if (!project) return;
+        meta.textContent = `proyecto · ${project.role}`;
+        title.textContent = project.project;
+        role.textContent = `${project.company} · ${project.startYear}–${project.endYear}`;
+        body.replaceChildren(projectBody(project));
+        return;
+      }
+
+      meta.textContent = request.label;
+      title.textContent = `${request.ids.length} proyectos`;
+      role.textContent = "selecciona uno para abrir su ficha";
+      body.replaceChildren(listBody(request.ids));
+    }
+
+    function projectBody(project: Project): HTMLElement {
+      const fragment = document.createDocumentFragment();
+
+      fragment.append(element("p", "drawer-text", project.summary));
+
+      if (project.achievements.length > 0) {
+        const block = element("section", "drawer-block");
+        block.append(element("span", "eyebrow", "hitos"));
+        const list = element("ul", "drawer-list");
+        for (const achievement of project.achievements) {
+          list.append(element("li", undefined, achievement));
+        }
+        block.append(list);
+        fragment.append(block);
+      }
+
+      const chips = element("section", "drawer-block");
+      chips.append(element("span", "eyebrow", "etiquetas"));
+      const chipRow = element("p", "drawer-chips");
+      chipRow.append(element("span", "pill", payload.domain[project.domain]));
+      for (const pillar of project.pillars) {
+        chipRow.append(element("span", "pill", payload.pillar[pillar] ?? pillar));
+      }
+      chips.append(chipRow);
+      fragment.append(chips);
+
+      if (project.stack && project.stack.length > 0) {
+        const stack = element("section", "drawer-block");
+        stack.append(element("span", "eyebrow", "tecnologías clave"));
+        const stackRow = element("p", "drawer-chips");
+        for (const item of project.stack) {
+          stackRow.append(element("span", "pill", item));
+        }
+        stack.append(stackRow);
+        fragment.append(stack);
+      }
+
+      const wrapper = element("div", "drawer-stack");
+      wrapper.append(fragment);
+      return wrapper;
+    }
+
+    function listBody(ids: string[]): HTMLElement {
+      const list = element("ul", "drawer-picker");
+      for (const id of ids) {
+        const project = projectById.get(id);
+        if (!project) continue;
+        const item = element("li");
+        const button = element("button", "drawer-pick", project.project);
+        button.type = "button";
+        button.addEventListener("click", () => {
+          render({ kind: "project", id });
+          focusPanel();
+        });
+        item.append(
+          button,
+          element(
+            "span",
+            "drawer-pick-meta",
+            `${project.company} · ${project.startYear}–${project.endYear}`,
+          ),
+        );
+        list.append(item);
+      }
+      return list;
+    }
+
+    function open() {
+      if (panel.classList.contains("is-open")) return;
+      restoreFocus =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      panel.classList.add("is-open");
+      panel.setAttribute("aria-hidden", "false");
+      backdrop?.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      requestAnimationFrame(focusPanel);
+    }
+
+    function focusPanel() {
+      panel.focus({ preventScroll: true });
+    }
+
+    function close() {
+      if (!panel.classList.contains("is-open")) return;
+      panel.classList.remove("is-open");
+      panel.setAttribute("aria-hidden", "true");
+      backdrop?.classList.remove("is-open");
+      document.body.style.overflow = "";
+      restoreFocus?.focus();
+    }
+  }
+
+  function element<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className?: string,
+    text?: string,
+  ): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function must<T extends Element>(selector: string): T {
+    const node = document.querySelector<T>(selector);
+    if (!node) throw new Error(`drawer markup is missing ${selector}`);
+    return node;
+  }
+</script>
+
+<style is:global>
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgb(26 26 26 / 0.18);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 200ms ease,
+      visibility 0s 200ms;
+  }
+
+  .drawer-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 200ms ease,
+      visibility 0s;
+  }
+
+  .drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    inline-size: min(28rem, 100vw);
+    background: #fcfaf7;
+    border-inline-start: 1px solid var(--color-border);
+    box-shadow: -16px 0 40px rgb(26 26 26 / 0.08);
+    transform: translateX(101%);
+    visibility: hidden;
+    transition:
+      transform 240ms ease,
+      visibility 0s 240ms;
+  }
+
+  .drawer.is-open {
+    transform: none;
+    visibility: visible;
+    transition:
+      transform 240ms ease,
+      visibility 0s;
+  }
+
+  .drawer:focus {
+    outline: none;
+  }
+
+  .drawer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 2rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-paper);
+  }
+
+  .drawer-meta {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .drawer-title {
+    margin-top: 0.2rem;
+    font-family: var(--font-serif);
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .drawer-role {
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+  }
+
+  .drawer-close {
+    display: grid;
+    place-items: center;
+    margin: -0.35rem -0.5rem 0 0;
+    padding: 0.4rem;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-ink-faint);
+    cursor: pointer;
+    transition: color 140ms ease;
+  }
+
+  .drawer-close:hover {
+    color: var(--color-ink);
+  }
+
+  .drawer-close svg {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.75rem 2rem 2rem;
+  }
+
+  .drawer-stack {
+    display: grid;
+    gap: 1.4rem;
+    align-content: start;
+  }
+
+  .drawer-text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+
+  .drawer-block {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .drawer-list {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .drawer-list li {
+    position: relative;
+    padding-inline-start: 0.9rem;
+  }
+
+  .drawer-list li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.55em;
+    inline-size: 0.35rem;
+    block-size: 1px;
+    background: var(--color-ink-faint);
+  }
+
+  .drawer-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .drawer-picker {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .drawer-picker li {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .drawer-pick {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+
+  .drawer-pick:hover {
+    text-decoration-color: var(--color-ink);
+  }
+
+  .drawer-pick-meta {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    color: var(--color-ink-faint);
+  }
+
+  .drawer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-paper);
+  }
+
+  .drawer-hint {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    color: var(--color-ink-faint);
+  }
+
+  .drawer-ok {
+    padding: 0.4rem 0.9rem;
+    border: 0;
+    border-radius: 4px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+
+  .drawer-ok:hover {
+    background: #333;
+  }
+
+  @media (max-width: 640px) {
+    .drawer-head,
+    .drawer-body,
+    .drawer-foot {
+      padding-inline: 1.25rem;
+    }
+  }
+</style>
