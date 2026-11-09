@@ -1,16 +1,346 @@
 ---
+import Layout from "../layouts/Layout.astro";
+
+const jobs = [
+	{
+		period: "2024 — 2026",
+		company: "Quabu SL",
+		role: "Solutions Architect",
+		projects: "Coleo, Bodega Digital, Jira Addons y Nakire TPS",
+		description:
+			"Diseño de soluciones e implementación de la arquitectura, integrando pipelines de CI/CD, QA gates e infraestructura cloud. Automatización de procesos operativos e integración segura de IA.",
+	},
+	{
+		period: "2021 — 2024",
+		company: "BaseTIS S.L.",
+		role: "Technical Team Lead",
+		projects: "Love ISDIN PIN",
+		description:
+			"Con un rol más de liderazgo, analizaba los requerimientos y su viabilidad de implementación, definía las PRDs, mentorizaba al equipo, revisaba las PRs y desarrollaba los componentes más críticos del sistema.",
+	},
+	{
+		period: "2017 — 2021",
+		company: "BaseTIS S.L.",
+		role: "Full Stack Developer",
+		projects: "Shelter Gencat, ACA CSV, Mambo Supply, EMA y Love ISDIN PIN",
+		description:
+			"Evolucioné hasta un perfil Full Stack. Participé en proyectos web, mobile y desktop, con componentes de AI aplicada, IOT y gamificación.",
+	},
+	{
+		period: "2011 — 2017",
+		company: "ACD Sistemes SL",
+		role: "Software Developer",
+		projects:
+			"ACDConcursal Web, ACDAuditor, ACDCircularización Web, ACDImportador v2",
+		description:
+			"Mis primeras andadas, participé en todas las fases del ciclo de vida del software y asumiendo progresivamente la responsabilidad técnica de varias soluciones web. Estuve en Brasil y Angola, para implementar y desplegar soluciones.",
+	},
+];
+
+const education = [
+	{
+		year: "2026",
+		title: "Grado en Ing. Informática",
+		org: "Universitat Oberta de Catalunya",
+	},
+	{
+		year: "Actualidad",
+		title: "Desarrollo Agéntico",
+		org: "Canales oficiales de Anthropic, Google, OpenAI",
+	},
+	{
+		year: "2021",
+		title: "Desarrollo Seguro",
+		org: "CyberAcademy",
+	},
+	{
+		year: "2021",
+		title: "Introducción a la Seguridad Informática",
+		org: "Udemy Alumni",
+	},
+	{
+		year: "2018",
+		title: "ISTQB® Certified Tester, Foundation Level",
+		org: "ISTQB Certification Institute · 18-CTFL-145497-09",
+	},
+	{
+		year: "2018",
+		title: "ITIL Foundation certificate in IT Service Management",
+		org: "APMG International & AXELOS Global Best Practice",
+	},
+	{
+		year: "2017",
+		title: "Introducción a Machine Learning",
+		org: "Universidad de Stanford — Coursera",
+	},
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <main>
+    <header>
+      <h1>Gabriel Alcántara</h1>
+      <p class="tagline">Un curioso empedernido, feliz esposo y padre orgulloso.</p>
+    </header>
+
+    <div class="prose">
+      <p>
+        Durante más de una década he diseñado y construido sistemas de principio a fin.
+        Hasta julio de 2026 estuve en <strong>Quabu</strong> como solutions architect:
+        diseño de soluciones e implementación de arquitectura, pipelines de CI/CD, QA
+        gates e infraestructura cloud, con automatización de procesos operativos e
+        integración segura de IA.
+      </p>
+      <p>
+        El proyecto del que más orgulloso estoy es <strong>Bodega Digital</strong>: un
+        sistema con arquitectura por eventos (<code>EDA + DDD + TDD</code>) para la
+        automatización de almacenes con robots, PLC, LEDs y sonidos, donde la IA no solo
+        vive en el desarrollo, sino en los propios procesos del sistema — priorizar
+        tareas y ejecutarlas, como mover un pallet de <code>x1,y1,z1</code> a
+        <code>x2,y2,z2</code>.
+      </p>
+      <p>
+        Empecé en 2011 en <strong>ACD Sistemes</strong>, empresa de producto, donde con
+        21 años viajé a Brasil y Angola a implementar y desplegar soluciones de
+        auditoría contable en instituciones públicas. De ahí pasé a
+        <strong>BaseTIS</strong>, una consultora grande, donde entré como full stack y
+        acabé de team lead: revisando PRs, definiendo PRDs y mentorizando al equipo. Todo
+        ese trayecto me da una visión amplia de la ingeniería, y mi paso por Quabu una
+        visión más profunda del impacto en negocio.
+      </p>
+    </div>
+
+    <section>
+      <h2>Experiencia</h2>
+      {
+        jobs.map((job) => (
+          <article class="job">
+            <p class="job-meta">
+              {job.period} · {job.company}
+            </p>
+            <h3>{job.role}</h3>
+            <p class="job-projects">{job.projects}</p>
+            <p>{job.description}</p>
+          </article>
+        ))
+      }
+    </section>
+
+    <section>
+      <h2>Conocimientos técnicos</h2>
+      <div class="prose">
+        <p>
+          React, React Native, Next.js, Flutter · Symfony, ElysiaJS, TypeScript, Dart ·
+          MySQL, MongoDB, PostgreSQL, Redis · JIRA, metodologías Agile, Scrum, TDD, BDD,
+          DDD, SDD, Clean Arch, Hexagonal Arch, Event Arch · AWS Services, Docker, SSE.
+        </p>
+        <p class="soft-skills">
+          Resiliente, autodidacta, autogestión del tiempo, comunicación activa, trabajo
+          en equipo, enfoque en el outcome, curioso, diseño al fallo.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Formación</h2>
+      <ul class="education">
+        {
+          education.map((item) => (
+            <li>
+              <span class="edu-year">{item.year}</span>
+              <span class="edu-body">
+                <strong>{item.title}</strong>
+                <span class="edu-org"> — {item.org}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>En otra parte</h2>
+      <ul class="elsewhere">
+        <li>
+          <span class="label">email</span>
+          <a href="mailto:gabrielalcantara.93@gmail.com">gabrielalcantara.93@gmail.com</a>
+        </li>
+        <li>
+          <span class="label">teléfono</span>
+          <a href="tel:+34622290217">+34 622 290 217</a>
+        </li>
+        <li>
+          <span class="label">github</span>
+          <a href="https://github.com/SrAlcantaraRD" rel="me">github.com/SrAlcantaraRD</a>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <p class="sig">— Gabriel</p>
+      <p class="footnote">Hecho con Astro · Desplegado en Dokploy</p>
+    </footer>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: var(--container-prose);
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 6rem;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .tagline {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-hand);
+    font-size: 1.35rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+  }
+
+  .prose p {
+    margin: 0 0 1.5rem;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  code {
+    background: var(--color-surface);
+    border: 1px solid var(--color-stroke);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+    font-size: 0.85em;
+  }
+
+  section {
+    margin-top: 3rem;
+    border-top: 1px solid var(--color-stroke);
+    padding-top: 1.75rem;
+  }
+
+  h2 {
+    margin: 0 0 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+
+  .job {
+    margin-bottom: 1.75rem;
+  }
+
+  .job:last-child {
+    margin-bottom: 0;
+  }
+
+  .job-meta {
+    margin: 0 0 0.1rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .job h3 {
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .job-projects {
+    margin: 0 0 0.4rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+  }
+
+  .job p:last-child {
+    margin: 0;
+  }
+
+  .soft-skills {
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+
+  .education {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .education li {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .education li:last-child {
+    margin-bottom: 0;
+  }
+
+  .edu-year {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    padding-top: 0.15rem;
+  }
+
+  .edu-org {
+    color: var(--color-text-secondary);
+  }
+
+  .elsewhere {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .elsewhere li {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .elsewhere li:last-child {
+    margin-bottom: 0;
+  }
+
+  .label {
+    min-width: 5.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    padding-top: 0.15rem;
+  }
+
+  footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--color-stroke);
+    padding-top: 1.75rem;
+  }
+
+  .sig {
+    margin: 0 0 0.25rem;
+    font-family: var(--font-hand);
+    font-size: 1.6rem;
+    color: var(--color-text-primary);
+  }
+
+  .footnote {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+</style>
