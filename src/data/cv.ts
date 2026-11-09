@@ -5,10 +5,15 @@
  * published CV copy. Nothing here is inferred: if a fact is not in either
  * source it is not in this file.
  *
- * Periods are the thing to edit. A position owns its months (`from`/`to`, both
- * inclusive, written as YYYY-MM) and its projects inherit them unless a project
- * sets its own. The timeline range is derived, so moving a period moves the
- * matrix with it.
+ * Periods are the thing to edit. Everything is written as `"YYYY.MM"` and both
+ * ends are inclusive: `start` is the first month worked, `end` the last one.
+ *
+ *   { start: "2023.01", end: "2023.11" }  → enero a noviembre de 2023
+ *
+ * A position (POSITIONS) owns its months; its projects inherit them unless a
+ * project declares its own `start`/`end`. Undated projects of a position are
+ * spread over it in the order they are written. The timeline range is derived,
+ * so moving a period moves the matrix with it.
  */
 
 import { currentMonth, monthLabel, parseMonth } from "../lib/period.ts";
@@ -40,10 +45,10 @@ export interface Position {
 	id: string;
 	companyId: string;
 	title: string;
-	/** First month worked, inclusive: YYYY-MM. */
-	from: string;
-	/** Last month worked, inclusive: YYYY-MM. */
-	to: string;
+	/** First month worked, inclusive. */
+	start: string;
+	/** Last month worked, inclusive. */
+	end: string;
 	place?: string;
 	mode?: string;
 	focus: string;
@@ -68,8 +73,10 @@ export interface ProjectSeed {
 	name: string;
 	/** Compact label used inside narrow timeline bars. */
 	short: string;
-	from?: string;
-	to?: string;
+	/** Optional: defaults to the months of the position. */
+	start?: string;
+	/** Optional: defaults to the months of the position. */
+	end?: string;
 	domain: Domain;
 	pillars: Pillar[];
 	summary: string;
@@ -155,8 +162,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-junior",
 		companyId: "acd",
 		title: "Junior Software Developer",
-		from: "2011-12",
-		to: "2013-09",
+		start: "2011.12",
+		end: "2013.09",
 		place: "Igualada",
 		focus: "primer producto: auditoría contable",
 		summary:
@@ -172,8 +179,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-web-suite",
 		companyId: "acd",
 		title: "Full Stack Developer",
-		from: "2013-09",
-		to: "2015-09",
+		start: "2013.09",
+		end: "2015.09",
 		place: "Igualada",
 		focus: "suite web del producto concursal",
 		summary:
@@ -188,8 +195,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-concursal-modulo",
 		companyId: "acd",
 		title: "Full Stack Developer",
-		from: "2015-09",
-		to: "2016-04",
+		start: "2015.09",
+		end: "2016.04",
 		place: "Igualada",
 		focus: "validación de datos de auditoría",
 		summary:
@@ -201,8 +208,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-igf",
 		companyId: "acd",
 		title: "Product Owner & Developer",
-		from: "2016-04",
-		to: "2016-07",
+		start: "2016.04",
+		end: "2016.07",
 		place: "Barcelona",
 		focus: "entrega internacional y web grids",
 		summary:
@@ -218,8 +225,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-charts",
 		companyId: "acd",
 		title: "Full Stack Developer",
-		from: "2016-07",
-		to: "2016-09",
+		start: "2016.07",
+		end: "2016.09",
 		place: "Barcelona",
 		focus: "gráficas dinámicas en javascript",
 		summary:
@@ -231,8 +238,8 @@ export const POSITIONS: Position[] = [
 		id: "acd-importador2",
 		companyId: "acd",
 		title: "Full Stack Developer",
-		from: "2016-09",
-		to: "2017-04",
+		start: "2016.09",
+		end: "2017.04",
 		place: "Barcelona",
 		focus: "nueva versión del importador",
 		summary:
@@ -244,8 +251,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-shelter",
 		companyId: "basetis",
 		title: "Web Software Developer",
-		from: "2017-08",
-		to: "2017-12",
+		start: "2017.08",
+		end: "2017.12",
 		place: "Barcelona",
 		focus: "primer proyecto en consultora",
 		summary:
@@ -257,8 +264,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-siebel",
 		companyId: "basetis",
 		title: "Siebel Developer",
-		from: "2017-12",
-		to: "2018-06",
+		start: "2017.12",
+		end: "2018.06",
 		place: "Barcelona",
 		focus: "crm enterprise para aca csv",
 		summary: "Desarrollo Siebel para ACA CSV: CRM y Oracle PL/SQL.",
@@ -269,8 +276,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-msupply",
 		companyId: "basetis",
 		title: "Full Stack Developer",
-		from: "2018-06",
-		to: "2019-10",
+		start: "2018.06",
+		end: "2019.10",
 		place: "Barcelona",
 		focus: "producto con equipo y cliente propio",
 		summary:
@@ -295,8 +302,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-ema",
 		companyId: "basetis",
 		title: "Full Stack Developer",
-		from: "2019-10",
-		to: "2020-09",
+		start: "2019.10",
+		end: "2020.09",
 		place: "Barcelona",
 		focus: "mantenimiento de aplicaciones",
 		summary:
@@ -308,8 +315,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-isdin-pro",
 		companyId: "basetis",
 		title: "Full Stack Developer",
-		from: "2020-09",
-		to: "2021-03",
+		start: "2020.09",
+		end: "2021.03",
 		place: "Barcelona",
 		focus: "producto de marca sobre node",
 		summary:
@@ -321,8 +328,8 @@ export const POSITIONS: Position[] = [
 		id: "basetis-lead",
 		companyId: "basetis",
 		title: "Senior Technical Team Lead",
-		from: "2021-03",
-		to: "2024-04",
+		start: "2021.03",
+		end: "2024.04",
 		place: "Barcelona",
 		focus: "liderazgo técnico en loveisdin",
 		summary:
@@ -338,8 +345,8 @@ export const POSITIONS: Position[] = [
 		id: "quabu-architect",
 		companyId: "quabu",
 		title: "Arquitecto de soluciones de software",
-		from: "2024-01",
-		to: "2026-08",
+		start: "2024.01",
+		end: "2026.08",
 		place: "Vilanova i la Geltrù",
 		mode: "híbrido",
 		focus: "automatización de almacenes con robótica",
@@ -581,8 +588,8 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		positionId: "quabu-architect",
 		name: "Bodega Digital",
 		short: "bodega digital",
-		from: "2024-01",
-		to: "2026-08",
+		start: "2024.01",
+		end: "2026.08",
 		domain: "logistics",
 		pillars: ["eda", "micro", "robotics", "cloud", "data", "security"],
 		summary:
@@ -656,8 +663,8 @@ export function resolvePositions(
 				`position "${position.id}" points at unknown company "${position.companyId}"`,
 			);
 		}
-		const startMonth = parseMonth(position.from);
-		const endMonth = parseMonth(position.to) + 1;
+		const startMonth = parseMonth(position.start);
+		const endMonth = parseMonth(position.end) + 1;
 		if (endMonth <= startMonth) {
 			throw new Error(`position "${position.id}" ends before it starts`);
 		}
@@ -700,7 +707,7 @@ export function resolveProjects(
 			);
 		}
 
-		const undated = group.filter((seed) => !seed.from && !seed.to);
+		const undated = group.filter((seed) => !seed.start && !seed.end);
 		if (undated.length > 0) {
 			const months = position.endMonth - position.startMonth;
 			if (undated.length > months) {
@@ -719,10 +726,10 @@ export function resolveProjects(
 		}
 
 		for (const seed of group) {
-			if (!seed.from && !seed.to) continue;
+			if (!seed.start && !seed.end) continue;
 			spans.set(seed.id, {
-				startMonth: seed.from ? parseMonth(seed.from) : position.startMonth,
-				endMonth: seed.to ? parseMonth(seed.to) + 1 : position.endMonth,
+				startMonth: seed.start ? parseMonth(seed.start) : position.startMonth,
+				endMonth: seed.end ? parseMonth(seed.end) + 1 : position.endMonth,
 			});
 		}
 	}

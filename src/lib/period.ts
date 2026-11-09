@@ -18,9 +18,9 @@ const MONTHS_ES = [
  * exact for three-month stints and still render as years in the axis.
  */
 export function parseMonth(value: string): number {
-	const match = /^(\d{4})-(\d{2})$/.exec(value);
+	const match = /^(\d{4})[-.](\d{2})$/.exec(value);
 	if (!match) {
-		throw new Error(`invalid month "${value}", expected YYYY-MM`);
+		throw new Error(`invalid month "${value}", expected YYYY.MM`);
 	}
 	const year = Number(match[1]);
 	const month = Number(match[2]);
