@@ -44,7 +44,19 @@ const updated = new Date().getFullYear();
   </header>
 
   <main class="container main">
-    <section class="statement">
+    <section class="section" id="trayectoria">
+      <div class="section-head">
+        <h2 class="section-title">Trayectoria &amp; foco longitudinal</h2>
+        <span class="section-meta">{YEAR_LABEL}</span>
+      </div>
+      <ExperienceMatrix />
+    </section>
+
+    <section class="section statement" id="perfil">
+      <div class="section-head">
+        <h2 class="section-title">Perfil</h2>
+        <span class="section-meta">2011 — 2026 · 15 años</span>
+      </div>
       <p class="statement-lead">
         Durante más de una década he diseñado y construido sistemas de principio
         a fin: convertir un requisito de negocio en una arquitectura que aguante.
@@ -75,14 +87,6 @@ const updated = new Date().getFullYear();
           mentorizando al equipo.
         </p>
       </div>
-    </section>
-
-    <section class="section" id="trayectoria">
-      <div class="section-head">
-        <h2 class="section-title">Trayectoria &amp; foco longitudinal</h2>
-        <span class="section-meta">{YEAR_LABEL}</span>
-      </div>
-      <ExperienceMatrix />
     </section>
 
     <section class="section" id="experiencia">
