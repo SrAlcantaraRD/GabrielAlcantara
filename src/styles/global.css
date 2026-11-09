@@ -1,22 +1,39 @@
-/* Design tokens — styled after sanyam.sh */
+/* Design tokens — editorial paper, taken from the owner's mockup */
 :root {
-	--color-bg: #fff;
-	--color-surface: #fafafa;
-	--color-text-primary: #1a1a1a;
-	--color-text-secondary: #6b6b6b;
-	--color-text-muted: #9b9b9b;
-	--color-accent: #3b82f6;
-	--color-selection: #34d399;
-	--color-stroke: #ebebeb;
+	--color-paper: #faf8f5;
+	--color-paper-warm: #f5f1ea;
+	--color-card: #fff;
+	--color-ink: #1a1a1a;
+	--color-ink-muted: #585552;
+	--color-ink-faint: #736d64;
+	--color-border: #e6e0d6;
+	--color-border-subtle: #eeeae3;
+	--color-cobalt: #294c60;
+	--color-cobalt-tint: #eef3f7;
+	--color-sage: #3e5c49;
+	--color-sage-tint: #eff4f0;
+	--color-terracotta: #9e4e36;
+	--color-terracotta-tint: #f8efea;
+	--color-available: #059669;
+	--color-selection: #eae3d5;
 
+	--font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 	--font-sans:
-		"Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-		"Helvetica Neue", Arial, sans-serif;
-	--font-hand: "Caveat", cursive;
+		"Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system,
+		sans-serif;
+	--font-mono:
+		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	--text-body: 0.9rem;
-	--text-body-lh: 1.75;
-	--container-prose: 42rem;
+	--text-body-lh: 1.65;
+	--container: 64rem;
+	--gutter: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+	:root {
+		--gutter: 2.5rem;
+	}
 }
 
 *,
@@ -27,43 +44,148 @@
 
 html {
 	-webkit-text-size-adjust: 100%;
-	tab-size: 4;
 }
 
 body {
 	margin: 0;
-	background: var(--color-bg);
-	color: var(--color-text-primary);
+	background: var(--color-paper);
+	color: var(--color-ink);
 	font-family: var(--font-sans);
 	font-size: var(--text-body);
 	line-height: var(--text-body-lh);
-	text-transform: lowercase;
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
 }
 
-/* Keep literals verbatim, like sanyam.sh does */
+::selection {
+	background: var(--color-selection);
+	color: var(--color-ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+	margin: 0;
+}
+
+ul,
+ol {
+	padding: 0;
+	list-style: none;
+}
+
+a {
+	color: inherit;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: var(--color-border);
+	text-underline-offset: 4px;
+	transition: text-decoration-color 140ms ease;
+}
+
+a:hover {
+	text-decoration-color: var(--color-ink);
+}
+
 code,
 pre,
 kbd,
 samp {
-	text-transform: none;
+	font-family: var(--font-mono);
+	font-size: 0.92em;
 }
 
-::selection {
-	background: var(--color-selection);
-	color: #0a0a0a;
+:focus-visible {
+	outline: 2px solid var(--color-cobalt);
+	outline-offset: 2px;
 }
 
-a {
-	color: var(--color-accent);
-	text-decoration: underline;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 0.15em;
-	text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
-	transition: text-decoration-color 120ms ease;
+img {
+	display: block;
+	max-width: 100%;
 }
 
-a:hover {
-	text-decoration-color: currentColor;
+.container {
+	width: 100%;
+	max-width: var(--container);
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+
+/* Shared editorial primitives */
+.section-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.35rem 1rem;
+	margin-bottom: 1.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.section-title {
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 400;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--color-ink-faint);
+}
+
+.section-meta {
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	color: var(--color-ink-faint);
+}
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.1rem 0.45rem;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	background: var(--color-paper-warm);
+	color: var(--color-ink-muted);
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	line-height: 1.5;
+}
+
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.656rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--color-ink-faint);
+}
+
+.accent-cobalt {
+	--accent: var(--color-cobalt);
+	--accent-tint: var(--color-cobalt-tint);
+}
+
+.accent-sage {
+	--accent: var(--color-sage);
+	--accent-tint: var(--color-sage-tint);
+}
+
+.accent-terracotta {
+	--accent: var(--color-terracotta);
+	--accent-tint: var(--color-terracotta-tint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
 }
