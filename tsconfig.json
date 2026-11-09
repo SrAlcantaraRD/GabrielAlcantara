@@ -1,5 +1,7 @@
 {
 	"extends": "astro/tsconfigs/strict",
+	// Node's native test runner needs explicit .ts specifiers in src imports.
+	"allowImportingTsExtensions": true,
 	"include": [".astro/types.d.ts", "**/*"],
 	"exclude": ["dist"]
 }
