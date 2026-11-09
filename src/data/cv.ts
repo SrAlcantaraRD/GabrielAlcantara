@@ -841,6 +841,27 @@ export const STACK_GROUPS: { label: string; items: string[] }[] = [
 	},
 ];
 
+const stackItems = (label: string): string[] =>
+	STACK_GROUPS.find((group) => group.label === label)?.items ?? [];
+
+/** Las etiquetas del header y lo que revela cada una. Todo sale de `STACK_GROUPS` o de `EDUCATION`. */
+export const EXPERTISE: { label: string; items: string[] }[] = [
+	{ label: "EDA", items: ["Event Arch", "Kafka", "Mulesoft", "SSE"] },
+	{ label: "DDD", items: ["Clean Arch", "Hexagonal", "Event Arch"] },
+	{
+		label: "IA",
+		items: [
+			"Desarrollo Agéntico",
+			"Introducción a Machine Learning",
+			"IA en Bodega Digital",
+		],
+	},
+	{ label: "TDD", items: ["BDD", "CI/CD", "Jenkins"] },
+	{ label: "Design Patterns", items: ["Clean Arch", "Hexagonal", "Redux"] },
+	{ label: "FE", items: stackItems("front") },
+	{ label: "BE", items: stackItems("back") },
+];
+
 export const SOFT_SKILLS: string[] = [
 	"Resiliente",
 	"Autodidacta",
