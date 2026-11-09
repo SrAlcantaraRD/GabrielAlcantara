@@ -1,0 +1,31 @@
+{
+	"name": "Gabriel Alcántara — Solutions Architect",
+	"short_name": "G. Alcántara",
+	"description": "Curioso empedernido. Diseño y construyo sistemas desde 2011: de full stack a solutions architect. Event-driven architecture, TDD, cloud e IA aplicada.",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#ffffff",
+	"lang": "es-ES",
+	"icons": [
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}

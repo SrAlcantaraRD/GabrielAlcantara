@@ -6,29 +6,114 @@ import "../styles/global.css";
 interface Props {
 	title?: string;
 	description?: string;
+	/** Social share image path. Defaults to the site-wide OG card. */
+	image?: string;
+	imageAlt?: string;
+	/** Open Graph object type. */
+	type?: "website" | "profile" | "article";
 }
 
+const SITE_NAME = "Gabriel Alcántara";
+const ORIGIN = Astro.site ?? new URL("https://gabrielalcantara.com");
+const LOCALE = "es_ES";
+
 const {
-	title = "Gabriel Alcántara — Solutions Architect & Full Stack Developer",
-	description = "Curioso empedernido. Diseño y construyo sistemas: desde 2011, de full stack developer a solutions architect. Event-driven architecture, TDD, cloud e IA aplicada.",
+	title = "Gabriel Alcántara — Solutions Architect · Software Engineer",
+	description = "Curioso empedernido. Diseño y construyo sistemas desde 2011: de full stack a solutions architect. Event-driven architecture, TDD, cloud e IA aplicada.",
+	image = "/og-image.png",
+	imageAlt = "Gabriel Alcántara — Solutions Architect · Software Engineer",
+	type = "website",
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, ORIGIN);
+const socialImage = new URL(image, ORIGIN);
+
+const personId = new URL("/#person", ORIGIN).href;
+const websiteId = new URL("/#website", ORIGIN).href;
+
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@graph": [
+		{
+			"@type": "Person",
+			"@id": personId,
+			name: SITE_NAME,
+			url: ORIGIN.href,
+			jobTitle: ["Solutions Architect", "Software Engineer"],
+			description,
+			email: "gabriel@alcantaramoreno.com",
+			knowsAbout: [
+				"Software Architecture",
+				"Event-Driven Architecture",
+				"Domain-Driven Design",
+				"Test-Driven Development",
+				"Cloud (AWS, Azure)",
+				"TypeScript",
+				"Microservices",
+			],
+			alumniOf: {
+				"@type": "CollegeOrUniversity",
+				name: "Universitat Oberta de Catalunya",
+			},
+			sameAs: ["https://github.com/SrAlcantaraRD"],
+		},
+		{
+			"@type": "WebSite",
+			"@id": websiteId,
+			name: SITE_NAME,
+			url: ORIGIN.href,
+			description,
+			inLanguage: "es-ES",
+			author: { "@id": personId },
+		},
+	],
+};
 ---
 
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta name="color-scheme" content="light" />
-  </head>
-  <body>
-    <slot />
-  </body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical.href} />
+
+		<!-- Icons & PWA -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" sizes="32x32" href="/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+		<meta name="theme-color" content="#ffffff" />
+		<meta name="color-scheme" content="light" />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content={SITE_NAME} />
+		<meta property="og:locale" content={LOCALE} />
+		<meta property="og:url" content={canonical.href} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={socialImage.href} />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={imageAlt} />
+
+		<!-- Twitter / X -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={socialImage.href} />
+		<meta name="twitter:image:alt" content={imageAlt} />
+
+		<!-- Structured data -->
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+		<meta name="generator" content={Astro.generator} />
+	</head>
+	<body>
+		<slot />
+	</body>
 </html>
