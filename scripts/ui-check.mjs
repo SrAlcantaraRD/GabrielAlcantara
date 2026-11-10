@@ -99,7 +99,7 @@ for (const viewport of VIEWPORTS) {
 
 	for (const scenario of SCENARIOS) {
 		const page = await context.newPage();
-		await page.goto(`${base}${scenario.query}`, { waitUntil: "load" });
+		await page.goto(`${base}experience/${scenario.query}`, { waitUntil: "load" });
 		await page.waitForFunction(
 			() => document.querySelectorAll(".bar").length > 0,
 		);
