@@ -6,75 +6,32 @@ import "@fontsource/newsreader/500.css";
 import "@fontsource-variable/plus-jakarta-sans";
 import "@fontsource-variable/jetbrains-mono";
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+
+import Seo from "../components/Seo.astro";
+import type { Breadcrumb } from "../data/site";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import EasterEgg from "../components/EasterEgg.astro";
 
 interface Props {
-	title?: string;
-	description?: string;
-	/** Social share image path. Defaults to the site-wide OG card. */
+	title: string;
+	description: string;
 	image?: string;
 	imageAlt?: string;
-	/** Open Graph object type. */
 	type?: "website" | "profile" | "article";
+	noindex?: boolean;
+	breadcrumbs?: Breadcrumb[];
+	jsonLd?: Record<string, unknown>[];
+	publishedTime?: string;
+	modifiedTime?: string;
+	articleSection?: string;
+	tags?: string[];
 }
 
-const SITE_NAME = "Gabriel Alcántara";
-const ORIGIN = Astro.site ?? new URL("https://gabrielalcantara.com");
-const LOCALE = "es_ES";
-
-const {
-	title = "Gabriel Alcántara — Solutions Architect · Software Engineer",
-	description = "Curioso empedernido. Diseño y construyo sistemas desde 2011: de full stack a solutions architect. Event-driven architecture, TDD, cloud e IA aplicada.",
-	image = "/og-image.png",
-	imageAlt = "Gabriel Alcántara — Solutions Architect · Software Engineer",
-	type = "website",
-} = Astro.props;
-
-const canonical = new URL(Astro.url.pathname, ORIGIN);
-const socialImage = new URL(image, ORIGIN);
-
-const personId = new URL("/#person", ORIGIN).href;
-const websiteId = new URL("/#website", ORIGIN).href;
-
-const jsonLd = {
-	"@context": "https://schema.org",
-	"@graph": [
-		{
-			"@type": "Person",
-			"@id": personId,
-			name: SITE_NAME,
-			url: ORIGIN.href,
-			jobTitle: ["Solutions Architect", "Software Engineer"],
-			description,
-			email: "gabriel@alcantaramoreno.com",
-			knowsAbout: [
-				"Software Architecture",
-				"Event-Driven Architecture",
-				"Domain-Driven Design",
-				"Test-Driven Development",
-				"Cloud (AWS, Azure)",
-				"TypeScript",
-				"Microservices",
-			],
-			alumniOf: {
-				"@type": "CollegeOrUniversity",
-				name: "Universitat Oberta de Catalunya",
-			},
-			sameAs: [
-				"https://github.com/SrAlcantaraRD",
-				"https://x.com/SrAlcantaraRD",
-			],
-		},
-		{
-			"@type": "WebSite",
-			"@id": websiteId,
-			name: SITE_NAME,
-			url: ORIGIN.href,
-			description,
-			inLanguage: "es-ES",
-			author: { "@id": personId },
-		},
-	],
-};
+const { breadcrumbs, ...seo } = Astro.props;
+const showBreadcrumbs = breadcrumbs && breadcrumbs.length > 0;
 ---
 
 <!doctype html>
@@ -83,10 +40,8 @@ const jsonLd = {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<title>{title}</title>
-		<meta name="description" content={description} />
-		<meta name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
-		<link rel="canonical" href={canonical.href} />
+		<ClientRouter />
+		<Seo {...seo} breadcrumbs={breadcrumbs} />
 
 		<!-- Icons & PWA -->
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -96,34 +51,16 @@ const jsonLd = {
 		<meta name="theme-color" content="#faf8f5" />
 		<meta name="color-scheme" content="light" />
 
-		<!-- Open Graph -->
-		<meta property="og:type" content={type} />
-		<meta property="og:site_name" content={SITE_NAME} />
-		<meta property="og:locale" content={LOCALE} />
-		<meta property="og:url" content={canonical.href} />
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
-		<meta property="og:image" content={socialImage.href} />
-		<meta property="og:image:type" content="image/png" />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content={imageAlt} />
-
-		<!-- Twitter / X -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:site" content="@SrAlcantaraRD" />
-		<meta name="twitter:creator" content="@SrAlcantaraRD" />
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={socialImage.href} />
-		<meta name="twitter:image:alt" content={imageAlt} />
-
-		<!-- Structured data -->
-		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
 		<meta name="generator" content={Astro.generator} />
 	</head>
 	<body>
-		<slot />
+		<a class="skip-link" href="#contenido">Saltar al contenido</a>
+		<SiteHeader />
+		<main id="contenido" class="main container">
+			{showBreadcrumbs && <Breadcrumbs items={breadcrumbs} />}
+			<slot />
+		</main>
+		<SiteFooter />
+		<EasterEgg />
 	</body>
 </html>

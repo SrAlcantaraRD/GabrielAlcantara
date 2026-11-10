@@ -1,0 +1,252 @@
+---
+import Layout from "./Layout.astro";
+import PostCard from "../components/PostCard.astro";
+import { PROJECTS } from "../data/cv";
+import { SITE } from "../data/site";
+import {
+	categoryOf,
+	formatDate,
+	postHref,
+	relatedPosts,
+	type PostMeta,
+} from "../data/blog";
+
+interface Props extends PostMeta {}
+
+const post = Astro.props;
+const category = categoryOf(post.category);
+const related = relatedPosts(post);
+const projects = post.projectIds.flatMap((id) => {
+	const project = PROJECTS.find((item) => item.id === id);
+	return project ? [project] : [];
+});
+
+const articleUrl = new URL(postHref(post.slug), SITE.url).href;
+const personId = new URL("/#person", SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "BlogPosting",
+		"@id": `${articleUrl}#article`,
+		headline: post.title,
+		description: post.description,
+		datePublished: post.date,
+		dateModified: post.updated ?? post.date,
+		inLanguage: "es-ES",
+		articleSection: category.label,
+		keywords: post.tags.join(", "),
+		url: articleUrl,
+		mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+		author: { "@id": personId },
+		publisher: { "@id": personId },
+		image: new URL("/og-image.png", SITE.url).href,
+	},
+];
+---
+
+<Layout
+  title={`${post.title} | Gabriel Alcántara`}
+  description={post.description}
+  image={post.image ?? `/og/${post.slug}.png`}
+  imageAlt={`${post.title} — Gabriel Alcántara`}
+  type="article"
+  publishedTime={post.date}
+  modifiedTime={post.updated ?? post.date}
+  articleSection={category.label}
+  tags={post.tags}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { label: "Blog", href: "/blog/" },
+    { label: category.label, href: `/blog/categoria/${category.slug}/` },
+    { label: post.title },
+  ]}
+>
+  <article class="article">
+    <header class="article-head">
+      <p class="kicker">
+        <a href={`/blog/categoria/${category.slug}/`}>{category.label}</a>
+        <span aria-hidden="true">·</span>
+        <time datetime={post.date}>{formatDate(post.date)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{post.readingMinutes} min de lectura</span>
+      </p>
+      <h1 class="display">{post.title}</h1>
+      <p class="lede">{post.description}</p>
+      <div class="tag-row">
+        {post.tags.map((tag) => <span class="pill">{tag}</span>)}
+      </div>
+      {post.updated && (
+        <p class="updated">Actualizado el {formatDate(post.updated)}</p>
+      )}
+    </header>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <footer class="article-foot">
+      {
+        projects.length > 0 && (
+          <section class="related-projects" aria-labelledby="proyectos-relacionados">
+            <h2 class="section-title" id="proyectos-relacionados">
+              Proyecto relacionado
+            </h2>
+            <ul>
+              {projects.map((project) => (
+                <li>
+                  <a
+                    href={
+                      project.id === "bodega-digital"
+                        ? "/projects/bodega-digital/"
+                        : "/projects/"
+                    }
+                  >
+                    <strong>{project.name}</strong>
+                    <span>
+                      {project.company} · {project.summary}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        related.length > 0 && (
+          <section class="related-posts" aria-labelledby="articulos-relacionados">
+            <h2 class="section-title" id="articulos-relacionados">
+              Artículos relacionados
+            </h2>
+            <div class="related-list">
+              {related.map((item) => <PostCard post={item} compact />)}
+            </div>
+          </section>
+        )
+      }
+
+      <section class="cta" aria-labelledby="cta-articulo">
+        <h2 class="section-title" id="cta-articulo">Siguiente paso</h2>
+        <p>
+          Si estás trabajando en un problema parecido y quieres contrastarlo, puedes
+          escribirme. También puedes ver el resto de proyectos o descargar el CV.
+        </p>
+        <div class="actions">
+          <a class="btn" href={`mailto:${SITE.email}`}>Escríbeme</a>
+          <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+          <a class="btn btn--ghost" href="/cv/">Ver CV</a>
+        </div>
+      </section>
+    </footer>
+  </article>
+</Layout>
+
+<style>
+  .article {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .article-head {
+    display: grid;
+    gap: 0.85rem;
+    max-inline-size: 50rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .kicker a {
+    color: var(--color-terracotta);
+    text-decoration: none;
+  }
+
+  .kicker a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .updated {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .article-foot {
+    display: grid;
+    gap: 2.5rem;
+    max-inline-size: 46rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .article-foot .section-title {
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+
+  .related-projects ul {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .related-projects a {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    background: color-mix(in srgb, var(--color-card) 70%, transparent);
+  }
+
+  .related-projects a:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 20%, transparent);
+  }
+
+  .related-projects strong {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .related-projects span {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .related-list {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .cta {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-paper-warm);
+  }
+
+  .cta p {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+    max-inline-size: 38rem;
+  }
+</style>
