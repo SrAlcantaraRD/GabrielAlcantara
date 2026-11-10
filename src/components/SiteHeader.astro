@@ -74,8 +74,10 @@ const active = (href: string) => isNavActive(pathname, href);
 
 <style>
   .site-header {
-    --header-bar-height: 4.25rem;
-    --header-crumbs-height: 1.75rem;
+    /* Single spacing token: the gap above the brand and the gap below the
+       breadcrumbs both resolve to it, so the header stays balanced. */
+    --header-space: 1rem;
+    --crumbs-line: 0.875rem;
     position: sticky;
     top: 0;
     z-index: 30;
@@ -89,14 +91,15 @@ const active = (href: string) => isNavActive(pathname, href);
     flex-wrap: nowrap;
     align-items: center;
     gap: 0.75rem 1.5rem;
-    block-size: var(--header-bar-height);
+    padding-block-start: var(--header-space);
   }
 
-  /* Reserved strip: keeps the header height constant with or without breadcrumbs. */
+  /* Reserved strip: fixed height keeps the header constant with or without
+     breadcrumbs, while centering the text leaves an equal gap above and below. */
   .header-crumbs {
     display: flex;
     align-items: center;
-    block-size: var(--header-crumbs-height);
+    block-size: calc(var(--header-space) * 2 + var(--crumbs-line));
   }
 
   .brand {
@@ -261,10 +264,6 @@ const active = (href: string) => isNavActive(pathname, href);
   }
 
   @media (min-width: 1024px) {
-    .site-header {
-      --header-bar-height: 4.5rem;
-    }
-
     .site-nav {
       display: flex;
       align-items: center;
@@ -281,6 +280,11 @@ const active = (href: string) => isNavActive(pathname, href);
   }
 
   @media (max-width: 1023px) {
+    .header-inner {
+      /* Top-align so the gap above the brand matches the gap below the crumbs. */
+      align-items: start;
+    }
+
     .brand {
       margin-inline-end: auto;
     }
