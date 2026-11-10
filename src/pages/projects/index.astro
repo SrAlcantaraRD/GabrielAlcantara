@@ -1,0 +1,207 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import {
+	FEATURED_CASE,
+	OTHER_PROJECTS,
+	PROJECT_CASES,
+	SELECTED_CASES,
+} from "../../data/projects";
+import { COMPANIES, PROJECTS } from "../../data/cv";
+import { SITE } from "../../data/site";
+
+const pageUrl = new URL("/projects/", SITE.url).href;
+
+const otherGroups = COMPANIES.map((company) => ({
+	company,
+	projects: OTHER_PROJECTS.filter((project) => project.companyId === company.id),
+})).filter((group) => group.projects.length > 0);
+
+const jsonLd = [
+	{
+		"@type": "CollectionPage",
+		"@id": `${pageUrl}#webpage`,
+		url: pageUrl,
+		name: "Proyectos de arquitectura de software y sistemas distribuidos",
+		description:
+			"Casos de estudio de Gabriel Alcántara: automatización industrial, sistemas distribuidos, productos digitales y plataformas empresariales.",
+		inLanguage: "es-ES",
+		about: { "@id": new URL("/#person", SITE.url).href },
+	},
+	{
+		"@type": "ItemList",
+		"@id": `${pageUrl}#projects`,
+		name: "Proyectos seleccionados",
+		itemListElement: PROJECT_CASES.map((project, index) => ({
+			"@type": "ListItem",
+			position: index + 1,
+			name: project.name,
+			...(project.caseStudyHref
+				? { url: new URL(project.caseStudyHref, SITE.url).href }
+				: {}),
+		})),
+	},
+];
+---
+
+<Layout
+  title="Proyectos de arquitectura de software y sistemas distribuidos"
+  description="Casos de estudio de Gabriel Alcántara: Bodega Digital, Nakire TPS, LoveISDIN, MSyupply y la suite ACD. Problema, rol, decisión técnica y resultado de cada proyecto."
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "Proyectos" }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Proyectos</p>
+    <h1 class="display">Proyectos donde la arquitectura se encuentra con la realidad.</h1>
+    <p class="lede">
+      Estos proyectos muestran algunos de los problemas técnicos y de negocio en los que
+      he trabajado, desde plataformas empresariales hasta sistemas industriales
+      conectados.
+    </p>
+    <div class="meta-row">
+      <span>{PROJECT_CASES.length} casos documentados</span>
+      <span>{PROJECTS.length} proyectos en la trayectoria</span>
+      <span>problema · rol · decisión · resultado</span>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="destacado-title">
+    <div class="section-head">
+      <h2 class="section-title" id="destacado-title">Caso de estudio principal</h2>
+      <span class="section-meta">{FEATURED_CASE.company}</span>
+    </div>
+    <ProjectCard project={FEATURED_CASE} />
+  </section>
+
+  <section class="section" aria-labelledby="seleccionados-title">
+    <div class="section-head">
+      <h2 class="section-title" id="seleccionados-title">Proyectos seleccionados</h2>
+      <span class="section-meta">{SELECTED_CASES.length} casos</span>
+    </div>
+    <div class="grid grid--2">
+      {SELECTED_CASES.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="otros-title">
+    <div class="section-head">
+      <h2 class="section-title" id="otros-title">Resto de la trayectoria</h2>
+      <span class="section-meta">{OTHER_PROJECTS.length} proyectos</span>
+    </div>
+    <p class="section-lede">
+      No todos los proyectos tienen un caso escrito. Estos son los que completan el
+      recorrido, agrupados por empresa.
+    </p>
+    <div class="other-groups">
+      {
+        otherGroups.map((group) => (
+          <section class={`other-group accent-${group.company.accent}`}>
+            <h3 class="other-company">{group.company.name}</h3>
+            <ul>
+              {group.projects.map((project) => (
+                <li>
+                  <span class="other-name">{project.name}</span>
+                  <span class="other-summary">{project.summary}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="projects-cierre">
+    <h2 class="section-title" id="projects-cierre">Siguiente paso</h2>
+    <p>
+      Si alguno de estos problemas se parece al que tienes delante, puedo contarte con
+      más detalle cómo lo abordé y qué aprendí por el camino.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/contact/">Contactar</a>
+      <a class="btn btn--ghost" href="/experience/">Ver la trayectoria</a>
+      <a class="btn btn--ghost" href="/blog/">Leer el blog</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .section-lede {
+    max-inline-size: 46rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--color-ink-muted);
+  }
+
+  .other-groups {
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .other-groups {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+
+  .other-group {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding-top: 0.75rem;
+    border-top: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  .other-company {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+
+  .other-group ul {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .other-group li {
+    display: grid;
+    gap: 0.05rem;
+  }
+
+  .other-name {
+    font-family: var(--font-mono);
+    font-size: 0.71875rem;
+    color: var(--color-ink);
+  }
+
+  .other-summary {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>
