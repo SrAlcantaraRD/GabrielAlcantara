@@ -1,5 +1,13 @@
 ---
-import { NAV, SITE, isNavActive } from "../data/site";
+import { NAV, SITE, isNavActive, type Breadcrumb } from "../data/site";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+interface Props {
+  breadcrumbs?: Breadcrumb[];
+}
+
+const { breadcrumbs } = Astro.props;
+const showBreadcrumbs = breadcrumbs && breadcrumbs.length > 0;
 
 const pathname = Astro.url.pathname;
 const active = (href: string) => isNavActive(pathname, href);
@@ -58,10 +66,16 @@ const active = (href: string) => isNavActive(pathname, href);
       </nav>
     </details>
   </div>
+
+  <div class="container header-crumbs">
+    {showBreadcrumbs && <Breadcrumbs items={breadcrumbs ?? []} />}
+  </div>
 </header>
 
 <style>
   .site-header {
+    --header-bar-height: 4.25rem;
+    --header-crumbs-height: 1.75rem;
     position: sticky;
     top: 0;
     z-index: 30;
@@ -72,32 +86,46 @@ const active = (href: string) => isNavActive(pathname, href);
 
   .header-inner {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 0.75rem 1.5rem;
-    padding-block: 0.9rem;
+    block-size: var(--header-bar-height);
+  }
+
+  /* Reserved strip: keeps the header height constant with or without breadcrumbs. */
+  .header-crumbs {
+    display: flex;
+    align-items: center;
+    block-size: var(--header-crumbs-height);
   }
 
   .brand {
     display: grid;
     gap: 0.05rem;
+    min-inline-size: 0;
     margin-inline-end: auto;
     text-decoration: none;
   }
 
   .brand-name {
+    overflow: hidden;
     font-family: var(--font-serif);
     font-size: 1.125rem;
     font-weight: 500;
     line-height: 1.2;
     color: var(--color-ink);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .brand-role {
+    overflow: hidden;
     font-family: var(--font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.1em;
+    text-overflow: ellipsis;
     text-transform: uppercase;
+    white-space: nowrap;
     color: var(--color-ink-faint);
   }
 
@@ -233,9 +261,8 @@ const active = (href: string) => isNavActive(pathname, href);
   }
 
   @media (min-width: 1024px) {
-    .header-inner {
-      flex-wrap: nowrap;
-      padding-block: 1rem;
+    .site-header {
+      --header-bar-height: 4.5rem;
     }
 
     .site-nav {
@@ -256,6 +283,12 @@ const active = (href: string) => isNavActive(pathname, href);
   @media (max-width: 1023px) {
     .brand {
       margin-inline-end: auto;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .brand-role {
+      display: none;
     }
   }
 </style>

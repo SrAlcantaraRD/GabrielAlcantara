@@ -24,11 +24,17 @@ const { items } = Astro.props;
 </nav>
 
 <style>
+  .breadcrumbs {
+    min-inline-size: 0;
+  }
+
   .breadcrumbs ol {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: baseline;
     gap: 0.35rem;
+    min-inline-size: 0;
+    overflow: hidden;
     font-family: var(--font-mono);
     font-size: 0.625rem;
     letter-spacing: 0.04em;
@@ -39,6 +45,11 @@ const { items } = Astro.props;
     display: flex;
     align-items: baseline;
     gap: 0.35rem;
+    white-space: nowrap;
+  }
+
+  .breadcrumbs li:last-child {
+    min-inline-size: 0;
   }
 
   .breadcrumbs li + li::before {
@@ -58,6 +69,9 @@ const { items } = Astro.props;
   }
 
   .breadcrumbs [aria-current="page"] {
+    overflow: hidden;
     color: var(--color-ink-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
