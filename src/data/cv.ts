@@ -30,7 +30,13 @@ export type Pillar =
 	| "security"
 	| "lead";
 
-export type Domain = "financial" | "public" | "product" | "health" | "logistics";
+export type Domain =
+	| "financial"
+	| "public"
+	| "product"
+	| "health"
+	| "logistics"
+	| "agrifood";
 
 export type Accent = "cobalt" | "sage" | "terracotta";
 
@@ -128,6 +134,7 @@ export const DOMAIN_LABEL: Record<Domain, string> = {
 	product: "producto digital",
 	health: "salud y marca",
 	logistics: "logística y automatización",
+	agrifood: "vino y agroalimentación",
 };
 
 export const PILLAR_ORDER: Pillar[] = [
@@ -149,12 +156,19 @@ export const DOMAIN_ORDER: Domain[] = [
 	"product",
 	"health",
 	"logistics",
+	"agrifood",
 ];
 
 export const COMPANIES: Company[] = [
 	{ id: "acd", name: "ACD Sistemes SL", short: "acd", accent: "terracotta" },
 	{ id: "basetis", name: "Basetis", short: "basetis", accent: "sage" },
 	{ id: "quabu", name: "Quabu Solutions", short: "quabu", accent: "cobalt" },
+	{
+		id: "pachanga",
+		name: "Pachanga Community",
+		short: "pachanga",
+		accent: "sage",
+	},
 ];
 
 export const POSITIONS: Position[] = [
@@ -349,9 +363,9 @@ export const POSITIONS: Position[] = [
 		end: "2026.08",
 		place: "Vilanova i la Geltrù",
 		mode: "híbrido",
-		focus: "automatización de almacenes con robótica",
+		focus: "arquitectura de producto y automatización industrial",
 		summary:
-			"Diseñé e implementé un sistema orientado a eventos sobre DDD, TDD y microservicios para la automatización de almacenes inteligentes: un monolito agrupado en frontend, backend, core y un subconjunto de dispositivos.",
+			"Arquitectura de varios productos en paralelo: una herramienta de inventario de vino con RFID y machine learning, los addons de Atlassian, un producto de microservicios y, más tarde, un sistema distribuido de automatización de almacenes con robótica.",
 		achievements: [
 			"DDD y TDD para absorber las reglas de negocio, mapas y versiones de robot distintas de cada almacén.",
 			"Core orientado a agentes: dictator ordena, ranker prioriza y distributor delega, maximizando la disponibilidad de los dispositivos y minimizando movimientos.",
@@ -371,6 +385,36 @@ export const POSITIONS: Position[] = [
 			"CI/CD",
 			"Cloud",
 			"English",
+		],
+	},
+	{
+		id: "pachanga-own",
+		companyId: "pachanga",
+		title: "Arquitecto y desarrollador · producto propio",
+		start: "2026.07",
+		end: "2026.11",
+		place: "Barcelona · remoto",
+		mode: "producto propio",
+		focus: "app móvil y web de fútbol amateur",
+		summary:
+			"Producto propio de principio a fin: app móvil en React Native y Expo, web en Ghost con tres idiomas, enlaces universales y despliegue en Dokploy.",
+		achievements: [
+			"App móvil con React Native y Expo, arquitectura hexagonal sobre DDD y Atomic Design.",
+			"Web en Ghost con tema generado desde fuentes propias y tres idiomas.",
+			"Enlaces universales con AASA y assetlinks, con fallback a tienda para quien no tiene la app.",
+			"Despliegue propio: Docker en local y Traefik sobre Dokploy en producción.",
+		],
+		stack: [
+			"React Native",
+			"Expo",
+			"TypeScript",
+			"Supabase",
+			"Drizzle",
+			"Ghost",
+			"Handlebars",
+			"Docker",
+			"Traefik",
+			"Dokploy",
 		],
 	},
 ];
@@ -584,51 +628,12 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		stack: ["AWS", "NodeJS", "NextJS", "React"],
 	},
 	{
-		id: "bodega-digital",
-		positionId: "quabu-architect",
-		name: "Bodega Digital",
-		short: "bodega digital",
-		start: "2024.01",
-		end: "2026.08",
-		domain: "logistics",
-		pillars: ["eda", "micro", "robotics", "cloud", "data", "security"],
-		summary:
-			"Sistema event-driven para automatizar almacenes con robots, PLC, LEDs, cámaras y sonido en tiempo real, con un core de tareas atómicas que prioriza y reparte el trabajo entre dispositivos.",
-		achievements: [
-			"Abstracción por casos de uso, puertos y adaptadores: cambiar una API o un dispositivo no arrastra al dominio.",
-			"Tareas con distinto nivel de detalle, desde el dispositivo concreto hasta solo la familia y la acción.",
-			"Administración por rol y tipo de operador con RBAC y WebSocket.",
-		],
-		stack: [
-			"EDA",
-			"DDD",
-			"TDD",
-			"Kafka",
-			"Kubernetes",
-			"Docker",
-			"WebSocket",
-		],
-	},
-	{
-		id: "nakire-tps",
-		positionId: "quabu-architect",
-		name: "Nakire TPS",
-		short: "nakire tps",
-		domain: "logistics",
-		pillars: ["eda", "micro", "cloud", "data"],
-		summary:
-			"Sistema transaccional con eventos de alto rendimiento y orquestación de robótica en tiempo real.",
-		achievements: [
-			"EDA para la comunicación asíncrona con el middleware robótico.",
-			"Persistencia heterogénea: time-series para métricas, PostgreSQL y Redis para transacciones.",
-		],
-		stack: ["Kafka", "Microservicios", "AWS", "Azure", "PostgreSQL", "Redis"],
-	},
-	{
 		id: "coleo",
 		positionId: "quabu-architect",
 		name: "Coleo",
 		short: "coleo",
+		start: "2024.01",
+		end: "2024.03",
 		domain: "product",
 		pillars: ["micro", "cloud"],
 		summary:
@@ -640,15 +645,149 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		stack: ["Microservicios", "Docker", "AWS"],
 	},
 	{
+		id: "bodega-digital",
+		positionId: "quabu-architect",
+		name: "Bodega Digital",
+		short: "bodega digital",
+		start: "2024.03",
+		end: "2025.02",
+		domain: "agrifood",
+		pillars: ["web", "mobile", "data", "integration", "robotics"],
+		summary:
+			"Herramienta de inventario de vino en tiempo real para bodegas y empresas vinícolas, financiada por el Ministerio de Industria y NextGenerationEU. Identificación de botellas por RFID, predicción de demanda con machine learning y trazabilidad, sobre un monolito monorepo con DDD y TDD.",
+		achievements: [
+			"Dos fases: RFID y predicción de demanda primero; visión por computadora después.",
+			"Adaptadores para lectores RFID, visión artificial y el modelo de predicción, sin arrastrar al dominio.",
+			"Frontend, backend y base de datos en un solo repositorio, con un único despliegue.",
+			"Su estructura fue el punto de partida de Nakire TPS.",
+		],
+		stack: [
+			"DDD",
+			"TDD",
+			"Monorepo",
+			"SQL",
+			"RFID",
+			"IoT",
+			"Machine Learning",
+			"Computer Vision",
+			"Blockchain",
+			"Mobile",
+		],
+	},
+	{
 		id: "jira-addons",
 		positionId: "quabu-architect",
-		name: "Jira Addons",
-		short: "jira addons",
+		name: "Quabu Atlassian Addons",
+		short: "atlassian addons",
+		start: "2024.07",
+		end: "2024.10",
 		domain: "product",
 		pillars: ["micro", "cloud"],
-		summary: "Addons de Jira dentro del ecosistema de herramientas de Quabu.",
-		achievements: ["Automatización de procesos operativos."],
+		summary:
+			"Addons de Jira y del ecosistema Atlassian dentro de las herramientas de Quabu, desarrollados entre las dos fases de Bodega Digital y mantenidos de forma transversal.",
+		achievements: [
+			"Automatización de procesos operativos.",
+			"Desarrollo transversal mientras avanzaban los demás proyectos de la etapa.",
+		],
 		stack: ["Jira", "Microservicios", "AWS"],
+	},
+	{
+		id: "ondunova",
+		positionId: "quabu-architect",
+		name: "Ondunova",
+		short: "ondunova",
+		start: "2025.02",
+		end: "2025.04",
+		domain: "product",
+		pillars: ["mobile", "integration", "robotics"],
+		summary:
+			"Actualización y ampliación de una app legacy: Flutter en el cliente, backend con ElysiaJS e integración de lectores y sensores.",
+		achievements: [
+			"Actualización de la app legacy y ampliación de su funcionalidad.",
+			"Cliente en Flutter y backend con ElysiaJS.",
+			"Integración de lectores y sensores.",
+		],
+		stack: ["Flutter", "Dart", "ElysiaJS", "Lectores y sensores"],
+	},
+	{
+		id: "nakire-tps",
+		positionId: "quabu-architect",
+		name: "Nakire TPS",
+		short: "nakire tps",
+		start: "2025.04",
+		end: "2026.06",
+		domain: "logistics",
+		pillars: ["data", "micro", "eda", "cloud", "robotics", "security"],
+		summary:
+			"Software distribuido para operaciones industriales en tiempo real: un microservicio por familia de dispositivo, un core de agentes que reparte tareas atómicas y comunicación asíncrona por eventos. Se desarrolló en dos fases.",
+		achievements: [
+			"Fase I: MVP de abril a julio de 2025.",
+			"Fase II: de septiembre de 2025 a junio de 2026.",
+			"Un microservicio por familia de dispositivo, con adaptadores por modelo, versión y protocolo.",
+			"Core de agentes que ordena, prioriza y reparte tareas entre los dispositivos disponibles.",
+			"Frontend reactivo por WebSocket con RBAC por rol y tipo de operador.",
+			"Despliegue en Docker y Kubernetes sobre cloud bajo VPN, con QA gates sobre hardware real.",
+		],
+		stack: [
+			"EDA",
+			"DDD",
+			"TDD",
+			"Kafka",
+			"Kubernetes",
+			"Docker",
+			"WebSocket",
+			"PostgreSQL",
+			"Redis",
+			"AWS",
+			"Azure",
+		],
+	},
+	{
+		id: "essentialist",
+		positionId: "quabu-architect",
+		name: "Essentialist",
+		short: "essentialist",
+		start: "2025.07",
+		end: "2025.09",
+		domain: "product",
+		pillars: ["lead"],
+		summary:
+			"Liderazgo del equipo durante la baja del TechLead: análisis, spikes y revisión de PRs.",
+		achievements: [
+			"Cobertura del liderazgo técnico del equipo durante la baja del TechLead.",
+			"Análisis funcional y técnico, spikes de investigación y revisión de PRs.",
+		],
+		stack: ["Technical Leadership"],
+	},
+	{
+		id: "pachanga-community",
+		positionId: "pachanga-own",
+		name: "Pachanga Community",
+		short: "pachanga",
+		start: "2026.07",
+		end: "2026.11",
+		domain: "product",
+		pillars: ["mobile", "web", "data", "cloud", "lead"],
+		summary:
+			"App de fútbol amateur con equipos, ligas, temporadas y valoraciones entre jugadores: React Native y Expo sobre hexagonal y DDD, con web en Ghost, enlaces universales y despliegue propio.",
+		achievements: [
+			"Arquitectura hexagonal con dominio puro en TypeScript y Zod, puertos y adaptadores.",
+			"Sincronización local-first con Supabase y Drizzle, sin perfiles públicos indexados.",
+			"Web en Ghost con el tema generado desde fuentes propias y tres idiomas.",
+			"Enlaces universales iOS y Android, con fallback a tienda para quien no tiene la app.",
+		],
+		stack: [
+			"React Native",
+			"Expo",
+			"TypeScript",
+			"Supabase",
+			"Drizzle",
+			"Ghost",
+			"Docker",
+			"Traefik",
+			"Dokploy",
+			"Atomic Design",
+		],
 	},
 ];
 

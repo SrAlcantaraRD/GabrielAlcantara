@@ -1,0 +1,291 @@
+---
+/**
+ * Architecture diagram for the Pachanga Community case study.
+ *
+ * Hand-authored SVG: no runtime, no external request, and readable text for
+ * search engines and agents. The page repeats the same structure as text, so
+ * the diagram is never the only place the information lives.
+ */
+---
+
+<figure class="pd-diagram">
+  <div class="pd-scroll">
+    <svg
+      viewBox="0 0 900 560"
+      role="img"
+      aria-labelledby="pd-title pd-desc"
+      preserveAspectRatio="xMidYMin meet"
+    >
+      <title id="pd-title">Arquitectura de Pachanga Community</title>
+      <desc id="pd-desc">
+        A la izquierda, el flujo de datos: la app de Expo Router y sus pantallas llaman a
+        hooks de dominio, que llaman a casos de uso; los casos de uso dependen de puertos y
+        los adaptadores los implementan contra Supabase. A la derecha, las capas de Atomic
+        Design: particles, atoms, molecules, organisms, layouts y screens.
+      </desc>
+
+      <defs>
+        <marker
+          id="pd-arrow"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" class="pd-arrowhead" />
+        </marker>
+      </defs>
+
+      <!-- Flow: app -->
+      <g>
+        <rect class="pd-box" x="24" y="30" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="57">src/app/ · Expo Router</text>
+        <text class="pd-sub" x="44" y="78">
+          rutas por fichero; cada pantalla vive en src/ui/screens/
+        </text>
+      </g>
+
+      <line class="pd-line" x1="304" y1="98" x2="304" y2="106" marker-end="url(#pd-arrow)" />
+
+      <!-- Flow: hooks -->
+      <g>
+        <rect class="pd-box" x="24" y="110" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="137">Hooks de dominio</text>
+        <text class="pd-sub" x="44" y="158">
+          estado derivado; la pantalla no conoce de dónde vienen los datos
+        </text>
+      </g>
+
+      <line class="pd-line" x1="304" y1="178" x2="304" y2="186" marker-end="url(#pd-arrow)" />
+
+      <!-- Flow: use cases -->
+      <g>
+        <rect class="pd-box pd-box--core" x="24" y="190" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="217">Casos de uso · domain/**/use-cases</text>
+        <text class="pd-sub" x="44" y="238">
+          una regla por caso, con sus pruebas; TypeScript puro y Zod
+        </text>
+      </g>
+
+      <line class="pd-line" x1="304" y1="258" x2="304" y2="266" marker-end="url(#pd-arrow)" />
+
+      <!-- Flow: ports -->
+      <g>
+        <rect class="pd-box" x="24" y="270" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="297">Puertos · I*Port</text>
+        <text class="pd-sub" x="44" y="318">
+          el contrato que el dominio necesita, sin saber quién lo cumple
+        </text>
+      </g>
+
+      <!-- Domain boundary -->
+      <line class="pd-boundary" x1="24" y1="352" x2="584" y2="352" />
+      <text class="pd-boundary-label" x="24" y="372">frontera del dominio</text>
+
+      <!-- Adapters implement ports: arrow climbs back into the domain -->
+      <line class="pd-line" x1="304" y1="376" x2="304" y2="340" marker-end="url(#pd-arrow)" />
+
+      <!-- Flow: adapters -->
+      <g>
+        <rect class="pd-box" x="24" y="380" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="407">Adaptadores · src/adapter</text>
+        <text class="pd-sub" x="44" y="428">
+          Supabase · in-memory · MMKV · TanStack Query · navegación · notificaciones
+        </text>
+      </g>
+
+      <line class="pd-line" x1="304" y1="448" x2="304" y2="456" marker-end="url(#pd-arrow)" />
+
+      <!-- Flow: infrastructure -->
+      <g>
+        <rect class="pd-box pd-box--soft" x="24" y="460" width="560" height="64" rx="8" />
+        <text class="pd-title" x="44" y="487">Supabase · red</text>
+        <text class="pd-sub" x="44" y="508">
+          PostgreSQL, autenticación y sincronización con el dispositivo
+        </text>
+      </g>
+
+      <!-- Atomic Design -->
+      <text class="pd-panel" x="612" y="30">UI · Atomic Design</text>
+
+      <g>
+        <rect class="pd-pill" x="612" y="44" width="268" height="40" rx="20" />
+        <text class="pd-pill-text" x="746" y="69">particles</text>
+      </g>
+      <line class="pd-line" x1="746" y1="86" x2="746" y2="94" marker-end="url(#pd-arrow)" />
+
+      <g>
+        <rect class="pd-pill" x="612" y="98" width="268" height="40" rx="20" />
+        <text class="pd-pill-text" x="746" y="123">atoms</text>
+      </g>
+      <line class="pd-line" x1="746" y1="140" x2="746" y2="148" marker-end="url(#pd-arrow)" />
+
+      <g>
+        <rect class="pd-pill" x="612" y="152" width="268" height="40" rx="20" />
+        <text class="pd-pill-text" x="746" y="177">molecules</text>
+      </g>
+      <line class="pd-line" x1="746" y1="194" x2="746" y2="202" marker-end="url(#pd-arrow)" />
+
+      <g>
+        <rect class="pd-pill" x="612" y="206" width="268" height="40" rx="20" />
+        <text class="pd-pill-text" x="746" y="231">organisms</text>
+      </g>
+      <line class="pd-line" x1="746" y1="248" x2="746" y2="256" marker-end="url(#pd-arrow)" />
+
+      <g>
+        <rect class="pd-pill" x="612" y="260" width="268" height="40" rx="20" />
+        <text class="pd-pill-text" x="746" y="285">layouts</text>
+      </g>
+      <line class="pd-line" x1="746" y1="302" x2="746" y2="310" marker-end="url(#pd-arrow)" />
+
+      <g>
+        <rect class="pd-pill pd-pill--screens" x="612" y="314" width="268" height="40" rx="20" />
+        <text class="pd-pill-text pd-pill-text--screens" x="746" y="339">screens</text>
+      </g>
+
+      <text class="pd-note" x="612" y="386">
+        Cada capa compone la anterior y solo
+      </text>
+      <text class="pd-note" x="612" y="404">
+        habla con la de al lado. Un cambio
+      </text>
+      <text class="pd-note" x="612" y="422">
+        visual no toca la lógica.
+      </text>
+      <text class="pd-note" x="612" y="458">
+        Las pantallas llaman a los hooks
+      </text>
+      <text class="pd-note" x="612" y="476">
+        de dominio: la UI no habla con
+      </text>
+      <text class="pd-note" x="612" y="494">
+        Supabase directamente.
+      </text>
+    </svg>
+  </div>
+
+  <figcaption>
+    Flujo real del proyecto: pantalla → hook de dominio → caso de uso → puerto ← adaptador
+    → Supabase. El dominio no importa React Native, Expo ni la base de datos; por eso se
+    prueba sin infraestructura.
+  </figcaption>
+</figure>
+
+<style>
+  .pd-diagram {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .pd-scroll {
+    overflow-x: auto;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .pd-diagram svg {
+    inline-size: 100%;
+    min-inline-size: 44rem;
+    block-size: auto;
+  }
+
+  .pd-box {
+    fill: #fff;
+    stroke: #e6e0d6;
+    stroke-width: 1;
+  }
+
+  .pd-box--soft {
+    fill: #fbf9f5;
+  }
+
+  .pd-box--core {
+    fill: #eef3f7;
+    stroke: #cfdde6;
+  }
+
+  .pd-pill {
+    fill: #fff;
+    stroke: #e6e0d6;
+    stroke-width: 1;
+  }
+
+  .pd-pill--screens {
+    fill: #294c60;
+    stroke: #294c60;
+  }
+
+  .pd-pill-text {
+    fill: #4f4b47;
+    font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+    font-size: 12px;
+    text-anchor: middle;
+    letter-spacing: 0.02em;
+  }
+
+  .pd-pill-text--screens {
+    fill: #f7f4ef;
+  }
+
+  .pd-title {
+    fill: #1a1a1a;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .pd-sub {
+    fill: #6f6960;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 10.5px;
+  }
+
+  .pd-panel {
+    fill: #1a1a1a;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pd-note {
+    fill: #6f6960;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 10.5px;
+  }
+
+  .pd-line {
+    stroke: #b8b0a3;
+    stroke-width: 1.2;
+  }
+
+  .pd-arrowhead {
+    fill: #b8b0a3;
+  }
+
+  .pd-boundary {
+    stroke: #c9c1b4;
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .pd-boundary-label {
+    fill: #9b9388;
+    font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .pd-diagram figcaption {
+    max-inline-size: 46rem;
+    font-size: 0.75rem;
+    line-height: 1.65;
+    color: var(--color-ink-faint);
+  }
+</style>

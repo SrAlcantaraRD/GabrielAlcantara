@@ -1,0 +1,447 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ArchitectureDiagram from "../../components/ArchitectureDiagram.astro";
+import PostCard from "../../components/PostCard.astro";
+import { caseStudyOf } from "../../data/projects";
+import { postOf } from "../../data/blog";
+import { SITE } from "../../data/site";
+import { durationLabel, spanLabel } from "../../lib/period";
+
+const project = caseStudyOf("nakire-tps");
+const relatedPosts = [
+	postOf("lecciones-plataforma-industrial"),
+	postOf("arquitectura-orientada-a-eventos"),
+	postOf("websockets-operaciones-tiempo-real"),
+];
+
+const pageUrl = new URL("/projects/nakire-tps/", SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "Article",
+		"@id": `${pageUrl}#article`,
+		url: pageUrl,
+		headline:
+			"Nakire TPS: software distribuido para operaciones industriales en tiempo real",
+		description:
+			"Caso de estudio de Nakire TPS: arquitectura orientada a eventos, dominios, integración con robots, PLC, LEDs y cámaras, tiempo real y despliegue.",
+		inLanguage: "es-ES",
+		author: { "@id": new URL("/#person", SITE.url).href },
+		about: { "@id": new URL("/#person", SITE.url).href },
+		keywords:
+			"automatización industrial, sistemas distribuidos, arquitectura orientada a eventos, DDD, WebSocket, microservicios",
+	},
+];
+---
+
+<Layout
+  title="Nakire TPS: arquitectura industrial en tiempo real | Gabriel Alcántara"
+  description="Caso de estudio de Nakire TPS: dominios y servicios, eventos, integración con robots, PLC, LEDs y cámaras, WebSockets, RBAC y CI/CD sobre hardware real."
+  image="/og/nakire-tps.png"
+  imageAlt="Nakire TPS — caso de estudio de Gabriel Alcántara"
+  type="article"
+  publishedTime="2026-11-10"
+  articleSection="Sistemas distribuidos"
+  tags={["Automatización industrial", "EDA", "DDD", "Microservicios", "WebSocket"]}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { label: "Proyectos", href: "/projects/" },
+    { label: "Nakire TPS" },
+  ]}
+>
+  <article class="case">
+    <header class="case-head">
+      <p class="eyebrow">Caso de estudio · {project.company}</p>
+      <h1 class="display">
+        Nakire TPS: software distribuido para operaciones industriales en tiempo real.
+      </h1>
+      <p class="lede">
+        La evolución distribuida de la arquitectura que nació en Bodega Digital: servicios,
+        eventos y dispositivos industriales coordinados en tiempo real.
+      </p>
+      <div class="meta-row">
+        <span>{spanLabel(project.startMonth, project.endMonth)}</span>
+        <span>{durationLabel(project.endMonth - project.startMonth)}</span>
+        <span>{project.position}</span>
+      </div>
+    </header>
+
+    <dl class="facts case-facts">
+      <dt>Rol</dt>
+      <dd>{project.role}</dd>
+      <dt>Contexto</dt>
+      <dd>{project.company} · {project.position}</dd>
+      <dt>Dominio</dt>
+      <dd>Logística y automatización de almacenes</dd>
+      <dt>Tecnologías</dt>
+      <dd>
+        <span class="tag-row">
+          {project.stack?.map((item) => <span class="pill">{item}</span>)}
+        </span>
+      </dd>
+    </dl>
+
+    <div class="prose">
+      <h2 id="resumen">Resumen ejecutivo</h2>
+      <p>
+        Nakire TPS conecta la operación física de un almacén con el software que la
+        coordina. El sistema une personas, aplicaciones y dispositivos industriales
+        —robots, PLC, LEDs, picking, cámaras y sonido— en un mismo flujo de trabajo, con
+        trazabilidad y capacidad de evolucionar almacén a almacén.
+      </p>
+      <p>
+        La solución se organizó alrededor de dominios y servicios con responsabilidades
+        claras, comunicación orientada a eventos y canales en tiempo real para reflejar el
+        estado de las operaciones. Mi trabajo combinó arquitectura, modelado de dominios,
+        desarrollo de servicios, integración con dispositivos y definición de los flujos
+        de comunicación.
+      </p>
+      <p>
+        Se desarrolló en dos fases: un MVP entre abril y julio de 2025 y una segunda fase
+        de septiembre de 2025 a junio de 2026.
+      </p>
+
+      <h2 id="origen">De Bodega Digital a Nakire TPS</h2>
+      <p>
+        Nakire TPS no partió de una hoja en blanco. El modelo de dominio, el lenguaje
+        compartido con la operación y la disciplina de pruebas venían de
+        <a href="/projects/bodega-digital/">Bodega Digital</a>, el monolito monorepo
+        anterior: frontend, backend y base de datos en un mismo repositorio, con DDD y
+        TDD.
+      </p>
+      <p>
+        Lo que cambió fue la escala. Coordinar dispositivos industriales en tiempo real
+        exigía separar servicios, comunicarlos por eventos y asumir el fallo de cada
+        borde. Nakire TPS es esa evolución: la misma arquitectura de dominio, llevada a un
+        sistema distribuido.
+      </p>
+
+      <h2 id="contexto">Contexto industrial</h2>
+      <p>
+        En un almacén automatizado, mover un pallet no es una operación aislada: implica
+        una tarea, un dispositivo disponible, un operador que necesita saber qué hacer y
+        un registro de lo que ha ocurrido. El software tiene que coordinar esos actores
+        sin convertirse en un cuello de botella y sin perder de vista quién puede hacer
+        qué.
+      </p>
+      <p>
+        El punto de partida no era una hoja en blanco: cada almacén tiene su mapa, sus
+        versiones de robot y sus reglas de negocio. El sistema debía absorber esa
+        variación sin multiplicar el código ni depender de un fabricante concreto.
+      </p>
+
+      <h2 id="problema">El problema</h2>
+      <p>
+        El reto no consistía únicamente en construir una aplicación, sino en coordinar
+        distintos actores, dispositivos y flujos operativos dentro de un sistema que debía
+        ser trazable, mantenible y capaz de evolucionar.
+      </p>
+      <ul>
+        <li>
+          Coordinar tareas entre familias de dispositivos muy distintas, cada una con su
+          propio protocolo y su propio ciclo de vida.
+        </li>
+        <li>
+          Permitir que la configuración de un almacén —mapa, robots, versiones— cambie sin
+          reescribir el dominio.
+        </li>
+        <li>
+          Reflejar el estado de la operación en tiempo real para que las personas puedan
+          actuar sobre lo que está pasando.
+        </li>
+        <li>
+          Mantener límites claros entre lo que decide el negocio y lo que decide el
+          hardware.
+        </li>
+      </ul>
+
+      <h2 id="restricciones">Restricciones</h2>
+      <ul>
+        <li>
+          <strong>Hardware heterogéneo.</strong> Carretillas, PLC, LEDs, picking y cámaras
+          no comparten modelo, versión ni protocolo.
+        </li>
+        <li>
+          <strong>Validación sobre hardware real.</strong> Los QA gates del pipeline se
+          ejecutaban sobre dispositivos físicos, no solo sobre mocks.
+        </li>
+        <li>
+          <strong>Despliegue en cloud bajo VPN.</strong> El software vive en cloud y se
+          conecta a la instalación industrial a través de una VPN.
+        </li>
+        <li>
+          <strong>Fabricantes y documentación.</strong> La comunicación técnica y la
+          documentación con fabricantes chinos se hacía en inglés.
+        </li>
+        <li>
+          <strong>Trazabilidad y roles.</strong> Cada operador debía ver y ejecutar solo
+          lo que su rol permitía.
+        </li>
+      </ul>
+
+      <h2 id="rol">Mi rol</h2>
+      <p>
+        Mi trabajo combinó el diseño de la arquitectura, el modelado de dominios, el
+        desarrollo de servicios, la integración con dispositivos, la definición de los
+        flujos de comunicación y el acompañamiento de las decisiones técnicas. Formé parte
+        de un equipo: lo que sigue distingue lo que diseñé y dirigí de lo que fue trabajo
+        colectivo.
+      </p>
+      <ul>
+        <li>
+          Diseñé e implementé un sistema orientado a eventos sobre DDD, TDD y
+          microservicios, con un monolito agrupado en frontend, backend, core y un
+          subconjunto de dispositivos.
+        </li>
+        <li>
+          Definí el core de agentes que ordena, prioriza y reparte el trabajo entre los
+          dispositivos disponibles.
+        </li>
+        <li>
+          Separé cada familia de dispositivo en su propio microservicio, con adaptadores
+          por modelo, versión y protocolo.
+        </li>
+        <li>
+          Definí el frontend reactivo por WebSocket y el control de acceso por rol y tipo
+          de operador.
+        </li>
+        <li>
+          Acompañé el despliegue en Docker sobre cloud bajo VPN, con CI/CD y QA gates
+          sobre hardware físico real.
+        </li>
+      </ul>
+
+      <h2 id="arquitectura">Arquitectura</h2>
+      <p>
+        La solución se organizó alrededor de dominios y servicios con responsabilidades
+        claras, comunicación orientada a eventos y canales en tiempo real. El frontend y
+        la API hablan con un core que conoce las tareas; el core no conoce los protocolos
+        de cada dispositivo, solo sus capacidades.
+      </p>
+
+      <ArchitectureDiagram />
+
+      <p class="diagram-alt">
+        En texto: el frontend se conecta a la API; la API delega en el core de agentes
+        —dictator, ranker y distributor—; el core publica y consume eventos en el bus;
+        cada familia de dispositivo tiene su microservicio con adaptadores por modelo,
+        versión y protocolo; y esos servicios conversan con el hardware real del
+        almacén.
+      </p>
+
+      <h2 id="dominios">Dominios y servicios</h2>
+      <p>
+        DDD y TDD se usaron para absorber las reglas de negocio, los mapas y las versiones
+        de robot distintas de cada almacén. La abstracción se hizo por casos de uso,
+        puertos y adaptadores: cambiar una API o un dispositivo no arrastra al dominio.
+      </p>
+      <p>
+        El core trabaja con tareas de distinto nivel de detalle, desde la tarea que apunta
+        a un dispositivo concreto hasta la que solo expresa la familia y la acción. Esa
+        granularidad permite que el sistema siga coordinando cuando un modelo de robot no
+        está disponible o cuando un almacén incorpora una versión nueva.
+      </p>
+      <p>
+        Los agentes reparten el trabajo: <strong>dictator</strong> ordena,
+        <strong>ranker</strong> prioriza y <strong>distributor</strong> delega. El objetivo
+        es maximizar la disponibilidad de los dispositivos y minimizar los movimientos
+        necesarios para completar las tareas.
+      </p>
+
+      <h2 id="eventos">Eventos y comunicación</h2>
+      <p>
+        La comunicación entre servicios es asíncrona y orientada a eventos. El bus de
+        eventos del sistema permite que el core publique lo que ha decidido y que cada
+        servicio reaccione sin que el productor conozca a sus consumidores. Añadir una
+        familia de dispositivos o una nueva capacidad no obliga a tocar el core.
+      </p>
+      <p>
+        Esa separación también acota el fallo: un servicio de dispositivos que deja de
+        responder no bloquea la coordinación del resto, aunque el sistema deba decidir qué
+        hacer con las tareas que dependían de él. La persistencia acompaña esa división:
+        time-series para métricas, PostgreSQL y Redis para transacciones.
+      </p>
+
+      <h2 id="hardware">Integración con hardware</h2>
+      <p>
+        Cada familia de dispositivo —carretilla, PLC, LED, picking, cámara— es su propio
+        microservicio, con adaptadores según modelo, versión y protocolo. El dominio
+        expresa la intención; el adaptador se encarga de traducirla al protocolo concreto.
+      </p>
+      <p>
+        Ese límite fue la decisión que más veces se pagó sola: un fabricante nuevo o una
+        versión distinta de robot se incorporaba como un adaptador, no como un cambio en
+        las reglas de negocio. También permitió documentar y comunicar las integraciones
+        en inglés con los fabricantes sin mezclar su vocabulario con el del dominio.
+      </p>
+
+      <h2 id="tiempo-real">Tiempo real y roles</h2>
+      <p>
+        El frontend es reactivo y se comunica por WebSocket: la interfaz refleja el estado
+        de la operación sin que el operador tenga que refrescar. Sobre ese canal se aplica
+        RBAC, de forma que la interfaz se adapta al rol —admin u operador— y al tipo de
+        operador.
+      </p>
+      <p>
+        La consecuencia práctica es que el operador ve la siguiente acción que le
+        corresponde, con el contexto de lo que está pasando en el almacén, y no una pantalla
+        genérica con todas las posibilidades.
+      </p>
+
+      <h2 id="despliegue">CI/CD y despliegue</h2>
+      <p>
+        La plataforma se despliega con Docker y Kubernetes en cloud, bajo VPN hacia la
+        instalación. El pipeline incluye CI/CD y QA gates deterministas sobre hardware
+        físico real: la validación no se quedaba en el entorno de integración, llegaba a
+        los dispositivos que luego operan en el almacén.
+      </p>
+
+      <h2 id="decisiones">Decisiones técnicas</h2>
+      <ul>
+        <li>
+          <strong>Core de agentes en vez de una orquestación rígida.</strong> Permite
+          priorizar y repartir trabajo según disponibilidad, a cambio de asumir estado e
+          idempotencia en las tareas.
+        </li>
+        <li>
+          <strong>Un microservicio por familia de dispositivos.</strong> Aísla protocolos y
+          versiones, a cambio de más servicios que desplegar y observar.
+        </li>
+        <li>
+          <strong>Tareas con granularidad variable.</strong> El mismo modelo sirve para un
+          dispositivo concreto y para una familia entera, a cambio de un contrato de tarea
+          más rico.
+        </li>
+        <li>
+          <strong>DDD y TDD para el dominio.</strong> Absorben reglas que cambian por
+          almacén, a cambio de un esfuerzo inicial de modelado que se recupera en cada
+          variante.
+        </li>
+        <li>
+          <strong>QA sobre hardware real.</strong> Detecta lo que ningún mock detecta, a
+          cambio de un pipeline más lento y dependiente de dispositivos.
+        </li>
+      </ul>
+
+      <h2 id="resultados">Resultados</h2>
+      <p>
+        El sistema permitió conectar software y operación industrial, mejorar la
+        trazabilidad de los procesos y automatizar interacciones que antes requerían
+        coordinación manual. Los resultados que puedo afirmar son observables, no métricas
+        inventadas:
+      </p>
+      <ul>
+        <li>Las tareas quedan registradas y asociadas a su dispositivo y a su operador.</li>
+        <li>
+          La interfaz refleja el estado de la operación en tiempo real y se adapta al rol
+          de quien la usa.
+        </li>
+        <li>
+          Incorporar un modelo o una versión de dispositivo no exige rehacer el dominio.
+        </li>
+        <li>
+          El despliegue y la validación están automatizados, incluida la comprobación sobre
+          hardware real.
+        </li>
+      </ul>
+
+      <h2 id="aprendizajes">Aprendizajes</h2>
+      <ul>
+        <li>
+          En sistemas industriales, el hardware marca el ritmo: la arquitectura tiene que
+          asumir que los dispositivos fallan, cambian de versión y no siempre están
+          disponibles.
+        </li>
+        <li>
+          Los contratos explícitos entre dominio y dispositivo ahorran más tiempo que
+          cualquier optimización prematura.
+        </li>
+        <li>
+          Probar sobre hardware real cambia la conversación con el equipo: los problemas
+          aparecen antes y con nombre propio.
+        </li>
+        <li>
+          La documentación y el vocabulario compartido con fabricantes son parte de la
+          ingeniería, no un trámite.
+        </li>
+      </ul>
+    </div>
+
+    <section class="case-next" aria-labelledby="case-next-title">
+      <h2 class="section-title" id="case-next-title">Artículos relacionados</h2>
+      <div class="next-list">
+        {relatedPosts.map((post) => <PostCard post={post} compact />)}
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="case-cierre">
+      <h2 class="section-title" id="case-cierre">Siguiente paso</h2>
+      <p>
+        Si estás diseñando una plataforma que conecta software con operaciones físicas, o
+        necesitas ordenar una arquitectura que ya existe, puedo ayudarte a delimitar los
+        dominios y las integraciones.
+      </p>
+      <div class="actions">
+        <a class="btn" href="/contact/">Contactar</a>
+        <a class="btn btn--ghost" href="/projects/">Ver más proyectos</a>
+        <a class="btn btn--ghost" href="/cv/">Ver el CV</a>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .case {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .case-head {
+    display: grid;
+    gap: 0.9rem;
+    max-inline-size: 54rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .case-facts {
+    max-inline-size: 46rem;
+  }
+
+  .case .prose {
+    max-inline-size: 48rem;
+  }
+
+  .diagram-alt {
+    font-size: 0.8125rem;
+    color: var(--color-ink-faint);
+  }
+
+  .case-next {
+    display: grid;
+    max-inline-size: 46rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .next-list {
+    display: grid;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>

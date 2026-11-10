@@ -25,23 +25,26 @@ export async function socialCardSpecs() {
 		import(pathToFileURL(path.join(ROOT, "src/data/projects.ts")).href),
 	]);
 
-	const bodega = projects.caseStudyOf("bodega-digital");
+	const cases = ["nakire-tps", "bodega-digital", "pachanga-community"].map((id) => {
+		const project = projects.caseStudyOf(id);
+		return {
+			file: `/og/${id}.png`,
+			page: project.caseStudyHref ?? `/projects/${id}/`,
+			eyebrow: `Caso de estudio · ${project.company}`,
+			title: project.name,
+			subtitle: project.tagline ?? project.outcome,
+			meta: project.position,
+			footerLeft: (project.stack ?? []).slice(0, 4).join(" · "),
+			footerRight: `${Math.floor(project.startMonth / 12)} — ${Math.floor(
+				(project.endMonth - 1) / 12,
+			)}`,
+		};
+	});
+
 	const posts = [...blog.POSTS].sort((a, b) => b.date.localeCompare(a.date));
 
 	return [
-		{
-			file: "/og/bodega-digital.png",
-			page: bodega.caseStudyHref ?? "/projects/bodega-digital/",
-			eyebrow: `Caso de estudio · ${bodega.company}`,
-			title: bodega.name,
-			subtitle:
-				"Software distribuido para operaciones industriales en tiempo real.",
-			meta: bodega.position,
-			footerLeft: (bodega.stack ?? []).slice(0, 4).join(" · "),
-			footerRight: `${Math.floor(bodega.startMonth / 12)} — ${Math.floor(
-				(bodega.endMonth - 1) / 12,
-			)}`,
-		},
+		...cases,
 		...posts.map((post) => ({
 			file: `/og/${post.slug}.png`,
 			page: blog.postHref(post.slug),

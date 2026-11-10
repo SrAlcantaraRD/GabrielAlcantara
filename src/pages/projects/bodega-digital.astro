@@ -1,6 +1,5 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import ArchitectureDiagram from "../../components/ArchitectureDiagram.astro";
 import PostCard from "../../components/PostCard.astro";
 import { caseStudyOf } from "../../data/projects";
 import { postOf } from "../../data/blog";
@@ -8,11 +7,7 @@ import { SITE } from "../../data/site";
 import { durationLabel, spanLabel } from "../../lib/period";
 
 const project = caseStudyOf("bodega-digital");
-const relatedPosts = [
-	postOf("lecciones-plataforma-industrial"),
-	postOf("arquitectura-orientada-a-eventos"),
-	postOf("websockets-operaciones-tiempo-real"),
-];
+const relatedPosts = [postOf("ddd-dominios-complejos")];
 
 const pageUrl = new URL("/projects/bodega-digital/", SITE.url).href;
 
@@ -21,28 +16,27 @@ const jsonLd = [
 		"@type": "Article",
 		"@id": `${pageUrl}#article`,
 		url: pageUrl,
-		headline:
-			"Bodega Digital: software distribuido para operaciones industriales en tiempo real",
+		headline: "Bodega Digital: inventario de vino en tiempo real",
 		description:
-			"Caso de estudio de Bodega Digital: arquitectura orientada a eventos, dominios, integración con robots, PLC, LEDs y cámaras, tiempo real y despliegue.",
+			"Caso de estudio de Bodega Digital: identificación de botellas por RFID, predicción de demanda con machine learning, trazabilidad y un monolito monorepo con DDD y TDD.",
 		inLanguage: "es-ES",
 		author: { "@id": new URL("/#person", SITE.url).href },
 		about: { "@id": new URL("/#person", SITE.url).href },
 		keywords:
-			"automatización industrial, sistemas distribuidos, arquitectura orientada a eventos, DDD, WebSocket, microservicios",
+			"inventario de vino, RFID, IoT, machine learning, trazabilidad, DDD, TDD, monolito, monorepo",
 	},
 ];
 ---
 
 <Layout
-  title="Bodega Digital: arquitectura industrial en tiempo real | Gabriel Alcántara"
-  description="Caso de estudio de Bodega Digital: dominios y servicios, eventos, integración con robots, PLC, LEDs y cámaras, WebSockets, RBAC y CI/CD sobre hardware real."
+  title="Bodega Digital: inventario de vino con RFID y ML | Gabriel Alcántara"
+  description="Caso de estudio de Bodega Digital: identificación de botellas por RFID, predicción de demanda con machine learning y trazabilidad sobre un monolito monorepo con DDD y TDD."
   image="/og/bodega-digital.png"
   imageAlt="Bodega Digital — caso de estudio de Gabriel Alcántara"
   type="article"
-  publishedTime="2026-09-15"
-  articleSection="Automatización industrial"
-  tags={["Automatización industrial", "EDA", "DDD", "Microservicios", "WebSocket"]}
+  publishedTime="2026-11-10"
+  articleSection="Vino y agroalimentación"
+  tags={["RFID", "IoT", "Machine Learning", "DDD", "Monolito"]}
   jsonLd={jsonLd}
   breadcrumbs={[
     { label: "Proyectos", href: "/projects/" },
@@ -52,13 +46,11 @@ const jsonLd = [
   <article class="case">
     <header class="case-head">
       <p class="eyebrow">Caso de estudio · {project.company}</p>
-      <h1 class="display">
-        Bodega Digital: software distribuido para operaciones industriales en tiempo real.
-      </h1>
+      <h1 class="display">Bodega Digital: inventario de vino en tiempo real.</h1>
       <p class="lede">
-        Una plataforma conectada con la operación de una bodega, diseñada para coordinar
-        procesos, usuarios y dispositivos físicos mediante servicios distribuidos y
-        comunicación en tiempo real.
+        Una herramienta para bodegas y empresas vinícolas: identificación de botellas por
+        RFID, predicción de demanda con machine learning y trazabilidad. Construida como
+        monolito monorepo, con DDD y TDD.
       </p>
       <div class="meta-row">
         <span>{spanLabel(project.startMonth, project.endMonth)}</span>
@@ -73,7 +65,7 @@ const jsonLd = [
       <dt>Contexto</dt>
       <dd>{project.company} · {project.position}</dd>
       <dt>Dominio</dt>
-      <dd>Logística y automatización de almacenes</dd>
+      <dd>Vino y agroalimentación</dd>
       <dt>Tecnologías</dt>
       <dd>
         <span class="tag-row">
@@ -85,266 +77,221 @@ const jsonLd = [
     <div class="prose">
       <h2 id="resumen">Resumen ejecutivo</h2>
       <p>
-        Bodega Digital nació para conectar la operación física de un almacén con el
-        software que la coordina. El sistema debía unir personas, aplicaciones y
-        dispositivos industriales —robots, PLC, LEDs, picking, cámaras y sonido— en un
-        mismo flujo de trabajo, con trazabilidad y capacidad de evolucionar almacén a
-        almacén.
+        Bodega Digital es una herramienta inteligente para gestionar el inventario de vino
+        en bodegas y empresas que manejan grandes cantidades de botellas. El proyecto,
+        financiado por el Ministerio de Industria, Comercio y Turismo y por el fondo
+        europeo NextGenerationEU, se planteó en dos fases: identificación de botellas por
+        radiofrecuencia (RFID) con predicción de demanda, y refinamiento del inventario
+        mediante visión por computadora.
       </p>
       <p>
-        La solución se organizó alrededor de dominios y servicios con responsabilidades
-        claras, comunicación orientada a eventos y canales en tiempo real para reflejar el
-        estado de las operaciones. Mi trabajo combinó arquitectura, modelado de dominios,
-        desarrollo de servicios, integración con dispositivos y definición de los flujos
-        de comunicación.
+        Quabu Solutions participó como socio tecnológico del consorcio, aportando
+        desarrollo de software e integración. Mi trabajo fue la arquitectura y el modelo de
+        dominio, sobre un monolito monorepo con frontend, backend y base de datos en un
+        mismo repositorio, con DDD para los límites y TDD para la lógica de negocio.
+      </p>
+      <p>
+        Se construyó en dos fases —de marzo a julio de 2024 y de octubre de 2024 a febrero
+        de 2025—, separadas por el desarrollo de los Atlassian Addons de Quabu. La
+        estructura que quedó fue la base sobre la que después se construyó
+        <a href="/projects/nakire-tps/">Nakire TPS</a>.
       </p>
 
-      <h2 id="contexto">Contexto industrial</h2>
+      <h2 id="contexto">Contexto: una bodega no es un almacén cualquiera</h2>
       <p>
-        En una bodega automatizada, mover un pallet no es una operación aislada: implica
-        una tarea, un dispositivo disponible, un operador que necesita saber qué hacer y
-        un registro de lo que ha ocurrido. El software tiene que coordinar esos actores
-        sin convertirse en un cuello de botella y sin perder de vista quién puede hacer
-        qué.
+        En una bodega, las botellas pueden pasar hasta quince años en crianza, con
+        operaciones distintas durante ese tiempo. Y las referencias se parecen mucho entre
+        sí: cambian el año, la variedad, la parcela. Saber cuántas botellas hay, de cuál y
+        dónde están es un problema real de negocio, no un detalle de inventario.
       </p>
       <p>
-        El punto de partida no era una hoja en blanco: cada almacén tiene su mapa, sus
-        versiones de robot y sus reglas de negocio. El sistema debía absorber esa
-        variación sin multiplicar el código ni depender de un fabricante concreto.
+        El proyecto nació para el sector vitivinícola, con la idea de poder extenderse
+        después a otros ámbitos —manufactura, aeropuertos, industria agroalimentaria o
+        medicina— donde identificar unidades individuales dentro de un stock también
+        importa.
       </p>
 
       <h2 id="problema">El problema</h2>
-      <p>
-        El reto no consistía únicamente en construir una aplicación, sino en coordinar
-        distintos actores, dispositivos y flujos operativos dentro de un sistema que debía
-        ser trazable, mantenible y capaz de evolucionar.
-      </p>
       <ul>
         <li>
-          Coordinar tareas entre familias de dispositivos muy distintas, cada una con su
-          propio protocolo y su propio ciclo de vida.
+          Identificar cada botella de forma individual, no por referencia: la añada, la
+          variedad y la parcela convierten cada unidad en un caso distinto.
         </li>
         <li>
-          Permitir que la configuración de un almacén —mapa, robots, versiones— cambie sin
-          reescribir el dominio.
+          Leer esas etiquetas en un entorno hostil para la radiofrecuencia: el líquido de
+          la botella altera las lecturas, y una estantería llena concentra cientos de
+          tags.
         </li>
         <li>
-          Reflejar el estado de la operación en tiempo real para que las personas puedan
-          actuar sobre lo que está pasando.
+          Anticipar la demanda para evitar roturas de stock y mejorar la disponibilidad
+          para el cliente final.
         </li>
         <li>
-          Mantener límites claros entre lo que decide el negocio y lo que decide el
-          hardware.
+          Mantener la trazabilidad a lo largo de toda la cadena de valor del vino.
         </li>
       </ul>
 
       <h2 id="restricciones">Restricciones</h2>
       <ul>
         <li>
-          <strong>Hardware heterogéneo.</strong> Carretillas, PLC, LEDs, picking y cámaras
-          no comparten modelo, versión ni protocolo.
+          <strong>RFID sobre líquido.</strong> Había que evaluar tags UHF que pudieran ir
+          en el cuello de la botella minimizando los errores de lectura.
         </li>
         <li>
-          <strong>Validación sobre hardware real.</strong> Los QA gates del pipeline se
-          ejecutaban sobre dispositivos físicos, no solo sobre mocks.
+          <strong>Alta densidad.</strong> Las antenas debían funcionar con muchas botellas
+          juntas, no con una etiqueta aislada.
         </li>
         <li>
-          <strong>Despliegue en cloud bajo VPN.</strong> El software vive en cloud y se
-          conecta a la instalación industrial a través de una VPN.
+          <strong>Proyecto en consorcio.</strong> Seis socios —Clúster Digital de Cataluña,
+          INNOVI, Grupo ICA, Raw Data, DO5 Hispanobodegas y Quabu Solutions— con
+          financiación pública y fases comprometidas.
         </li>
         <li>
-          <strong>Fabricantes y documentación.</strong> La comunicación técnica y la
-          documentación con fabricantes chinos se hacía en inglés.
-        </li>
-        <li>
-          <strong>Trazabilidad y roles.</strong> Cada operador debía ver y ejecutar solo
-          lo que su rol permitía.
+          <strong>Dos fases.</strong> La primera con RFID y predicción de demanda; la
+          segunda con visión por computadora para refinar el inventario.
         </li>
       </ul>
 
       <h2 id="rol">Mi rol</h2>
       <p>
-        Mi trabajo combinó el diseño de la arquitectura, el modelado de dominios, el
-        desarrollo de servicios, la integración con dispositivos, la definición de los
-        flujos de comunicación y el acompañamiento de las decisiones técnicas. Formé parte
-        de un equipo: lo que sigue distingue lo que diseñé y dirigí de lo que fue trabajo
+        Mi trabajo se centró en la arquitectura y el modelo de dominio: qué piezas existían,
+        dónde estaban los límites y cómo se probaba la lógica de negocio. Formé parte de un
+        equipo y de un consorcio: lo que sigue distingue lo que diseñé de lo que fue trabajo
         colectivo.
       </p>
       <ul>
         <li>
-          Diseñé e implementé un sistema orientado a eventos sobre DDD, TDD y
-          microservicios, con un monolito agrupado en frontend, backend, core y un
-          subconjunto de dispositivos.
+          Diseñé el monolito monorepo: frontend, backend y base de datos en un mismo
+          repositorio, con un único despliegue.
         </li>
         <li>
-          Definí el core de agentes que ordena, prioriza y reparte el trabajo entre los
-          dispositivos disponibles.
+          Modelé el dominio con DDD: botella, referencia, añada, lote y posición como
+          vocabulario compartido con negocio.
         </li>
         <li>
-          Separé cada familia de dispositivo en su propio microservicio, con adaptadores
-          por modelo, versión y protocolo.
+          Sostuve la lógica con TDD, de forma que las reglas de inventario se pudieran
+          cambiar sin romper las que ya funcionaban.
         </li>
         <li>
-          Definí el frontend reactivo por WebSocket y el control de acceso por rol y tipo
-          de operador.
-        </li>
-        <li>
-          Acompañé el despliegue en Docker sobre cloud bajo VPN, con CI/CD y QA gates
-          sobre hardware físico real.
+          Dejé cada integración —lectores RFID, visión por computadora, modelo de
+          predicción— detrás de su propio adaptador.
         </li>
       </ul>
 
-      <h2 id="arquitectura">Arquitectura</h2>
+      <h2 id="arquitectura">Arquitectura: un monolito monorepo</h2>
       <p>
-        La solución se organizó alrededor de dominios y servicios con responsabilidades
-        claras, comunicación orientada a eventos y canales en tiempo real. El frontend y
-        la API hablan con un core que conoce las tareas; el core no conoce los protocolos
-        de cada dispositivo, solo sus capacidades.
+        Tres piezas en un mismo repositorio: frontend, backend y base de datos. Un único
+        despliegue, un único ciclo de integración y el contrato entre cliente y servidor
+        versionado junto, de modo que un cambio de API se veía en el mismo sitio que su
+        consumidor.
+      </p>
+      <p>
+        Monolito no significa un bloque sin estructura. La separación se hacía por dentro:
+        casos de uso, capas y límites de dominio. La infraestructura era una sola, pero el
+        código no era un único montón.
       </p>
 
-      <ArchitectureDiagram />
-
-      <p class="diagram-alt">
-        En texto: el frontend se conecta a la API; la API delega en el core de agentes
-        —dictator, ranker y distributor—; el core publica y consume eventos en el bus;
-        cada familia de dispositivo tiene su microservicio con adaptadores por modelo,
-        versión y protocolo; y esos servicios conversan con el hardware real de la
-        bodega.
+      <h2 id="ddd-tdd">DDD y TDD dentro del monolito</h2>
+      <p>
+        DDD aportó el lenguaje y los límites. El código usaba el vocabulario de la bodega
+        —botellas, referencias, añadas, lotes, posiciones— en lugar de hablar de tablas y
+        formularios, y cada contexto podía cambiar sin arrastrar a los demás.
+      </p>
+      <p>
+        TDD aportó la red. Las reglas de inventario se escribían con pruebas antes que con
+        implementación, así que el modelo podía cambiar sin miedo a romper una regla que
+        nadie recordaba. En un monolito esa red es especialmente rentable: todo el dominio
+        se prueba en un mismo proceso, sin montar infraestructura distribuida para
+        comprobarlo.
       </p>
 
-      <h2 id="dominios">Dominios y servicios</h2>
+      <h2 id="integraciones">RFID, visión y predicción</h2>
       <p>
-        DDD y TDD se usaron para absorber las reglas de negocio, los mapas y las versiones
-        de robot distintas de cada almacén. La abstracción se hizo por casos de uso,
-        puertos y adaptadores: cambiar una API o un dispositivo no arrastra al dominio.
+        La primera fase unió identificación por radiofrecuencia y predicción de demanda con
+        machine learning. La segunda añadió visión por computadora para recoger información
+        adicional y ganar precisión en el inventario. En fases avanzadas, el proyecto
+        planteaba integrar Blockchain junto al RFID para dar trazabilidad completa a lo
+        largo de la cadena de valor.
       </p>
       <p>
-        El core trabaja con tareas de distinto nivel de detalle, desde la tarea que apunta
-        a un dispositivo concreto hasta la que solo expresa la familia y la acción. Esa
-        granularidad permite que el sistema siga coordinando cuando un modelo de robot no
-        está disponible o cuando un almacén incorpora una versión nueva.
-      </p>
-      <p>
-        Los agentes reparten el trabajo: <strong>dictator</strong> ordena,
-        <strong>ranker</strong> prioriza y <strong>distributor</strong> delega. El objetivo
-        es maximizar la disponibilidad de los dispositivos y minimizar los movimientos
-        necesarios para completar las tareas.
+        Cada una de esas piezas entra por un adaptador. El dominio expresa qué necesita
+        —identificar una botella, conocer su posición, anticipar una rotura de stock— y el
+        adaptador se encarga de cómo lo resuelve un lector, una cámara o un modelo. Cambiar
+        de hardware o de modelo no obliga a tocar las reglas de negocio.
       </p>
 
-      <h2 id="eventos">Eventos y comunicación</h2>
+      <h2 id="evolucion">De Bodega Digital a Nakire TPS</h2>
       <p>
-        La comunicación entre servicios es asíncrona y orientada a eventos. El bus de
-        eventos del sistema permite que el core publique lo que ha decidido y que cada
-        servicio reaccione sin que el productor conozca a sus consumidores. Añadir una
-        familia de dispositivos o una nueva capacidad no obliga a tocar el core.
+        La estructura funcionó lo suficiente como para ser el punto de partida de
+        <a href="/projects/nakire-tps/">Nakire TPS</a>. Cuando el sistema pasó a coordinar
+        dispositivos industriales en tiempo real, el modelo de dominio, el lenguaje y la
+        forma de probar se mantuvieron; lo que cambió fue el despliegue: lo que era un
+        monolito pasó a repartirse en servicios y eventos.
       </p>
       <p>
-        Esa separación también acota el fallo: un servicio de dispositivos que deja de
-        responder no bloquea la coordinación del resto, aunque el sistema deba decidir qué
-        hacer con las tareas que dependían de él.
-      </p>
-
-      <h2 id="hardware">Integración con hardware</h2>
-      <p>
-        Cada familia de dispositivo —carretilla, PLC, LED, picking, cámara— es su propio
-        microservicio, con adaptadores según modelo, versión y protocolo. El dominio
-        expresa la intención; el adaptador se encarga de traducirla al protocolo concreto.
-      </p>
-      <p>
-        Ese límite fue la decisión que más veces se pagó sola: un fabricante nuevo o una
-        versión distinta de robot se incorporaba como un adaptador, no como un cambio en
-        las reglas de negocio. También permitió documentar y comunicar las integraciones
-        en inglés con los fabricantes sin mezclar su vocabulario con el del dominio.
-      </p>
-
-      <h2 id="tiempo-real">Tiempo real y roles</h2>
-      <p>
-        El frontend es reactivo y se comunica por WebSocket: la interfaz refleja el estado
-        de la operación sin que el operador tenga que refrescar. Sobre ese canal se aplica
-        RBAC, de forma que la interfaz se adapta al rol —admin u operador— y al tipo de
-        operador.
-      </p>
-      <p>
-        La consecuencia práctica es que el operador ve la siguiente acción que le
-        corresponde, con el contexto de lo que está pasando en la bodega, y no una pantalla
-        genérica con todas las posibilidades.
-      </p>
-
-      <h2 id="despliegue">CI/CD y despliegue</h2>
-      <p>
-        La plataforma se despliega con Docker en cloud, bajo VPN hacia la instalación. El
-        pipeline incluye CI/CD y QA gates deterministas sobre hardware físico real: la
-        validación no se quedaba en el entorno de integración, llegaba a los dispositivos
-        que luego operan en la bodega.
+        Esa continuidad es la parte interesante del proyecto. El monolito no fue un atajo
+        que hubo que deshacer: fue el sitio donde el dominio se entendió lo bastante bien
+        como para poder repartirlo después.
       </p>
 
       <h2 id="decisiones">Decisiones técnicas</h2>
       <ul>
         <li>
-          <strong>Core de agentes en vez de una orquestación rígida.</strong> Permite
-          priorizar y repartir trabajo según disponibilidad, a cambio de asumir estado e
-          idempotencia en las tareas.
+          <strong>Monolito monorepo en vez de servicios.</strong> Un solo despliegue y un
+          solo ciclo de integración, a cambio de asumir un único ritmo de escalado.
         </li>
         <li>
-          <strong>Un microservicio por familia de dispositivos.</strong> Aísla protocolos y
-          versiones, a cambio de más servicios que desplegar y observar.
+          <strong>DDD dentro del monolito.</strong> Límites de dominio en el código, a
+          cambio de un esfuerzo de modelado que solo se recupera si el dominio se respeta.
         </li>
         <li>
-          <strong>Tareas con granularidad variable.</strong> El mismo modelo sirve para un
-          dispositivo concreto y para una familia entera, a cambio de un contrato de tarea
-          más rico.
+          <strong>TDD sobre la lógica de negocio.</strong> Pruebas primero en el dominio, a
+          cambio de escribir más código del estrictamente necesario para arrancar.
         </li>
         <li>
-          <strong>DDD y TDD para el dominio.</strong> Absorben reglas que cambian por
-          almacén, a cambio de un esfuerzo inicial de modelado que se recupera en cada
-          variante.
-        </li>
-        <li>
-          <strong>QA sobre hardware real.</strong> Detecta lo que ningún mock detecta, a
-          cambio de un pipeline más lento y dependiente de dispositivos.
+          <strong>Un adaptador por integración.</strong> RFID, visión y predicción cambian a
+          su ritmo, a cambio de mantener el contrato del puerto estable.
         </li>
       </ul>
 
       <h2 id="resultados">Resultados</h2>
       <p>
-        El sistema permitió conectar software y operación industrial, mejorar la
-        trazabilidad de los procesos y automatizar interacciones que antes requerían
-        coordinación manual. Los resultados que puedo afirmar son observables, no métricas
+        Los resultados que puedo afirmar son los que el proyecto declara, no métricas
         inventadas:
       </p>
       <ul>
-        <li>Las tareas quedan registradas y asociadas a su dispositivo y a su operador.</li>
         <li>
-          La interfaz refleja el estado de la operación en tiempo real y se adapta al rol
-          de quien la usa.
+          Cada botella se identifica de forma individual, con su añada, variedad y parcela.
         </li>
         <li>
-          Incorporar un modelo o una versión de dispositivo no exige rehacer el dominio.
+          La disponibilidad de género se consulta de forma rápida y detallada, en lugar de
+          por estimación.
         </li>
         <li>
-          El despliegue y la validación están automatizados, incluida la comprobación sobre
-          hardware real.
+          La predicción de demanda permite anticipar roturas de stock.
+        </li>
+        <li>
+          La trazabilidad acompaña a la botella a lo largo de la cadena de valor.
         </li>
       </ul>
 
       <h2 id="aprendizajes">Aprendizajes</h2>
       <ul>
         <li>
-          En sistemas industriales, el hardware marca el ritmo: la arquitectura tiene que
-          asumir que los dispositivos fallan, cambian de versión y no siempre están
-          disponibles.
+          La radiofrecuencia y el líquido no se llevan bien: el hardware marca el diseño
+          tanto como el dominio.
         </li>
         <li>
-          Los contratos explícitos entre dominio y dispositivo ahorran más tiempo que
-          cualquier optimización prematura.
+          La separación se decide dentro del código antes que en la infraestructura: un
+          monolito con límites claros se puede repartir después; uno sin ellos, no.
         </li>
         <li>
-          Probar sobre hardware real cambia la conversación con el equipo: los problemas
-          aparecen antes y con nombre propio.
+          DDD y TDD no son ceremonia de arquitectura distribuida: sostienen igual de bien
+          un producto que todavía cabe en un despliegue.
         </li>
         <li>
-          La documentación y el vocabulario compartido con fabricantes son parte de la
-          ingeniería, no un trámite.
+          En proyectos con financiación pública y varios socios, el vocabulario compartido
+          es parte de la entrega, no un adorno.
         </li>
       </ul>
     </div>
@@ -359,9 +306,9 @@ const jsonLd = [
     <section class="closing" aria-labelledby="case-cierre">
       <h2 class="section-title" id="case-cierre">Siguiente paso</h2>
       <p>
-        Si estás diseñando una plataforma que conecta software con operaciones físicas, o
-        necesitas ordenar una arquitectura que ya existe, puedo ayudarte a delimitar los
-        dominios y las integraciones.
+        Si estás digitalizando una operación con hardware físico —etiquetas, cámaras,
+        sensores—, puedo ayudarte a decidir dónde poner los límites entre dominio y
+        dispositivo.
       </p>
       <div class="actions">
         <a class="btn" href="/contact/">Contactar</a>
@@ -392,11 +339,6 @@ const jsonLd = [
 
   .case .prose {
     max-inline-size: 48rem;
-  }
-
-  .diagram-alt {
-    font-size: 0.8125rem;
-    color: var(--color-ink-faint);
   }
 
   .case-next {

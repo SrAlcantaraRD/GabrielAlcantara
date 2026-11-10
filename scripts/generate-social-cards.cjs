@@ -1,10 +1,10 @@
 /**
  * Regenerates the social share cards and app icons in `public/`.
  *
- * One default card, one card for the Bodega Digital case study and one per
- * blog post. Card copy is read from the same modules that render the pages
- * (`src/data/blog.ts` and `src/data/projects.ts`), so a title change cannot
- * leave the shared image announcing something different.
+ * One default card, one card per case study (Nakire TPS and Bodega Digital) and
+ * one per blog post. Card copy is read from the same modules that render the
+ * pages (`src/data/blog.ts` and `src/data/projects.ts`), so a title change
+ * cannot leave the shared image announcing something different.
  *
  * Fonts are embedded from the site's own dependencies — Newsreader for the
  * name and titles, Plus Jakarta Sans for the role and JetBrains Mono for the

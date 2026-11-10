@@ -1,0 +1,362 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PachangaDiagram from "../../components/PachangaDiagram.astro";
+import PostCard from "../../components/PostCard.astro";
+import { caseStudyOf } from "../../data/projects";
+import { postOf } from "../../data/blog";
+import { SITE } from "../../data/site";
+import { durationLabel, spanLabel } from "../../lib/period";
+
+const project = caseStudyOf("pachanga-community");
+const relatedPosts = [postOf("ddd-dominios-complejos")];
+
+const pageUrl = new URL("/projects/pachanga-community/", SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "Article",
+		"@id": `${pageUrl}#article`,
+		url: pageUrl,
+		headline: "Pachanga Community: app y web de fútbol amateur, de principio a fin",
+		description:
+			"Caso de estudio de Pachanga Community: app móvil con hexagonal y DDD, web en Ghost con tres idiomas, enlaces universales y despliegue propio.",
+		inLanguage: "es-ES",
+		author: { "@id": new URL("/#person", SITE.url).href },
+		about: { "@id": new URL("/#person", SITE.url).href },
+		keywords:
+			"producto propio, React Native, Expo, hexagonal, DDD, Ghost, Universal Links, Dokploy",
+	},
+];
+---
+
+<Layout
+  title="Pachanga Community: producto propio de fútbol amateur | Gabriel Alcántara"
+  description="Caso de estudio de Pachanga Community: app móvil con hexagonal y DDD, web en Ghost con tres idiomas, enlaces universales y despliegue propio sobre Dokploy."
+  image="/og/pachanga-community.png"
+  imageAlt="Pachanga Community — caso de estudio de Gabriel Alcántara"
+  type="article"
+  publishedTime="2026-11-11"
+  articleSection="Producto propio"
+  tags={["React Native", "DDD", "Ghost", "Dokploy", "Producto"]}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { label: "Proyectos", href: "/projects/" },
+    { label: "Pachanga Community" },
+  ]}
+>
+  <article class="case">
+    <header class="case-head">
+      <p class="eyebrow">Caso de estudio · producto propio</p>
+      <h1 class="display">
+        Pachanga Community: app y web de fútbol amateur, de principio a fin.
+      </h1>
+      <p class="lede">
+        Organizar las pachangas de un grupo de fútbol, desde el calendario hasta las
+        estadísticas. Móvil, web, enlaces universales, tiendas y despliegue: todo hecho y
+        mantenido por una sola persona.
+      </p>
+      <div class="meta-row">
+        <span>{spanLabel(project.startMonth, project.endMonth)}</span>
+        <span>{durationLabel(project.endMonth - project.startMonth)}</span>
+        <span>{project.company}</span>
+      </div>
+    </header>
+
+    <dl class="facts case-facts">
+      <dt>Rol</dt>
+      <dd>{project.role}</dd>
+      <dt>Contexto</dt>
+      <dd>{project.company} · producto propio</dd>
+      <dt>Dominio</dt>
+      <dd>Producto digital · fútbol amateur</dd>
+      <dt>Tecnologías</dt>
+      <dd>
+        <span class="tag-row">
+          {project.stack?.map((item) => <span class="pill">{item}</span>)}
+        </span>
+      </dd>
+    </dl>
+
+    <div class="prose">
+      <h2 id="resumen">Resumen ejecutivo</h2>
+      <p>
+        Pachanga Community organiza los partidos de fútbol de un grupo: calendario,
+        equipos, estadísticas y comunidad en un solo sitio, en lugar de repartidos por un
+        chat. La app está publicada en App Store y Play Store, y la web hace de escaparate,
+        de host de enlaces universales y de canal de soporte.
+      </p>
+      <p>
+        Aquí no hay equipo detrás: hay producto, diseño, app, web, infraestructura y
+        soporte en la misma persona. Ese es el aprendizaje real del proyecto: la
+        complejidad no está en una pieza, está en que todas las piezas tienen que
+        funcionar a la vez.
+      </p>
+
+      <h2 id="contexto">Contexto</h2>
+      <p>
+        En un grupo de amigos que juega cada semana, la organización vive en un chat: quién
+        juega, quién avisa a última hora, cómo se reparten los equipos y quién lleva la
+        cuenta. Cuando el grupo crece, el chat deja de ser una herramienta y pasa a ser el
+        problema.
+      </p>
+      <p>
+        El producto ataca eso: una app para el grupo, con privacidad como decisión de
+        diseño. Los cambios se guardan en el móvil y se sincronizan con la nube; no hay
+        perfiles públicos indexados ni venta de datos.
+      </p>
+
+      <h2 id="problema">El problema</h2>
+      <ul>
+        <li>
+          Coordinar un grupo que cambia cada semana: convocados, ausencias y equipos
+          equilibrados.
+        </li>
+        <li>
+          Llevar estadísticas que la gente quiera mirar, sin convertirlo en una liga
+          profesional.
+        </li>
+        <li>
+          Funcionar con mala cobertura en un campo de fútbol, sin depender de la red para
+          cada pantalla.
+        </li>
+        <li>
+          Publicar en dos tiendas, en tres idiomas y sin equipo de soporte detrás.
+        </li>
+      </ul>
+
+      <h2 id="restricciones">Restricciones</h2>
+      <ul>
+        <li>
+          <strong>Una sola persona.</strong> Cada decisión de arquitectura tiene que
+          reducir el coste de mantenerla seis meses después.
+        </li>
+        <li>
+          <strong>Dos tiendas.</strong> App Store y Play Store con sus revisiones, sus
+          builds y sus enlaces universales.
+        </li>
+        <li>
+          <strong>Tres idiomas.</strong> Español, inglés y catalán, tanto en la app como en
+          la web.
+        </li>
+        <li>
+          <strong>Coste de infraestructura.</strong> Un despliegue propio barato y
+          reproducible, no una plataforma gestionada por comodidad.
+        </li>
+      </ul>
+
+      <h2 id="rol">Mi rol</h2>
+      <p>
+        Todo. Arquitectura, dominio, app móvil, web, diseño de la identidad, despliegue,
+        tiendas y soporte. Lo que sigue describe las decisiones, no un reparto de trabajo.
+      </p>
+
+      <h2 id="movil">Arquitectura móvil: hexagonal sobre DDD</h2>
+      <p>
+        La app es React Native con Expo y TypeScript. La estructura es hexagonal sobre
+        DDD: el flujo va de la pantalla a los hooks de dominio, de ahí a los casos de uso y
+        de ahí a los puertos, que implementan adaptadores de Supabase o en memoria.
+      </p>
+      <p>
+        La regla que sostiene todo es simple: el dominio es TypeScript puro y Zod, sin
+        React Native, sin Expo y sin base de datos. Los casos de uso se prueban sin
+        infraestructura, y cambiar de proveedor es escribir otro adaptador. La interfaz se
+        organiza en Atomic Design —átomos, moléculas, organismos, layouts y pantallas— para
+        que un cambio visual no obligue a tocar la lógica.
+      </p>
+
+      <PachangaDiagram />
+
+      <p class="diagram-alt">
+        En texto: la app y sus pantallas llaman a hooks de dominio; los hooks llaman a casos
+        de uso; los casos de uso dependen de puertos; los adaptadores implementan esos
+        puertos contra Supabase, memoria o caché. La interfaz se compone de particles,
+        atoms, molecules, organisms, layouts y screens.
+      </p>
+
+      <h2 id="dominio">Un dominio que no es un CRUD</h2>
+      <p>
+        El modelo tiene equipo, temporada, partido y jugador, pero lo interesante está en
+        los bordes. Un jugador pertenece a un equipo con su propio nombre y sus atributos;
+        los partidos admiten jugadores fantasma que después reclaman su perfil con un
+        código de un solo uso; las valoraciones entre compañeros calculan un nivel relativo
+        dentro del grupo, no una puntuación absoluta.
+      </p>
+      <p>
+        Cada una de esas reglas tiene un caso de uso y sus pruebas. Es la parte del
+        proyecto que más he reutilizado: cuando el dominio está aislado, la app puede
+        cambiar de forma sin que el negocio se entere.
+      </p>
+
+      <h2 id="web">Arquitectura web: Ghost, tema generado y tres idiomas</h2>
+      <p>
+        La web es Ghost con un tema propio de Handlebars. El tema no se edita a mano: se
+        genera desde fuentes propias —plantillas y ficheros de traducción— y el build
+        escribe las variantes de cada idioma. Así, una página nueva en tres idiomas no
+        significa tres plantillas que se desincronizan.
+      </p>
+      <p>
+        Además de escaparate, la web es el host de los enlaces universales y una superficie
+        de descubrimiento: rutas de soporte, privacidad y términos por idioma, un
+        `llms.txt`, un catálogo para agentes y `robots.txt` con señal de contenido.
+      </p>
+
+      <h2 id="enlaces">Enlaces universales y fallback</h2>
+      <p>
+        Un enlace compartido por chat tiene que abrir la app si está instalada y llevar a la
+        tienda si no lo está. Eso son dos piezas: `apple-app-site-association` para iOS y
+        `assetlinks.json` para Android, servidos por un nginx propio; y un fallback en la
+        web que redirige a la tienda cuando el enlace llega a un navegador móvil.
+      </p>
+      <p>
+        El caso incómodo es el enlace de reclamación de un jugador fantasma: si quien lo
+        abre no tiene la app, no puede quedarse en una página de error. Por eso el 404
+        localizado también redirige a la tienda, en lugar de dejar al usuario en un callejón
+        sin salida.
+      </p>
+
+      <h2 id="despliegue">Despliegue y operación</h2>
+      <p>
+        En local, todo levanta con Docker Compose. En producción, la web corre en un stack
+        con Traefik sobre Dokploy, con el contenedor de Ghost, la base de datos y el nginx
+        de los enlaces universales. La app se compila y publica con EAS y Fastlane para las
+        dos tiendas.
+      </p>
+      <p>
+        Nada de eso es glamuroso, pero es lo que hace que el producto exista: certificados,
+        rutas, prioridades de Traefik, variables de entorno y una build que falla a la
+        primera si un fichero de configuración no está donde toca.
+      </p>
+
+      <h2 id="decisiones">Decisiones técnicas</h2>
+      <ul>
+        <li>
+          <strong>Hexagonal sobre DDD en el móvil.</strong> Dominio puro y adaptadores
+          intercambiables, a cambio de más ficheros por funcionalidad.
+        </li>
+        <li>
+          <strong>Local-first con Supabase.</strong> La app funciona sin red, a cambio de
+          asumir sincronización y conflictos.
+        </li>
+        <li>
+          <strong>Tema web generado.</strong> Una fuente para tres idiomas, a cambio de un
+          paso de build que hay que entender.
+        </li>
+        <li>
+          <strong>Infraestructura propia sobre Dokploy.</strong> Control y coste bajo, a
+          cambio de operarla yo.
+        </li>
+      </ul>
+
+      <h2 id="resultados">Resultados</h2>
+      <ul>
+        <li>App publicada en App Store y Play Store, con su web y su canal de soporte.</li>
+        <li>
+          Un dominio probado sin infraestructura, con adaptadores para Supabase y para
+          memoria.
+        </li>
+        <li>
+          Tres idiomas en app y web desde una sola fuente de copia por página.
+        </li>
+        <li>
+          Enlaces que abren la app cuando está instalada y llevan a la tienda cuando no.
+        </li>
+      </ul>
+
+      <h2 id="aprendizajes">Aprendizajes</h2>
+      <ul>
+        <li>
+          Llevar todo el producto cambia el criterio: cada pieza tiene que ser obvia para
+          tu yo de dentro de seis meses.
+        </li>
+        <li>
+          La arquitectura no se demuestra en el diagrama, se demuestra cuando toca cambiar
+          una pieza y solo cambia una.
+        </li>
+        <li>
+          La parte que nadie ve —enlaces universales, tiendas, despliegue— es la que decide
+          si el producto se siente terminado.
+        </li>
+        <li>
+          Un producto propio sin usuarios de pago sigue siendo el mejor banco de pruebas
+          para decisiones de arquitectura que luego aplico en equipos.
+        </li>
+      </ul>
+    </div>
+
+    <section class="case-next" aria-labelledby="case-next-title">
+      <h2 class="section-title" id="case-next-title">Artículos relacionados</h2>
+      <div class="next-list">
+        {relatedPosts.map((post) => <PostCard post={post} compact />)}
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="case-cierre">
+      <h2 class="section-title" id="case-cierre">Siguiente paso</h2>
+      <p>
+        Si tienes un producto que mantener con un equipo pequeño, puedo ayudarte a decidir
+        qué piezas conviene aislar para que el coste no crezca contigo.
+      </p>
+      <div class="actions">
+        <a class="btn" href="/contact/">Contactar</a>
+        <a class="btn btn--ghost" href="/projects/">Ver más proyectos</a>
+        <a class="btn btn--ghost" href="/cv/">Ver el CV</a>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .case {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .case-head {
+    display: grid;
+    gap: 0.9rem;
+    max-inline-size: 54rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .case-facts {
+    max-inline-size: 46rem;
+  }
+
+  .case .prose {
+    max-inline-size: 48rem;
+  }
+
+  .diagram-alt {
+    font-size: 0.8125rem;
+    color: var(--color-ink-faint);
+  }
+
+  .case-next {
+    display: grid;
+    max-inline-size: 46rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .next-list {
+    display: grid;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>

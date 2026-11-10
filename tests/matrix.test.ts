@@ -79,19 +79,19 @@ describe("axes", () => {
 		const values = axisValues("company", PROJECTS, config);
 		assert.deepEqual(
 			values.map((value) => value.id),
-			["acd", "basetis", "quabu"],
+			["acd", "basetis", "quabu", "pachanga"],
 		);
 		assert.deepEqual(
 			values.map((value) => value.label),
-			["ACD Sistemes SL", "Basetis", "Quabu Solutions"],
+			["ACD Sistemes SL", "Basetis", "Quabu Solutions", "Pachanga Community"],
 		);
 	});
 
-	it("lists the thirteen positions, one per stint, oldest first", () => {
+	it("lists the fourteen positions, one per stint, oldest first", () => {
 		const values = axisValues("position", PROJECTS, config);
-		assert.equal(values.length, 13);
+		assert.equal(values.length, 14);
 		assert.equal(values[0]?.id, "acd-junior");
-		assert.equal(values.at(-1)?.id, "quabu-architect");
+		assert.equal(values.at(-1)?.id, "pachanga-own");
 		const starts = values.map((value) => positionById(value.id).startMonth);
 		assert.deepEqual(starts, [...starts].sort((a, b) => a - b));
 	});
@@ -117,12 +117,12 @@ describe("axes", () => {
 			axisValues("position", PROJECTS, config, insideQuabu).map((value) => value.id),
 			["quabu-architect"],
 		);
-		assert.equal(axisValues("project", PROJECTS, config, insideQuabu).length, 3);
-		assert.equal(axisValues("company", PROJECTS, config).length, 3);
+		assert.equal(axisValues("project", PROJECTS, config, insideQuabu).length, 4);
+		assert.equal(axisValues("company", PROJECTS, config).length, 4);
 	});
 
 	it("offers only the domains and pillars the data actually uses", () => {
-		const single = [projectById("bodega-digital")];
+		const single = [projectById("nakire-tps")];
 		assert.deepEqual(
 			axisValues("pillar", single, config).map((value) => value.id),
 			["data", "micro", "eda", "cloud", "robotics", "security"],
@@ -130,6 +130,16 @@ describe("axes", () => {
 		assert.deepEqual(
 			axisValues("domain", single, config).map((value) => value.id),
 			["logistics"],
+		);
+
+		const bodega = [projectById("bodega-digital")];
+		assert.deepEqual(
+			axisValues("pillar", bodega, config).map((value) => value.id),
+			["web", "mobile", "data", "integration", "robotics"],
+		);
+		assert.deepEqual(
+			axisValues("domain", bodega, config).map((value) => value.id),
+			["agrifood"],
 		);
 	});
 });
@@ -260,14 +270,21 @@ describe("matrix cells", () => {
 			rowBars(PROJECTS, "position", "quabu-architect")
 				.map((bar) => bar.id)
 				.sort(),
-			["bodega-digital", "coleo", "jira-addons", "nakire-tps"],
+			[
+				"bodega-digital",
+				"coleo",
+				"essentialist",
+				"jira-addons",
+				"nakire-tps",
+				"ondunova",
+			],
 		);
 		assert.equal(rowBars(PROJECTS, "company", "basetis").length, 6);
 		assert.deepEqual(
 			rowBars(PROJECTS, "pillar", "eda")
 				.map((bar) => bar.id)
 				.sort(),
-			["bodega-digital", "nakire-tps"],
+			["nakire-tps"],
 		);
 	});
 });
@@ -276,7 +293,7 @@ describe("periods", () => {
 	it("runs the timeline from the first month worked to the present", () => {
 		assert.equal(MONTH_RANGE.from, FIRST_MONTH);
 		assert.equal(FIRST_MONTH, month("2011-12"));
-		assert.equal(LAST_MONTH, month("2026-08") + 1);
+		assert.equal(LAST_MONTH, month("2026-11") + 1);
 		assert.equal(MONTH_RANGE.to, Math.max(LAST_MONTH, TODAY_MONTH + 1));
 		assert.ok(MONTH_RANGE.to > MONTH_RANGE.from);
 	});
@@ -329,10 +346,9 @@ describe("periods", () => {
 
 	it("keeps a project pinned to its own dates", () => {
 		const bodega = projectById("bodega-digital");
-		const quabu = positionById("quabu-architect");
 		assert.deepEqual(
 			[bodega.startMonth, bodega.endMonth],
-			[quabu.startMonth, quabu.endMonth],
+			[month("2024-03"), month("2025-02") + 1],
 		);
 	});
 
@@ -422,9 +438,9 @@ describe("periods", () => {
 	});
 
 	it("keeps every authored position reachable", () => {
-		assert.equal(POSITIONS.length, 13);
-		assert.equal(COMPANIES.length, 3);
-		assert.equal(PROJECTS.length, 22);
+		assert.equal(POSITIONS.length, 14);
+		assert.equal(COMPANIES.length, 4);
+		assert.equal(PROJECTS.length, 25);
 	});
 });
 

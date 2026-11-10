@@ -27,49 +27,50 @@ const post = postOf("ddd-dominios-complejos");
 
   <h2>Lenguaje común</h2>
   <p>
-    Un almacén no habla de «registros» ni de «filas»: habla de tareas, posiciones,
-    carretillas, picking y operadores. Cuando el código usa ese mismo vocabulario, las
-    conversaciones con negocio y con los fabricantes se vuelven más cortas.
+    Una bodega no habla de «registros» ni de «filas»: habla de botellas, referencias,
+    añadas, lotes y posiciones. Cuando el código usa ese mismo vocabulario, las
+    conversaciones con negocio y con los proveedores de hardware se vuelven más cortas.
   </p>
   <p>
-    En Bodega Digital ese vocabulario fue parte del diseño: una tarea es una unidad con
-    intención, no un mensaje genérico; un dispositivo tiene capacidades, no solo un
-    identificador. El modelo refleja cómo se trabaja, no cómo se almacena.
+    En Bodega Digital ese vocabulario fue parte del diseño: una botella es una unidad
+    identificable —añada, variedad, parcela—, no una fila de stock; un lector RFID tiene
+    capacidades, no solo un identificador. El modelo refleja cómo se trabaja, no cómo se
+    almacena.
   </p>
 
   <h2>Límites: dónde está el coste de cambiar</h2>
   <p>
     La pregunta útil para encontrar un contexto delimitado no es «¿qué entidades van
     juntas?», sino «¿qué cambia junto y qué puede cambiar por separado?». Las reglas de
-    negocio de un almacén cambian por instalación; el protocolo de un robot cambia por
-    fabricante y versión. Son dos velocidades distintas y merecen límites distintos.
+    inventario cambian por bodega; el protocolo de un lector RFID cambia por fabricante y
+    modelo. Son dos velocidades distintas y merecen límites distintos.
   </p>
   <p>
-    Por eso cada familia de dispositivo terminó en su propio microservicio con adaptadores
-    por modelo, versión y protocolo, mientras el core mantenía las reglas que no dependen
-    del hardware. Un cambio de fabricante no obliga a tocar el dominio; un cambio de regla
-    de negocio no obliga a tocar los adaptadores.
+    Por eso cada integración —lectores RFID, visión por computadora, predicción de
+    demanda— quedó detrás de su propio adaptador, mientras el dominio mantenía las reglas
+    que no dependen del hardware. Un cambio de fabricante no obliga a tocar el dominio; un
+    cambio de regla de negocio no obliga a tocar los adaptadores.
   </p>
 
-  <h2>Agregados y tareas</h2>
+  <h2>Agregados y unidades identificables</h2>
   <p>
-    Un agregado es una frontera de consistencia. En una operación industrial, la tarea es
-    un buen candidato: tiene un ciclo de vida claro, un responsable y un resultado. Al
-    modelarla con estados explícitos, las transiciones se pueden probar y los errores
+    Un agregado es una frontera de consistencia. En un inventario de vino, la botella es
+    un buen candidato: tiene identidad propia —añada, variedad, parcela—, una posición y
+    un ciclo de vida. Al modelarla así, sus transiciones se pueden probar y los errores
     dejan de ser efectos secundarios.
   </p>
   <p>
-    Esa frontera también evita el agregado gigante que todo lo sabe. La tarea no necesita
-    conocer el mapa completo del almacén ni el protocolo del dispositivo; necesita saber
-    qué hay que hacer y en qué estado está.
+    Esa frontera también evita el agregado gigante que todo lo sabe. La botella no necesita
+    conocer el inventario completo ni el protocolo del lector; necesita saber qué es, dónde
+    está y en qué estado se encuentra.
   </p>
 
   <h2>Eventos de dominio</h2>
   <p>
-    Cuando una tarea cambia de estado, ese cambio es un hecho del negocio. Publicarlo como
-    evento permite que otros servicios reaccionen sin que la tarea sepa quiénes son. Es la
-    misma idea de los límites, aplicada al tiempo: el dominio declara lo que pasó y cada
-    consumidor decide qué hacer.
+    Cuando una botella cambia de estado, ese cambio es un hecho del negocio. Publicarlo
+    como evento permite que otros módulos reaccionen sin que la botella sepa quiénes son.
+    Es la misma idea de los límites, aplicada al tiempo: el dominio declara lo que pasó y
+    cada consumidor decide qué hacer.
   </p>
   <p>
     La disciplina está en no convertir el evento en una llamada encubierta. Si el emisor

@@ -69,7 +69,7 @@ export const POSTS: PostMeta[] = [
 		slug: "ddd-dominios-complejos",
 		title: "DDD cuando el dominio es complejo",
 		description:
-			"Qué cambia cuando el dominio tiene reglas que no caben en una tabla: límites, lenguaje común y las decisiones que tomé al modelar la operación de un almacén.",
+			"Qué cambia cuando el dominio tiene reglas que no caben en una tabla: límites, lenguaje común y las decisiones que tomé al modelar el inventario de una bodega.",
 		date: "2026-11-03",
 		category: "ddd",
 		tags: ["DDD", "Diseño de dominios", "Arquitectura"],
@@ -86,7 +86,7 @@ export const POSTS: PostMeta[] = [
 		category: "backend",
 		tags: ["WebSocket", "RBAC", "Tiempo real"],
 		readingMinutes: 7,
-		projectIds: ["bodega-digital"],
+		projectIds: ["nakire-tps"],
 		related: ["arquitectura-orientada-a-eventos", "lecciones-plataforma-industrial"],
 	},
 	{
@@ -98,7 +98,7 @@ export const POSTS: PostMeta[] = [
 		category: "sistemas-distribuidos",
 		tags: ["EDA", "Eventos", "Microservicios"],
 		readingMinutes: 9,
-		projectIds: ["bodega-digital", "nakire-tps"],
+		projectIds: ["nakire-tps"],
 		related: ["lecciones-plataforma-industrial", "ddd-dominios-complejos"],
 	},
 	{
@@ -110,7 +110,7 @@ export const POSTS: PostMeta[] = [
 		category: "automatizacion-industrial",
 		tags: ["Industrial", "Integración", "Arquitectura"],
 		readingMinutes: 9,
-		projectIds: ["bodega-digital"],
+		projectIds: ["nakire-tps"],
 		related: ["arquitectura-orientada-a-eventos", "websockets-operaciones-tiempo-real"],
 		featured: true,
 	},

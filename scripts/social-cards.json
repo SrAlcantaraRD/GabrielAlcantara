@@ -1,10 +1,22 @@
 {
 	"cards": [
 		{
+			"file": "/og/nakire-tps.png",
+			"page": "/projects/nakire-tps/",
+			"title": "Nakire TPS",
+			"sha256": "11243b60dbda8e2df92949988bd9e61eff2c48cf07405f30cc113b1eaf6c411c"
+		},
+		{
 			"file": "/og/bodega-digital.png",
 			"page": "/projects/bodega-digital/",
 			"title": "Bodega Digital",
-			"sha256": "ac6a55392cece2f1643341179a25d63d9daac9547ce204169beb8696404aa59f"
+			"sha256": "4c307fdf6a6f798f335408f135f530ac13fb06dbcfbfcba5845c2ed5103545c6"
+		},
+		{
+			"file": "/og/pachanga-community.png",
+			"page": "/projects/pachanga-community/",
+			"title": "Pachanga Community",
+			"sha256": "0188125774cb150b35a0259c45de27a570e04e20b83197737da2f6e2090275f1"
 		},
 		{
 			"file": "/og/ddd-dominios-complejos.png",

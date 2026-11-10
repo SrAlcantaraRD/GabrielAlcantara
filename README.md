@@ -55,6 +55,8 @@ The command writes one card per shareable page, all 1200×630:
 | File | Used by |
 | --- | --- |
 | `public/og-image.png` | All pages without a specific card |
+| `public/og/nakire-tps.png` | The Nakire TPS case study |
+| `public/og/pachanga-community.png` | The Pachanga Community case study |
 | `public/og/bodega-digital.png` | The Bodega Digital case study |
 | `public/og/<post-slug>.png` | Each blog article |
 

@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import {
+	COMPANIES,
 	EDUCATION,
 	POSITION_VIEWS,
 	STACK_GROUPS,
@@ -85,7 +86,7 @@ const jsonLd = [
     <section class="print-section" aria-labelledby="cv-experiencia">
       <div class="section-head">
         <h2 class="section-title" id="cv-experiencia">Experiencia</h2>
-        <span class="section-meta">{positions.length} puestos · 3 empresas</span>
+        <span class="section-meta">{positions.length} puestos · {COMPANIES.length} etapas</span>
       </div>
       <ol class="cv-positions">
         {

@@ -2,6 +2,7 @@
 import Layout from "./Layout.astro";
 import PostCard from "../components/PostCard.astro";
 import { PROJECTS } from "../data/cv";
+import { PROJECT_CASES } from "../data/projects";
 import { SITE } from "../data/site";
 import {
 	categoryOf,
@@ -20,6 +21,11 @@ const projects = post.projectIds.flatMap((id) => {
 	const project = PROJECTS.find((item) => item.id === id);
 	return project ? [project] : [];
 });
+
+/** Case-study URL for a project, when one exists; the index otherwise. */
+const caseHref = new Map(
+	PROJECT_CASES.map((item) => [item.id, item.caseStudyHref]),
+);
 
 const articleUrl = new URL(postHref(post.slug), SITE.url).href;
 const personId = new URL("/#person", SITE.url).href;
@@ -95,11 +101,7 @@ const jsonLd = [
               {projects.map((project) => (
                 <li>
                   <a
-                    href={
-                      project.id === "bodega-digital"
-                        ? "/projects/bodega-digital/"
-                        : "/projects/"
-                    }
+                    href={caseHref.get(project.id) ?? "/projects/"}
                   >
                     <strong>{project.name}</strong>
                     <span>

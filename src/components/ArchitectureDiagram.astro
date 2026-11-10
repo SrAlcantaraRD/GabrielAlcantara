@@ -1,6 +1,6 @@
 ---
 /**
- * Architecture diagram for the Bodega Digital case study.
+ * Architecture diagram for the Nakire TPS case study.
  *
  * Hand-authored SVG: no runtime, no external request, and readable text for
  * search engines and agents. The surrounding page repeats the same structure
@@ -16,13 +16,13 @@
       aria-labelledby="arch-title arch-desc"
       preserveAspectRatio="xMidYMin meet"
     >
-      <title id="arch-title">Arquitectura de Bodega Digital</title>
+      <title id="arch-title">Arquitectura de Nakire TPS</title>
       <desc id="arch-desc">
         Un frontend reactivo por rol se conecta a una API, que delega en un core de
         agentes —dictator, ranker y distributor—. El core publica y consume eventos
         en un bus. Cada familia de dispositivo (carretillas, PLC, LEDs, picking y
         cámaras) tiene su propio microservicio con adaptadores por modelo, versión y
-        protocolo, y conversa con el hardware real de la bodega.
+        protocolo, y conversa con el hardware real del almacén.
       </desc>
 
       <defs>
@@ -125,7 +125,7 @@
       <g>
         <rect class="arch-hardware" x="20" y="462" width="860" height="46" rx="8" />
         <text class="arch-bus-text" x="450" y="489">
-          Hardware real de la bodega · robots · PLC · LEDs · picking · cámaras
+          Hardware real del almacén · robots · PLC · LEDs · picking · cámaras
         </text>
       </g>
 
