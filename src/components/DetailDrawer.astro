@@ -60,13 +60,26 @@ const payload = {
     pillar: Record<string, string>;
   }
 
-  const panel = document.querySelector<HTMLElement>("#project-drawer");
+  let stop: (() => void) | null = null;
 
-  if (panel) {
-    init(panel);
+  boot();
+
+  document.addEventListener("astro:page-load", boot);
+  document.addEventListener("astro:before-swap", () => {
+    stop?.();
+    stop = null;
+    document.body.style.overflow = "";
+  });
+
+  function boot() {
+    const panel = document.querySelector<HTMLElement>("#project-drawer");
+    if (!panel || panel.dataset.drawerReady === "true") return;
+    stop?.();
+    panel.dataset.drawerReady = "true";
+    stop = init(panel);
   }
 
-  function init(panel: HTMLElement) {
+  function init(panel: HTMLElement): () => void {
     const backdrop = document.querySelector<HTMLElement>(".drawer-backdrop");
     const meta = must<HTMLElement>("#drawer-meta");
     const title = must<HTMLElement>("#drawer-title");
@@ -78,6 +91,7 @@ const payload = {
     const projectById = new Map(
       payload.projects.map((project) => [project.id, project]),
     );
+    const controller = new AbortController();
     let restoreFocus: HTMLElement | null = null;
 
     window.addEventListener("cv:open", (event) => {
@@ -85,15 +99,15 @@ const payload = {
       if (!request) return;
       render(request);
       open();
-    });
+    }, { signal: controller.signal });
 
     for (const closer of document.querySelectorAll("[data-drawer-close]")) {
-      closer.addEventListener("click", close);
+      closer.addEventListener("click", close, { signal: controller.signal });
     }
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") close();
-    });
+    }, { signal: controller.signal });
 
     function render(request: DrawerRequest) {
       if (request.kind === "project") {
@@ -204,6 +218,15 @@ const payload = {
       document.body.style.overflow = "";
       restoreFocus?.focus();
     }
+
+    return () => {
+      controller.abort();
+      if (panel.classList.contains("is-open")) {
+        panel.classList.remove("is-open");
+        panel.setAttribute("aria-hidden", "true");
+        backdrop?.classList.remove("is-open");
+      }
+    };
   }
 
   function element<K extends keyof HTMLElementTagNameMap>(

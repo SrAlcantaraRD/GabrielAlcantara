@@ -147,13 +147,25 @@ const payload = {
   const MIN_LABEL_PX = 54;
   const MIN_YEAR_SPACING_PX = 42;
 
-  const root = document.querySelector<HTMLElement>("#matriz");
+  let stop: (() => void) | null = null;
 
-  if (root) {
-    boot(root);
+  boot();
+
+  document.addEventListener("astro:page-load", boot);
+  document.addEventListener("astro:before-swap", () => {
+    stop?.();
+    stop = null;
+  });
+
+  function boot() {
+    const host = document.querySelector<HTMLElement>("#matriz");
+    if (!host || host.dataset.matrixReady === "true") return;
+    stop?.();
+    host.dataset.matrixReady = "true";
+    stop = start(host);
   }
 
-  function boot(host: HTMLElement) {
+  function start(host: HTMLElement): () => void {
     const surface = must<HTMLElement>(".matrix-surface", host);
     const grid = must<HTMLElement>("#matrix-grid", host);
     const rangeLabel = must<HTMLElement>("#matrix-range", host);
@@ -170,7 +182,14 @@ const payload = {
     bindChips();
     bindWindows();
     render();
-    new ResizeObserver(() => measure()).observe(surface);
+
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(surface);
+
+    return () => {
+      observer.disconnect();
+      hideTip();
+    };
 
     function readState(): { x: AxisId; y: AxisId; window: string } {
       const params = new URLSearchParams(window.location.search);
@@ -294,7 +313,11 @@ const payload = {
       url.searchParams.set("y", state.y);
       if (state.window === "all") url.searchParams.delete("w");
       else url.searchParams.set("w", state.window);
-      window.history.replaceState(null, "", url);
+      // ClientRouter keeps its navigation index in history.state: preserve it,
+      // otherwise back/forward stop being handled after a filter change.
+      if (url.href !== window.location.href) {
+        window.history.replaceState(window.history.state, "", url);
+      }
     }
 
     /** The months a row actually covers, drawn as a soft band behind its bars. */

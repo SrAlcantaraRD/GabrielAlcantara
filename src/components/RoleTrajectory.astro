@@ -130,14 +130,14 @@ const groups: Group[] = COMPANIES.map((company) => {
 <script>
   import { openDrawer } from "../lib/open-drawer";
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>(
-    ".chip-project",
-  )) {
-    button.addEventListener("click", () => {
-      const id = button.dataset.project;
-      if (id) openDrawer({ kind: "project", id });
-    });
-  }
+  // Delegated so it keeps working after a ClientRouter swap replaces the list.
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest<HTMLButtonElement>(".chip-project");
+    if (!button) return;
+    const id = button.dataset.project;
+    if (id) openDrawer({ kind: "project", id });
+  });
 </script>
 
 <style is:global>
