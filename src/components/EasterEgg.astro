@@ -1,0 +1,617 @@
+---
+/**
+ * Personal easter egg: typing "gabriel" anywhere on the page opens a modal
+ * with the four engines behind the profile — and the quirks that come with
+ * them. Deliberately left out of navigation, sitemap and metadata.
+ */
+const ENGINES = [
+	{
+		key: "sage",
+		name: "Ingeniería",
+		good: "Capacidad estructurada para resolver problemas complejos y ordenar lo que parece caótico.",
+		bad: "Perfeccionismo técnico: a veces sigo puliendo cuando el problema ya estaba resuelto.",
+	},
+	{
+		key: "rose",
+		name: "Periodismo",
+		good: "Pregunto el porqué antes de escribir la primera línea y exploro cada detalle.",
+		bad: "Curiosidad casi obsesiva: puedo abrir un frente nuevo cuando tocaba cerrar el actual.",
+	},
+	{
+		key: "cobalt",
+		name: "Emprendimiento",
+		good: "Miro el impacto antes que la tecnología y me muevo bien con información incompleta.",
+		bad: "Riesgo asumido: a veces el impulso de construir va por delante de la validación.",
+	},
+	{
+		key: "terracotta",
+		name: "Docencia",
+		good: "Traduzco arquitectura compleja a lenguaje claro y me implico con el equipo.",
+		bad: "Implicación al 100%: me cuesta desconectar cuando el equipo o el problema lo piden.",
+	},
+];
+
+const LEGEND = [
+	{ key: "sage", color: "Verde", name: "Ingeniería" },
+	{ key: "rose", color: "Rosa", name: "Periodismo" },
+	{ key: "cobalt", color: "Azul", name: "Emprendimiento" },
+	{ key: "terracotta", color: "Naranja", name: "Docencia" },
+];
+---
+
+<dialog
+  class="egg"
+  id="gabriel-egg"
+  aria-labelledby="egg-title"
+  aria-describedby="egg-intro"
+>
+  <div class="egg-panel">
+    <header class="egg-head">
+      <div>
+        <p class="eyebrow">Easter egg · el porqué</p>
+        <h2 class="egg-title" id="egg-title">Cuatro motores y sus manías</h2>
+      </div>
+      <button type="button" class="egg-close" data-egg-close aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="egg-body">
+      <div class="egg-intro" id="egg-intro">
+        <p class="egg-lede">
+          Si tuviera que resumir mi perfil en una frase, diría que soy el resultado
+          de crecer entre un padre ingeniero emprendedor y una madre profesora
+          periodista. De ahí vienen mis cuatro grandes motores… y también mis
+          manías.
+        </p>
+        <p>
+          De la parte de ingeniería heredé la capacidad estructurada para resolver
+          problemas complejos y, cómo no, un punto de perfeccionismo técnico. Del
+          periodismo, una curiosidad casi obsesiva por entender el porqué de las
+          cosas y explorar a fondo cada detalle. Del emprendimiento, la orientación
+          al impacto y al riesgo asumido. Y de la docencia, la capacidad de explicar
+          arquitectura compleja a perfiles no técnicos y la empatía para implicarme
+          al 100% con los equipos.
+        </p>
+      </div>
+
+      <ul class="engines" aria-label="Los cuatro motores">
+        {
+          ENGINES.map((engine, index) => (
+            <li>
+              <button
+                type="button"
+                class={`engine engine--${engine.key}`}
+                aria-label={`${engine.name}: lo bueno y lo malo`}
+              >
+                <span class="engine-inner">
+                  <span class="engine-face engine-front">
+                    <span class="engine-top">
+                      <span class="engine-dot" aria-hidden="true" />
+                      <span class="engine-name">{engine.name}</span>
+                      <span class="engine-num">{String(index + 1).padStart(2, "0")}</span>
+                    </span>
+                    <span class="engine-side">Lo bueno</span>
+                    <span class="engine-copy">{engine.good}</span>
+                  </span>
+                  <span class="engine-face engine-back">
+                    <span class="engine-top">
+                      <span class="engine-dot" aria-hidden="true" />
+                      <span class="engine-name">{engine.name}</span>
+                      <span class="engine-num">{String(index + 1).padStart(2, "0")}</span>
+                    </span>
+                    <span class="engine-side">Lo malo</span>
+                    <span class="engine-copy">{engine.bad}</span>
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="egg-hint">Pasa el cursor o toca una tarjeta para ver la otra cara.</p>
+
+      <div class="egg-legend-wrap">
+        <p class="egg-legend-title">Qué es cada color</p>
+        <ul class="egg-legend">
+          {
+            LEGEND.map((item) => (
+              <li>
+                <span
+                  class={`legend-dot legend-dot--${item.key}`}
+                  aria-hidden="true"
+                />
+                {item.color} · {item.name}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <p class="egg-note">
+        Para mí, la arquitectura de soluciones va exactamente de eso: equilibrar
+        rigor técnico, curiosidad, comunicación clara y visión de negocio.
+      </p>
+    </div>
+
+    <footer class="egg-foot">
+      <span class="egg-foot-hint">esc para cerrar</span>
+      <button type="button" class="egg-ok" data-egg-close>volver</button>
+    </footer>
+  </div>
+</dialog>
+
+<script>
+  const TRIGGER = "gabriel";
+  const canHover = window.matchMedia("(hover: hover)").matches;
+  let typed = "";
+  let previousOverflow = "";
+  let boundDialog: HTMLDialogElement | null = null;
+
+  bind();
+
+  document.addEventListener("astro:page-load", bind);
+  document.addEventListener("astro:before-swap", () => {
+    const dialog = currentDialog();
+    if (dialog?.open) dialog.close();
+    document.body.style.overflow = "";
+    boundDialog = null;
+    typed = "";
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.repeat || event.isComposing) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (isEditable(event.target)) return;
+    if (event.key.length !== 1) return;
+
+    typed = (typed + event.key.toLowerCase()).slice(-TRIGGER.length);
+    if (typed !== TRIGGER) return;
+    typed = "";
+    openDialog(currentDialog());
+  });
+
+  function bind() {
+    const dialog = currentDialog();
+    if (!dialog || dialog === boundDialog) return;
+    boundDialog = dialog;
+
+    for (const closer of dialog.querySelectorAll<HTMLElement>("[data-egg-close]")) {
+      closer.addEventListener("click", () => dialog.close());
+    }
+
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener("close", () => {
+      document.body.style.overflow = previousOverflow;
+      typed = "";
+    });
+
+    for (const card of dialog.querySelectorAll<HTMLButtonElement>(".engine")) {
+      card.addEventListener("click", () => {
+        if (canHover) return;
+        card.classList.toggle("is-flipped");
+      });
+    }
+  }
+
+  function currentDialog(): HTMLDialogElement | null {
+    return document.querySelector<HTMLDialogElement>("#gabriel-egg");
+  }
+
+  function openDialog(dialog: HTMLDialogElement | null) {
+    if (!dialog || dialog.open) return;
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog.showModal();
+  }
+
+  function isEditable(target: EventTarget | null): boolean {
+    return (
+      target instanceof HTMLElement &&
+      (target.isContentEditable ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT")
+    );
+  }
+</script>
+
+<style>
+  .egg {
+    inline-size: min(60rem, calc(100vw - 2rem));
+    max-inline-size: none;
+    max-block-size: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-ink);
+    overflow: visible;
+  }
+
+  .egg::backdrop {
+    background: rgb(26 26 26 / 0.34);
+    backdrop-filter: blur(3px);
+  }
+
+  .egg[open] .egg-panel {
+    animation: egg-in 220ms ease-out;
+  }
+
+  .egg-panel {
+    display: flex;
+    flex-direction: column;
+    max-block-size: min(88vh, 52rem);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-paper);
+    box-shadow: 0 30px 80px rgb(26 26 26 / 0.22);
+  }
+
+  .egg-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 1.15rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .egg-title {
+    margin-top: 0.3rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+
+  .egg-close {
+    display: grid;
+    place-items: center;
+    margin: -0.2rem -0.4rem 0 0;
+    padding: 0.4rem;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-ink-faint);
+    cursor: pointer;
+    transition: color 140ms ease;
+  }
+
+  .egg-close:hover {
+    color: var(--color-ink);
+  }
+
+  .egg-close svg {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .egg-body {
+    display: grid;
+    gap: 1.4rem;
+    overflow-y: auto;
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+
+  .egg-intro {
+    display: grid;
+    gap: 0.7rem;
+    max-inline-size: 48rem;
+  }
+
+  .egg-lede {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--color-ink);
+  }
+
+  .egg-intro p + p {
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+
+  .engines {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .engines > li {
+    display: grid;
+    min-inline-size: 0;
+  }
+
+  @media (min-width: 620px) {
+    .engines {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .engine {
+    --engine: var(--color-sage);
+    --engine-tint: var(--color-sage-tint);
+    display: block;
+    inline-size: 100%;
+    block-size: 13rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: start;
+    perspective: 1000px;
+    cursor: default;
+  }
+
+  .engine--rose {
+    --engine: #a34e63;
+    --engine-tint: #f8edf0;
+  }
+
+  .engine--cobalt {
+    --engine: var(--color-cobalt);
+    --engine-tint: var(--color-cobalt-tint);
+  }
+
+  .engine--terracotta {
+    --engine: #a85a2b;
+    --engine-tint: #f9efe6;
+  }
+
+  .engine-inner {
+    position: relative;
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    transform-style: preserve-3d;
+    transition: transform 480ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .engine:hover .engine-inner,
+  .engine:focus-visible .engine-inner,
+  .engine.is-flipped .engine-inner {
+    transform: rotateY(180deg);
+  }
+
+  .engine-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.55rem;
+    padding: 1.1rem 1.15rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .engine-front {
+    border-color: color-mix(in srgb, var(--engine) 26%, var(--color-border));
+    background: var(--engine-tint);
+  }
+
+  .engine-back {
+    border-color: var(--engine);
+    background: var(--engine);
+    color: var(--color-paper);
+    transform: rotateY(180deg);
+  }
+
+  .engine-top {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--engine);
+  }
+
+  .engine-back .engine-top {
+    color: color-mix(in srgb, var(--color-paper) 78%, transparent);
+  }
+
+  .engine-dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--engine);
+  }
+
+  .engine-back .engine-dot {
+    background: var(--color-paper);
+  }
+
+  .engine-name {
+    font-weight: 500;
+  }
+
+  .engine-num {
+    margin-inline-start: auto;
+    color: var(--color-ink-faint);
+  }
+
+  .engine-back .engine-num {
+    color: color-mix(in srgb, var(--color-paper) 62%, transparent);
+  }
+
+  .engine-side {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-style: italic;
+    line-height: 1.1;
+    color: var(--color-ink);
+  }
+
+  .engine-back .engine-side {
+    color: var(--color-paper);
+  }
+
+  .engine-copy {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .engine-back .engine-copy {
+    color: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  }
+
+  .egg-hint {
+    margin-top: -0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-faint);
+  }
+
+  .egg-legend-wrap {
+    display: grid;
+    gap: 0.55rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .egg-legend-title {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .egg-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+  }
+
+  .egg-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--color-sage);
+  }
+
+  .legend-dot--rose {
+    background: #a34e63;
+  }
+
+  .legend-dot--cobalt {
+    background: var(--color-cobalt);
+  }
+
+  .legend-dot--terracotta {
+    background: #a85a2b;
+  }
+
+  .egg-note {
+    max-inline-size: 48rem;
+    padding-inline-start: 1rem;
+    border-inline-start: 2px solid var(--color-border);
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+
+  .egg-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.75rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-paper-warm);
+  }
+
+  .egg-foot-hint {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .egg-ok {
+    padding: 0.4rem 0.9rem;
+    border: 0;
+    border-radius: 4px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+
+  .egg-ok:hover {
+    background: #333;
+  }
+
+  @media (max-width: 640px) {
+    .egg {
+      inline-size: calc(100vw - 1rem);
+    }
+
+    .egg-head,
+    .egg-body,
+    .egg-foot {
+      padding-inline: 1.1rem;
+    }
+
+    .engine {
+      block-size: 12.5rem;
+    }
+  }
+
+  @media print {
+    .egg {
+      display: none !important;
+    }
+  }
+
+  @keyframes egg-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
