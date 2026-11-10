@@ -1,17 +1,37 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { COLLABORATION, SERVICES, SITE } from "../data/site";
+import { FAQ } from "../data/faq";
+
+const servicesUrl = new URL("/services/", SITE.url).href;
+const personId = new URL("/#person", SITE.url).href;
 
 const jsonLd = [
 	{
 		"@type": "WebPage",
-		"@id": new URL("/services/", SITE.url).href + "#webpage",
-		url: new URL("/services/", SITE.url).href,
+		"@id": servicesUrl + "#webpage",
+		url: servicesUrl,
 		name: "Servicios | Gabriel Alcántara",
 		description:
 			"Revisión de arquitectura, diseño de sistemas distribuidos, modernización de plataformas y acompañamiento técnico a equipos.",
 		inLanguage: "es-ES",
-		about: { "@id": new URL("/#person", SITE.url).href },
+		about: { "@id": personId },
+	},
+	...SERVICES.map((service) => ({
+		"@type": "Service",
+		name: service.title,
+		description: service.body,
+		provider: { "@id": personId },
+		mainEntityOfPage: { "@id": servicesUrl + "#webpage" },
+	})),
+	{
+		"@type": "FAQPage",
+		"@id": servicesUrl + "#faq",
+		mainEntity: FAQ.map((entry) => ({
+			"@type": "Question",
+			name: entry.question,
+			acceptedAnswer: { "@type": "Answer", text: entry.answer },
+		})),
 	},
 ];
 ---
@@ -73,6 +93,23 @@ const jsonLd = [
     </p>
   </section>
 
+  <section class="section" aria-labelledby="faq-title">
+    <div class="section-head">
+      <h2 class="section-title" id="faq-title">Preguntas frecuentes</h2>
+      <span class="section-meta">{FAQ.length} respuestas</span>
+    </div>
+    <dl class="faq">
+      {
+        FAQ.map((entry) => (
+          <div class="faq-item">
+            <dt>{entry.question}</dt>
+            <dd>{entry.answer}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
   <section class="closing" aria-labelledby="servicios-cierre">
     <h2 class="section-title" id="servicios-cierre">¿Empezamos por el problema?</h2>
     <p>
@@ -132,6 +169,32 @@ const jsonLd = [
     font-size: 1.05rem;
     font-style: italic;
     line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .faq {
+    display: grid;
+    gap: 1.25rem;
+    max-inline-size: 46rem;
+  }
+
+  .faq-item {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .faq dt {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  .faq dd {
+    font-size: 0.8125rem;
+    line-height: 1.75;
     color: var(--color-ink-muted);
   }
 

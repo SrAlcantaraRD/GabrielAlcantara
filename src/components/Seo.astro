@@ -58,7 +58,7 @@ const person = {
 	jobTitle: [...SITE.roles],
 	description: SITE.description,
 	email: `mailto:${SITE.email}`,
-	knowsAbout: [...SITE.knowsAbout],
+	knowsAbout: SITE.knowsAbout.map((item) => item.en),
 	knowsLanguage: ["es", "en"],
 	sameAs: SITE.socials.map((social) => social.href),
 	alumniOf: {
@@ -109,7 +109,10 @@ const structuredData = {
 <meta name="author" content={SITE.name} />
 <meta name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
 <link rel="canonical" href={canonical.href} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
+<meta
+	name="robots"
+	content={noindex ? "noindex, nofollow" : "max-image-preview:large"}
+/>
 
 <!-- Open Graph -->
 <meta property="og:type" content={type} />

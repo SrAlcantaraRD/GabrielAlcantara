@@ -22,19 +22,27 @@ export const SITE = {
 	location: "Barcelona · remoto",
 	availability: "Disponible",
 	careerStart: 2011,
+	languages: ["español (nativo)", "inglés (profesional)"],
 	socials: [
 		{ label: "GitHub", href: "https://github.com/SrAlcantaraRD" },
 		{ label: "X", href: "https://x.com/SrAlcantaraRD" },
 	],
+	/**
+	 * The same list twice: `en` feeds `Person.knowsAbout` in the JSON-LD, `es`
+	 * is the prose `llms.txt` writes. One array, so the two cannot drift.
+	 */
 	knowsAbout: [
-		"Software Architecture",
-		"Distributed Systems",
-		"Event-Driven Architecture",
-		"Domain-Driven Design",
-		"Backend Engineering",
-		"Industrial Automation",
-		"Technical Leadership",
-		"CI/CD",
+		{ en: "Software Architecture", es: "arquitectura de software" },
+		{ en: "Distributed Systems", es: "sistemas distribuidos" },
+		{
+			en: "Event-Driven Architecture",
+			es: "arquitectura orientada a eventos (EDA)",
+		},
+		{ en: "Domain-Driven Design", es: "domain-driven design (DDD)" },
+		{ en: "Backend Engineering", es: "backend" },
+		{ en: "Industrial Automation", es: "automatización industrial" },
+		{ en: "Technical Leadership", es: "liderazgo técnico" },
+		{ en: "CI/CD", es: "CI/CD" },
 	],
 } as const;
 

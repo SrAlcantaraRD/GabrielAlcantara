@@ -1,41 +1,19 @@
 import type { APIRoute } from "astro";
 
-import { ACTIVE_CATEGORIES, POSTS } from "../data/blog";
-import { SITE } from "../data/site";
+import { sitemapEntries } from "../lib/seo.ts";
+import { SITE } from "../data/site.ts";
 
 /**
  * Static sitemap: every indexable route of the site.
  *
- * The list is derived from the same data that renders the pages, so a new post
- * or category appears here without a second edit.
+ * The list comes from `src/lib/seo.ts`, which derives it from the same data
+ * that renders the pages. A new post, category or case study appears here
+ * without a second edit, and `tests/seo.test.ts` fails if a page is missing.
  */
-const STATIC_ROUTES = [
-	"/",
-	"/about/",
-	"/experience/",
-	"/cv/",
-	"/projects/",
-	"/projects/bodega-digital/",
-	"/blog/",
-	"/services/",
-	"/contact/",
-];
-
 export const GET: APIRoute = () => {
 	const origin = SITE.url.replace(/\/$/, "");
 
-	const entries: { path: string; lastmod?: string }[] = [
-		...STATIC_ROUTES.map((path) => ({ path })),
-		...ACTIVE_CATEGORIES.map((category) => ({
-			path: `/blog/categoria/${category.slug}/`,
-		})),
-		...POSTS.map((post) => ({
-			path: `/blog/${post.slug}/`,
-			lastmod: post.updated ?? post.date,
-		})),
-	];
-
-	const urls = entries
+	const urls = sitemapEntries()
 		.map(({ path, lastmod }) =>
 			[
 				"  <url>",
