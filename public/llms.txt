@@ -1,0 +1,48 @@
+# Gabriel Alcántara
+
+> Arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas. Diseña y evoluciona sistemas complejos combinando arquitectura, desarrollo backend, automatización, integración con hardware y liderazgo técnico. Trabaja desde Barcelona, en remoto, y está disponible para nuevos retos.
+
+## Perfil
+
+- Nombre profesional: Gabriel Alcántara
+- Titular: Software Architect · Software Engineer
+- Especialidades: arquitectura de software, sistemas distribuidos, arquitectura orientada a eventos (EDA), domain-driven design (DDD), backend, automatización industrial, liderazgo técnico, CI/CD
+- Experiencia: desde 2011 en ACD Sistemes SL, Basetis y Quabu Solutions
+- Ubicación: Barcelona · remoto
+- Idiomas: español (nativo), inglés (profesional)
+
+## Páginas principales
+
+- [Inicio](https://gabrielalcantara.com/): propuesta de valor y proyectos destacados
+- [Sobre mí](https://gabrielalcantara.com/about/): trayectoria, principios y retos
+- [Experiencia](https://gabrielalcantara.com/experience/): puestos, proyectos y línea temporal
+- [CV](https://gabrielalcantara.com/cv/): currículum completo en HTML
+- [Proyectos](https://gabrielalcantara.com/projects/): casos de estudio
+- [Blog](https://gabrielalcantara.com/blog/): arquitectura, sistemas distribuidos, DDD y automatización
+- [Servicios](https://gabrielalcantara.com/services/): tipos de colaboración técnica
+- [Contacto](https://gabrielalcantara.com/contact/): canales directos
+
+## Proyectos
+
+- [Bodega Digital](https://gabrielalcantara.com/projects/bodega-digital/): sistema orientado a eventos para automatizar almacenes con robots, PLC, LEDs, cámaras y sonido en tiempo real, con RBAC y WebSockets.
+- [Nakire TPS](https://gabrielalcantara.com/projects/): sistema transaccional con eventos de alto rendimiento y orquestación de robótica en tiempo real.
+- [LoveISDIN](https://gabrielalcantara.com/projects/): plataforma de marca liderada técnicamente sobre AWS, Node.js, Next.js y React.
+- [MSyupply](https://gabrielalcantara.com/projects/): producto con AngularJS, Redux y Mulesoft, con gestión de equipo y cliente.
+- [Proyectos ACD](https://gabrielalcantara.com/projects/): suite web de auditoría y gestión concursal.
+
+## Artículos
+
+- [Lecciones de diseñar una plataforma industrial conectada](https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/)
+- [Arquitectura orientada a eventos en sistemas reales](https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/)
+- [WebSockets para operaciones en tiempo real](https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/)
+- [DDD cuando el dominio es complejo](https://gabrielalcantara.com/blog/ddd-dominios-complejos/)
+
+## Contacto
+
+- Email: gabriel@alcantaramoreno.com
+- GitHub: https://github.com/SrAlcantaraRD
+- X: https://x.com/SrAlcantaraRD
+
+## Nota
+
+Las cifras de impacto no publicadas se describen en términos cualitativos (trazabilidad, automatización, integración, autonomía de equipo). No se publican métricas que no puedan verificarse.
