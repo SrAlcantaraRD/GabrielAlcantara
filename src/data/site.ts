@@ -64,6 +64,39 @@ export function isNavActive(pathname: string, href: string): boolean {
 	return pathname === href || pathname.startsWith(href);
 }
 
+/**
+ * The question the header hands to an assistant. It points at llms.txt first so
+ * the answer comes from the site instead of from whatever the model remembers.
+ */
+export const ASK_PROMPT =
+	"¿Quién es Gabriel Alcántara y qué experiencia tiene como arquitecto de software? Lee https://gabrielalcantara.com/llms.txt y resúmeme su perfil: sistemas distribuidos, arquitectura orientada a eventos, DDD y liderazgo técnico.";
+
+export interface AskAssistant {
+	id: "chatgpt" | "claude" | "gemini";
+	label: string;
+	href: string;
+}
+
+const askQuestion = encodeURIComponent(ASK_PROMPT);
+
+export const ASK_ASSISTANTS: AskAssistant[] = [
+	{
+		id: "chatgpt",
+		label: "ChatGPT",
+		href: `https://chatgpt.com/?q=${askQuestion}`,
+	},
+	{
+		id: "claude",
+		label: "Claude",
+		href: `https://claude.ai/new?q=${askQuestion}`,
+	},
+	{
+		id: "gemini",
+		label: "Gemini",
+		href: `https://www.google.com/search?udm=50&q=${askQuestion}`,
+	},
+];
+
 export interface Specialty {
 	title: string;
 	body: string;
