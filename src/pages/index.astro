@@ -1,606 +1,423 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ExperienceMatrix from "../components/ExperienceMatrix.astro";
-import RoleTrajectory from "../components/RoleTrajectory.astro";
-import DetailDrawer from "../components/DetailDrawer.astro";
-import {
-	COMPANIES,
-	EDUCATION,
-	EXPERTISE,
-	POSITION_VIEWS,
-	PROJECTS,
-	SOFT_SKILLS,
-	STACK_GROUPS,
-	YEAR_LABEL,
-} from "../data/cv";
+import ProjectCard from "../components/ProjectCard.astro";
+import PostCard from "../components/PostCard.astro";
+import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
+import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
+import { FEATURED_POST, OTHER_POSTS, postHref } from "../data/blog";
+import { SITE, SPECIALTIES } from "../data/site";
+import { spanLabel } from "../lib/period";
 
-const updated = new Date().getFullYear();
-const panelId = (label: string) =>
-	`expertise-${label.toLowerCase().replace(/\s+/g, "-")}`;
+const selected = SELECTED_CASES.slice(0, 3);
+const posts = OTHER_POSTS.slice(0, 3);
+
+const companies = COMPANIES.map((company) => {
+	const own = POSITION_VIEWS.filter(
+		(position) => position.companyId === company.id,
+	).sort((a, b) => b.startMonth - a.startMonth);
+	return {
+		...company,
+		from: Math.min(...own.map((position) => position.startMonth)),
+		to: Math.max(...own.map((position) => position.endMonth)),
+		positions: own,
+		latest: own[0],
+	};
+}).sort((a, b) => b.to - a.to);
+
+const personId = new URL("/#person", SITE.url).href;
+const pageUrl = new URL("/", SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "ProfilePage",
+		"@id": `${pageUrl}#webpage`,
+		url: pageUrl,
+		name: "Gabriel Alcántara | Software Architect & Software Engineer",
+		inLanguage: "es-ES",
+		about: { "@id": personId },
+		mainEntity: { "@id": personId },
+	},
+];
 ---
 
-<Layout>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="identity">
-        <h1>Gabriel Alcántara</h1>
-        <div class="tagline">
-          <span class="tagline-roles">Solutions Architect · Software Engineer</span>
-          <ul class="expertise">
-            {
-              EXPERTISE.map((entry) => (
-                <li class="expertise-item">
-                  <button
-                    type="button"
-                    class="expertise-trigger"
-                    aria-describedby={panelId(entry.label)}
-                  >
-                    {entry.label}
-                  </button>
-                  <span
-                    class="expertise-panel"
-                    id={panelId(entry.label)}
-                    role="tooltip"
-                  >
-                    {entry.items.join(" · ")}
-                  </span>
-                </li>
-              ))
-            }
-          </ul>
+<Layout
+  title="Gabriel Alcántara | Software Architect & Software Engineer"
+  description="Arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas."
+  type="profile"
+  jsonLd={jsonLd}
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="hero-eyebrow">Software Architect · Software Engineer · Distributed Systems</p>
+    <h1 class="display" id="hero-title">
+      Diseño sistemas complejos para convertir problemas difíciles en software evolutivo.
+    </h1>
+    <p class="lede">
+      Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en
+      sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones
+      industriales conectadas.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/projects/">Ver proyectos</a>
+      <a class="btn btn--ghost" href="/cv/">Descargar CV</a>
+      <a class="btn btn--link" href="/contact/">Contactar conmigo</a>
+    </div>
+    <div class="meta-row">
+      <span class="is-available">{SITE.availability}</span>
+      <span>{SITE.location}</span>
+      <span>{PROJECTS.length} proyectos documentados</span>
+      <span>desde {SITE.careerStart}</span>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="especialidades-title">
+    <div class="section-head">
+      <h2 class="section-title" id="especialidades-title">Áreas en las que aporto valor</h2>
+      <span class="section-meta">4 frentes</span>
+    </div>
+    <div class="grid grid--4">
+      {
+        SPECIALTIES.map((specialty) => (
+          <div class="card">
+            <h3>{specialty.title}</h3>
+            <p>{specialty.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section featured" aria-labelledby="destacado-title">
+    <div class="section-head">
+      <h2 class="section-title" id="destacado-title">Proyecto destacado</h2>
+      <span class="section-meta">{FEATURED_CASE.company}</span>
+    </div>
+    <div class="featured-grid">
+      <div class="featured-body">
+        <p class="eyebrow">Del dominio de negocio a la operación industrial</p>
+        <h3 class="featured-name">
+          <a href={FEATURED_CASE.caseStudyHref}>{FEATURED_CASE.name}</a>
+        </h3>
+        <p class="featured-text">{FEATURED_CASE.problem}</p>
+        <p class="featured-text">{FEATURED_CASE.outcome}</p>
+        <div class="actions">
+          <a class="btn" href={FEATURED_CASE.caseStudyHref}>Ver el caso de estudio</a>
+          <a class="btn btn--ghost" href="/projects/">Todos los proyectos</a>
         </div>
       </div>
-      <div class="header-meta">
-        <span class="availability">
-          <span class="dot" aria-hidden="true"></span>Disponible
-        </span>
-        <span class="location">Barcelona · remoto</span>
-        <nav class="header-links" aria-label="contacto">
-          <a href="mailto:gabriel@alcantaramoreno.com">email</a>
-          <a href="https://github.com/SrAlcantaraRD" rel="me">github</a>
-          <a href="https://x.com/SrAlcantaraRD" rel="me">x</a>
-        </nav>
-      </div>
-    </div>
-  </header>
-
-  <main class="container main">
-    <section class="section" id="trayectoria">
-      <div class="section-head">
-        <h2 class="section-title">Trayectoria &amp; foco longitudinal</h2>
-        <span class="section-meta">{YEAR_LABEL}</span>
-      </div>
-      <ExperienceMatrix />
-    </section>
-
-    <section class="section statement" id="perfil">
-      <div class="section-head">
-        <h2 class="section-title">Perfil</h2>
-        <span class="section-meta">2011 — 2026 · 15 años</span>
-      </div>
-      <p class="statement-lead">
-        Durante más de una década he diseñado y construido sistemas de principio
-        a fin: convertir un requisito de negocio en una arquitectura que aguante.
-      </p>
-      <div class="statement-body">
-        <p>
-          Hasta agosto de 2026 estuve en <strong>Quabu</strong> como
-          arquitecto de soluciones. Casi todo lo que hago se resume en microservicios, sistemas
-          orientados a eventos (<code>EDA</code>) y APIs REST, con CI/CD y todo
-          corriendo en cloud (AWS/Azure). La seguridad y la calidad entran en el
-          diseño desde el principio.
-        </p>
-        <p>
-          El proyecto del que más orgulloso estoy es
-          <strong>Bodega Digital</strong>: un sistema con arquitectura por
-          eventos (<code>EDA + DDD + TDD</code>) para la automatización de
-          almacenes con robots, PLC, LEDs y sonidos, donde la IA no solo vive en
-          el desarrollo, sino en los propios procesos del sistema — priorizar
-          tareas y ejecutarlas, como mover un pallet de
-          <code>x1,y1,z1</code> a <code>x2,y2,z2</code>.
-        </p>
-        <p>
-          Empecé en 2011 en <strong>ACD Sistemes</strong>, empresa de producto,
-          donde con 21 años viajé a Brasil y Angola a implementar y desplegar
-          soluciones de auditoría contable en instituciones públicas. De ahí pasé
-          a <strong>BaseTIS</strong>, una consultora grande, donde entré como
-          full stack y acabé de team lead: revisando PRs, definiendo PRDs y
-          mentorizando al equipo.
-        </p>
-      </div>
-    </section>
-
-    <section class="section" id="experiencia">
-      <div class="section-head">
-        <h2 class="section-title">Experiencia principal</h2>
-        <span class="section-meta">
-          {COMPANIES.length} empresas · {POSITION_VIEWS.length} puestos ·{" "}
-          {PROJECTS.length} proyectos
-        </span>
-      </div>
-      <RoleTrajectory />
-    </section>
-
-    <section class="section focus-grid">
-      <div>
-        <h3 class="eyebrow">especialidad</h3>
-        <p>
-          Sistemas distribuidos, arquitecturas orientadas a eventos y
-          automatización con robótica industrial. Motores transaccionales con
-          seguridad y calidad desde el diseño.
-        </p>
-      </div>
-      <div>
-        <h3 class="eyebrow">filosofía</h3>
-        <p>
-          Arquitectura evolutiva, observabilidad intrínseca y equipos con alta
-          autonomía guiados por contratos claros.
-        </p>
-      </div>
-      <div>
-        <h3 class="eyebrow">contacto directo</h3>
-        <p>
-          Abierto a asesorías técnicas, roles de staff/principal y diseño
-          estratégico de sistemas.
-        </p>
-      </div>
-    </section>
-
-    <section class="section" id="conocimientos">
-      <div class="section-head">
-        <h2 class="section-title">Conocimientos técnicos</h2>
-        <span class="section-meta">stack</span>
-      </div>
-      <dl class="stack-groups">
-        {
-          STACK_GROUPS.map((group) => (
-            <div class="stack-group">
-              <dt class="eyebrow">{group.label}</dt>
-              <dd class="stack-chips">
-                {group.items.map((item) => (
-                  <span class="pill">{item}</span>
-                ))}
-              </dd>
-            </div>
-          ))
-        }
+      <dl class="facts featured-facts">
+        <dt>Rol</dt>
+        <dd>{FEATURED_CASE.role}</dd>
+        <dt>Periodo</dt>
+        <dd>
+          {spanLabel(FEATURED_CASE.startMonth, FEATURED_CASE.endMonth)} ·{" "}
+          {FEATURED_CASE.position}
+        </dd>
+        <dt>Decisión</dt>
+        <dd>{FEATURED_CASE.decision}</dd>
+        <dt>Tecnologías</dt>
+        <dd>
+          <span class="tag-row">
+            {FEATURED_CASE.stack?.map((item) => <span class="pill">{item}</span>)}
+          </span>
+        </dd>
       </dl>
-      <p class="soft-skills">{SOFT_SKILLS.join(" · ")}</p>
-    </section>
+    </div>
+  </section>
 
-    <section class="section" id="formacion">
-      <div class="section-head">
-        <h2 class="section-title">Formación</h2>
-        <span class="section-meta">{EDUCATION.length} registros</span>
-      </div>
-      <ul class="education">
-        {
-          EDUCATION.map((item) => (
-            <li class="education-item">
-              <span class="education-year">{item.year}</span>
-              <span class="education-body">
-                <strong>{item.title}</strong>
-                <span class="education-org">{item.org}</span>
+  <section class="section" aria-labelledby="proyectos-title">
+    <div class="section-head">
+      <h2 class="section-title" id="proyectos-title">Proyectos seleccionados</h2>
+      <span class="section-meta">{SELECTED_CASES.length} casos documentados</span>
+    </div>
+    <div class="grid grid--3">
+      {selected.map((project) => <ProjectCard project={project} brief />)}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="experiencia-title">
+    <div class="section-head">
+      <h2 class="section-title" id="experiencia-title">
+        Experiencia construyendo y evolucionando productos reales
+      </h2>
+      <span class="section-meta">{POSITION_VIEWS.length} puestos · 3 empresas</span>
+    </div>
+    <p class="section-lede">
+      He trabajado en productos digitales, plataformas empresariales y sistemas
+      industriales, participando tanto en las decisiones de arquitectura como en su
+      implementación y evolución.
+    </p>
+    <ol class="career">
+      {
+        companies.map((company) => (
+          <li class={`career-item accent-${company.accent}`}>
+            <div class="career-head">
+              <span class="career-name">{company.name}</span>
+              <span class="career-span">
+                {spanLabel(company.from, company.to)}
               </span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-  </main>
+            </div>
+            <p class="career-roles">
+              {company.positions.map((position) => position.title).join(" → ")}
+            </p>
+            <p class="career-focus">{company.latest.focus}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="actions">
+      <a class="btn btn--ghost" href="/experience/">Ver la trayectoria completa</a>
+      <a class="btn btn--link" href="/cv/">CV en HTML</a>
+    </div>
+  </section>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span>Gabriel Alcántara — dossier de arquitectura &amp; currículum</span>
-      <span class="footer-meta">
-        <span>actualizado {updated}</span>
-        <span aria-hidden="true">·</span>
-        <span>astro · dokploy</span>
+  <section class="section" aria-labelledby="blog-title">
+    <div class="section-head">
+      <h2 class="section-title" id="blog-title">Ideas sobre arquitectura y sistemas complejos</h2>
+      <span class="section-meta">
+        <a href="/blog/">Todos los artículos</a>
       </span>
     </div>
-  </footer>
+    <div class="blog-grid">
+      <div class="blog-featured">
+        <p class="eyebrow">Artículo destacado</p>
+        <h3 class="blog-featured-title">
+          <a href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
+        </h3>
+        <p class="blog-featured-text">{FEATURED_POST.description}</p>
+        <a class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
+      </div>
+      <div class="blog-list">
+        {posts.map((post) => <PostCard post={post} compact />)}
+      </div>
+    </div>
+  </section>
 
-  <DetailDrawer />
+  <section class="closing" aria-labelledby="cierre-title">
+    <h2 class="closing-title" id="cierre-title">
+      ¿Hablamos de arquitectura, sistemas distribuidos o evolución técnica?
+    </h2>
+    <p>
+      Si estás trabajando en un problema complejo o necesitas una segunda perspectiva
+      técnica, puedes escribirme.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/contact/">Contactar</a>
+      <a class="btn btn--ghost" href="/services/">Ver cómo puedo ayudar</a>
+    </div>
+  </section>
 </Layout>
 
 <style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    border-bottom: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-paper) 92%, transparent);
-    backdrop-filter: blur(8px);
-  }
-
-  .header-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    padding-block: 1.75rem;
-  }
-
-  /* A tall sticky header would eat a fifth of a phone viewport. */
-  @media (max-width: 767px) {
-    .site-header {
-      position: static;
-      backdrop-filter: none;
-    }
-  }
-
-  @media (min-width: 640px) {
-    .header-inner {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 1.5rem;
-      padding-block: 2.25rem;
-    }
-  }
-
-  h1 {
-    font-family: var(--font-serif);
-    font-size: 1.95rem;
-    font-weight: 300;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: var(--color-ink);
-  }
-
-  @media (min-width: 640px) {
-    h1 {
-      font-size: 2.25rem;
-    }
-  }
-
-  .tagline {
+  .hero {
     display: grid;
-    gap: 0.25rem;
-    margin-top: 0.5rem;
-    letter-spacing: 0.01em;
+    gap: 1.1rem;
+    max-inline-size: 56rem;
+    padding-block: 1rem 0.5rem;
   }
 
-  .tagline-roles {
-    font-size: 0.8125rem;
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-terracotta);
+  }
+
+  .hero .display {
+    font-size: clamp(2.2rem, 6vw, 3.7rem);
+    max-inline-size: 50rem;
+  }
+
+  .section {
+    display: grid;
+  }
+
+  .section-lede {
+    max-inline-size: 46rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.55;
     color: var(--color-ink-muted);
   }
 
-  .expertise {
-    position: relative;
+  .featured-grid {
+    display: grid;
+    gap: 2rem;
+    padding: 1.75rem 1.9rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-card);
+  }
+
+  @media (min-width: 900px) {
+    .featured-grid {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      gap: 2.5rem;
+      padding: 2.25rem 2.4rem;
+    }
+  }
+
+  .featured-body {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+  }
+
+  .featured-name {
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .featured-name a {
+    text-decoration: none;
+  }
+
+  .featured-name a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 6px;
+  }
+
+  .featured-text {
+    max-inline-size: 36rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+
+  .featured-facts {
+    align-content: start;
+    padding-top: 0.1rem;
+  }
+
+  .career {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .career-item {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.1rem 0.1rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    border-inline-start: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    padding-inline-start: 1rem;
+  }
+
+  .career-head {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.15rem 0.85rem;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+  }
+
+  .career-name {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .career-span {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.05em;
+    font-size: 0.625rem;
     color: var(--color-ink-faint);
   }
 
-  .expertise-item {
-    display: flex;
-    align-items: baseline;
-  }
-
-  @media (min-width: 768px) {
-    .expertise {
-      gap: 0.15rem 0;
-    }
-
-    .expertise-item {
-      position: relative;
-    }
-
-    .expertise-item + .expertise-item::before {
-      content: "·";
-      margin-inline: 0.45rem;
-    }
-  }
-
-  .expertise-trigger {
-    padding: 0.1rem 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    color: inherit;
-    text-align: start;
-    text-decoration: underline dotted;
-    text-decoration-thickness: 1px;
-    text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
-    text-underline-offset: 4px;
-    cursor: help;
-  }
-
-  .expertise-trigger:hover,
-  .expertise-item:focus-within .expertise-trigger {
+  .career-roles {
+    font-size: 0.78125rem;
+    line-height: 1.6;
     color: var(--color-ink-muted);
   }
 
-  .expertise-panel {
-    position: absolute;
-    inset-block-start: calc(100% + 0.55rem);
-    inset-inline-start: 0;
-    z-index: 40;
-    inline-size: max-content;
-    max-inline-size: min(22rem, 100%);    padding: 0.6rem 0.75rem;
+  .career-focus {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+
+  .blog-grid {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .blog-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 3rem;
+    }
+  }
+
+  .blog-featured {
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    padding: 1.5rem 1.6rem;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background: var(--color-card);
-    box-shadow: 0 8px 24px rgb(26 26 26 / 0.09);
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    line-height: 1.5;
-    letter-spacing: 0;
-    color: var(--color-ink-muted);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-0.25rem);
-    transition:
-      opacity 140ms ease,
-      transform 140ms ease,
-      visibility 140ms;
-  }
-
-  /* Keeps the label→panel gap hoverable, so the panel does not flicker shut. */
-  .expertise-panel::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: -0.6rem;
-    block-size: 0.6rem;
-  }
-
-  .expertise-item:hover .expertise-panel,
-  .expertise-item:focus-within .expertise-panel {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  @media (min-width: 768px) {
-    .expertise-panel {
-      max-inline-size: min(22rem, calc(100vw - 3rem));
-    }
-  }
-
-  .header-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.6rem 1rem;
-    font-size: 0.75rem;
-    color: var(--color-ink-muted);
-  }
-
-  .availability {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.1rem 0.5rem;
-    border: 1px solid color-mix(in srgb, var(--color-sage) 25%, transparent);
-    border-radius: 999px;
-    background: var(--color-sage-tint);
-    color: var(--color-sage);
-    font-size: 0.6875rem;
-    font-weight: 500;
-  }
-
-  .availability .dot {
-    inline-size: 0.375rem;
-    block-size: 0.375rem;
-    border-radius: 999px;
-    background: var(--color-available);
-  }
-
-  .location {
-    white-space: nowrap;
-  }
-
-  .header-links {
-    display: flex;
-    gap: 0.9rem;
-    font-size: 0.6875rem;
-    letter-spacing: 0.02em;
-  }
-
-  @media (max-width: 639px) {
-    .header-links {
-      flex-basis: 100%;
-    }
-  }
-
-  .main {
-    padding-block: 3rem 4rem;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4rem;
-  }
-
-  @media (min-width: 1024px) {
-    .main {
-      padding-block: 4rem 5rem;
-    }
-  }
-
-  .statement-lead {
-    max-inline-size: 44rem;
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 300;
-    line-height: 1.45;
-    color: var(--color-ink);
-  }
-
-  @media (min-width: 640px) {
-    .statement-lead {
-      font-size: 1.75rem;
-    }
-  }
-
-  .statement-body {
-    display: grid;
-    gap: 1.1rem;
-    max-inline-size: 42rem;
-    margin-top: 1.75rem;
-    color: var(--color-ink-muted);
-  }
-
-  .statement-body strong {
-    font-weight: 600;
-    color: var(--color-ink);
-  }
-
-  .statement-body code {
-    padding: 0.05em 0.3em;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 3px;
+    border-radius: 10px;
     background: var(--color-paper-warm);
-    color: var(--color-ink-muted);
-    font-size: 0.82em;
   }
 
-  .focus-grid {
-    display: grid;
-    gap: 1.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-border);
+  .blog-featured-title {
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    font-weight: 400;
+    line-height: 1.25;
   }
 
-  @media (min-width: 640px) {
-    .focus-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 2rem;
-    }
+  .blog-featured-title a {
+    text-decoration: none;
   }
 
-  .focus-grid p {
-    margin-top: 0.5rem;
+  .blog-featured-title a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 5px;
+  }
+
+  .blog-featured-text {
     font-size: 0.8125rem;
     line-height: 1.7;
     color: var(--color-ink-muted);
   }
 
-  .focus-grid .eyebrow {
-    font-family: var(--font-mono);
+  .blog-list {
+    display: grid;
+    gap: 0;
+    align-content: start;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.9rem;
+    justify-items: start;
+    padding: 2.25rem 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing-title {
+    max-inline-size: 36rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 1.95rem);
     font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
   }
 
-  .stack-groups {
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .stack-group {
-    display: grid;
-    gap: 0.3rem;
-  }
-
-  @media (min-width: 640px) {
-    .stack-group {
-      grid-template-columns: 6rem minmax(0, 1fr);
-      align-items: baseline;
-      gap: 1rem;
-    }
-  }
-
-  .stack-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin: 0;
-  }
-
-  .soft-skills {
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--color-border-subtle);
-    font-size: 0.75rem;
-    font-style: italic;
-    color: var(--color-ink-faint);
-  }
-
-  .education {
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .education-item {
-    display: grid;
-    gap: 0.15rem;
-  }
-
-  @media (min-width: 640px) {
-    .education-item {
-      grid-template-columns: 6rem minmax(0, 1fr);
-      align-items: baseline;
-      gap: 1rem;
-    }
-  }
-
-  .education-year {
-    font-family: var(--font-mono);
-    font-size: 0.656rem;
-    color: var(--color-ink-faint);
-  }
-
-  .education-body {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.35rem;
-    font-size: 0.8125rem;
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
     color: var(--color-ink-muted);
-  }
-
-  .education-body strong {
-    font-weight: 500;
-    color: var(--color-ink);
-  }
-
-  .education-org {
-    color: var(--color-ink-muted);
-  }
-
-  .education-org::before {
-    content: "— ";
-    color: var(--color-ink-faint);
-  }
-
-  .site-footer {
-    border-top: 1px solid var(--color-border);
-    background: var(--color-paper);
-  }
-
-  .footer-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    justify-content: space-between;
-    padding-block: 2rem;
-    font-size: 0.6875rem;
-    color: var(--color-ink-faint);
-  }
-
-  @media (min-width: 640px) {
-    .footer-inner {
-      flex-direction: row;
-      align-items: center;
-    }
-  }
-
-  .footer-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
   }
 </style>
-
-<script>
-  for (const trigger of document.querySelectorAll<HTMLButtonElement>(
-    ".expertise-trigger",
-  )) {
-    trigger.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") trigger.blur();
-    });
-  }
-</script>

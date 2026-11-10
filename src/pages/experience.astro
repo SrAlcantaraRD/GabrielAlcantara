@@ -1,0 +1,172 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ExperienceMatrix from "../components/ExperienceMatrix.astro";
+import RoleTrajectory from "../components/RoleTrajectory.astro";
+import DetailDrawer from "../components/DetailDrawer.astro";
+import {
+	COMPANIES,
+	EDUCATION,
+	POSITION_VIEWS,
+	PROJECTS,
+	YEAR_LABEL,
+} from "../data/cv";
+import { SITE } from "../data/site";
+
+const jsonLd = [
+	{
+		"@type": "CollectionPage",
+		"@id": new URL("/experience/", SITE.url).href + "#webpage",
+		url: new URL("/experience/", SITE.url).href,
+		name: "Experiencia | Gabriel Alcántara",
+		description:
+			"Trayectoria profesional de Gabriel Alcántara: empresas, puestos, proyectos y decisiones técnicas.",
+		inLanguage: "es-ES",
+		about: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+---
+
+<Layout
+  title="Experiencia | Gabriel Alcántara"
+  description="Trayectoria de Gabriel Alcántara: 13 puestos en 3 empresas, 22 proyectos documentados y las decisiones técnicas de cada etapa, desde ACD Sistemes hasta Quabu Solutions."
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "Experiencia" }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Experiencia</p>
+    <h1 class="display">Experiencia construyendo y evolucionando productos reales.</h1>
+    <p class="lede">
+      Desde 2011 he pasado por producto, consultoría y arquitectura. Esta página recorre
+      los mismos años de dos formas: como línea temporal navegable y como relación de
+      puestos, proyectos y decisiones.
+    </p>
+    <div class="meta-row">
+      <span>{COMPANIES.length} empresas</span>
+      <span>{POSITION_VIEWS.length} puestos</span>
+      <span>{PROJECTS.length} proyectos</span>
+      <span>{YEAR_LABEL}</span>
+    </div>
+  </header>
+
+  <section class="section" id="trayectoria" aria-labelledby="trayectoria-title">
+    <div class="section-head">
+      <h2 class="section-title" id="trayectoria-title">
+        Trayectoria y foco longitudinal
+      </h2>
+      <span class="section-meta">2011 — presente</span>
+    </div>
+    <ExperienceMatrix />
+  </section>
+
+  <section class="section" id="puestos" aria-labelledby="puestos-title">
+    <div class="section-head">
+      <h2 class="section-title" id="puestos-title">Puestos y proyectos</h2>
+      <span class="section-meta">orden cronológico inverso</span>
+    </div>
+    <RoleTrajectory />
+  </section>
+
+  <section class="section" id="formacion" aria-labelledby="formacion-title">
+    <div class="section-head">
+      <h2 class="section-title" id="formacion-title">Formación y certificaciones</h2>
+      <span class="section-meta">{EDUCATION.length} registros</span>
+    </div>
+    <ul class="education">
+      {
+        EDUCATION.map((item) => (
+          <li class="education-item">
+            <span class="education-year">{item.year}</span>
+            <span class="education-body">
+              <strong>{item.title}</strong>
+              <span class="education-org">{item.org}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="closing" aria-labelledby="exp-cierre">
+    <h2 class="section-title" id="exp-cierre">Siguiente paso</h2>
+    <p>
+      El CV reúne la misma información en un formato pensado para imprimir o guardar en
+      PDF. Los proyectos explican el problema, el rol y el resultado de cada caso.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/cv/">Ver el CV</a>
+      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+      <a class="btn btn--ghost" href="/contact/">Contactar</a>
+    </div>
+  </section>
+
+  <DetailDrawer />
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .education {
+    display: grid;
+    gap: 0.9rem;
+    max-inline-size: 46rem;
+  }
+
+  .education-item {
+    display: grid;
+    gap: 0.15rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  @media (min-width: 640px) {
+    .education-item {
+      grid-template-columns: 6rem minmax(0, 1fr);
+      align-items: baseline;
+      gap: 1rem;
+    }
+  }
+
+  .education-year {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    color: var(--color-ink-faint);
+  }
+
+  .education-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
+  }
+
+  .education-body strong {
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .education-org::before {
+    content: "— ";
+    color: var(--color-ink-faint);
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>

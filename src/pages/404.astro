@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Página no encontrada | Gabriel Alcántara"
+  description="La página que buscas no existe o se ha movido."
+  noindex
+>
+  <header class="page-head not-found">
+    <p class="eyebrow">404</p>
+    <h1 class="display">Esta página no existe.</h1>
+    <p class="lede">
+      Puede que el enlace esté mal escrito o que la página se haya movido. Desde aquí
+      puedes volver al inicio o ir directamente a lo que probablemente buscabas.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/">Volver al inicio</a>
+      <a class="btn btn--ghost" href="/cv/">Ver el CV</a>
+      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+      <a class="btn btn--link" href="/contact/">Contactar</a>
+    </div>
+  </header>
+</Layout>
+
+<style>
+  .not-found {
+    padding-block: 3rem;
+  }
+</style>

@@ -1,0 +1,154 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { COLLABORATION, SERVICES, SITE } from "../data/site";
+
+const jsonLd = [
+	{
+		"@type": "WebPage",
+		"@id": new URL("/services/", SITE.url).href + "#webpage",
+		url: new URL("/services/", SITE.url).href,
+		name: "Servicios | Gabriel Alcántara",
+		description:
+			"Revisión de arquitectura, diseño de sistemas distribuidos, modernización de plataformas y acompañamiento técnico a equipos.",
+		inLanguage: "es-ES",
+		about: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+---
+
+<Layout
+  title="Servicios de arquitectura de software y sistemas distribuidos | Gabriel Alcántara"
+  description="Colaboración técnica para equipos: revisión de arquitectura, diseño de sistemas distribuidos, modernización de plataformas, integraciones y acompañamiento a equipos."
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "Servicios" }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Servicios</p>
+    <h1 class="display">Ayuda técnica para tomar mejores decisiones sobre sistemas complejos.</h1>
+    <p class="lede">
+      Puedo colaborar con equipos que necesiten revisar una arquitectura, evolucionar una
+      plataforma o convertir un problema técnico complejo en un plan ejecutable.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/contact/">Comentar un reto técnico</a>
+      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="servicios-title">
+    <div class="section-head">
+      <h2 class="section-title" id="servicios-title">Tipos de colaboración</h2>
+      <span class="section-meta">{SERVICES.length} frentes</span>
+    </div>
+    <div class="grid grid--2">
+      {
+        SERVICES.map((service) => (
+          <div class="card">
+            <h3>{service.title}</h3>
+            <p>{service.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="como-title">
+    <div class="section-head">
+      <h2 class="section-title" id="como-title">Cómo trabajo</h2>
+      <span class="section-meta">contexto antes que solución</span>
+    </div>
+    <ol class="steps">
+      {
+        COLLABORATION.map((step, index) => (
+          <li class="step">
+            <span class="step-number">{String(index + 1).padStart(2, "0")}</span>
+            <p>{step}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="scope-note">
+      No trabajo como una agencia: prefiero pocas colaboraciones donde pueda implicarme
+      en las decisiones y en su ejecución. Si el problema encaja, te lo digo; si no, también.
+    </p>
+  </section>
+
+  <section class="closing" aria-labelledby="servicios-cierre">
+    <h2 class="section-title" id="servicios-cierre">¿Empezamos por el problema?</h2>
+    <p>
+      Cuéntame qué está pasando, en qué fase está el proyecto y qué tipo de ayuda
+      necesitas. Con eso puedo decirte si aporto valor y cómo lo abordaría.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/contact/">Contactar</a>
+      <a class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escribir un email</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .steps {
+    display: grid;
+    gap: 1rem;
+    max-inline-size: 46rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .step {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .step-number {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    letter-spacing: 0.12em;
+    color: var(--color-terracotta);
+  }
+
+  .step p {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+  }
+
+  .scope-note {
+    max-inline-size: 42rem;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>

@@ -1,0 +1,547 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {
+	EDUCATION,
+	POSITION_VIEWS,
+	STACK_GROUPS,
+	YEAR_LABEL,
+} from "../data/cv";
+import { PROJECT_CASES } from "../data/projects";
+import { SITE } from "../data/site";
+import { durationLabel, spanLabel } from "../lib/period";
+
+const positions = [...POSITION_VIEWS].sort((a, b) => b.startMonth - a.startMonth);
+const highlights = PROJECT_CASES.slice(0, 4);
+const currentYear = new Date().getFullYear();
+
+const jsonLd = [
+	{
+		"@type": "ProfilePage",
+		"@id": new URL("/cv/", SITE.url).href + "#webpage",
+		url: new URL("/cv/", SITE.url).href,
+		name: "CV | Gabriel Alcántara",
+		description:
+			"Currículum completo de Gabriel Alcántara: resumen ejecutivo, experiencia, proyectos, tecnologías, formación, certificaciones e idiomas.",
+		inLanguage: "es-ES",
+		about: { "@id": new URL("/#person", SITE.url).href },
+		mainEntity: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+---
+
+<Layout
+  title="CV | Gabriel Alcántara — Software Architect & Software Engineer"
+  description="Currículum de Gabriel Alcántara: arquitecto de software y Software Engineer. Experiencia en sistemas distribuidos, arquitectura orientada a eventos, backend, automatización industrial y liderazgo técnico."
+  type="profile"
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "CV" }]}
+>
+  <article class="cv">
+    <header class="cv-head">
+      <div class="cv-identity">
+        <p class="eyebrow">Currículum · actualizado {currentYear}</p>
+        <h1 class="cv-name">Gabriel Alcántara</h1>
+        <p class="cv-role">Arquitecto de software · Software Engineer</p>
+        <p class="cv-lede">
+          Arquitecto de software y Software Engineer con experiencia en sistemas
+          distribuidos, arquitectura orientada a eventos, backend, automatización
+          industrial y liderazgo técnico. Combino visión de arquitectura con capacidad de
+          implementación y acompañamiento a equipos.
+        </p>
+      </div>
+      <div class="cv-contact">
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <span>{SITE.location}</span>
+        {SITE.socials.map((social) => (
+          <a href={social.href} rel="me">{social.label}</a>
+        ))}
+        <span class="cv-range">{YEAR_LABEL}</span>
+      </div>
+      <div class="actions no-print">
+        <button class="btn" type="button" id="cv-print">Descargar CV en PDF</button>
+        <a class="btn btn--ghost" href="/experience/">Ver trayectoria con proyectos</a>
+        <a class="btn btn--link" href="/contact/">Contactar</a>
+      </div>
+      <p class="print-note no-print">
+        El botón abre el diálogo de impresión del navegador: elige «Guardar como PDF».
+        Esta página es la versión completa; el PDF es una alternativa.
+      </p>
+    </header>
+
+    <section class="print-section" aria-labelledby="cv-especialidades">
+      <h2 class="section-title" id="cv-especialidades">Especialidades</h2>
+      <ul class="specialty-list">
+        <li>Software architecture</li>
+        <li>Distributed systems</li>
+        <li>Event-driven architecture</li>
+        <li>Domain-driven design</li>
+        <li>Backend engineering</li>
+        <li>Industrial automation</li>
+        <li>Technical leadership</li>
+        <li>CI/CD and engineering practices</li>
+      </ul>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-experiencia">
+      <div class="section-head">
+        <h2 class="section-title" id="cv-experiencia">Experiencia</h2>
+        <span class="section-meta">{positions.length} puestos · 3 empresas</span>
+      </div>
+      <ol class="cv-positions">
+        {
+          positions.map((position) => (
+            <li class={`cv-position accent-${position.accent}`}>
+              <div class="cv-position-head">
+                <h3 class="cv-position-title">
+                  {position.title}
+                  <span class="cv-position-company"> · {position.company}</span>
+                </h3>
+                <span class="cv-position-dates">
+                  {spanLabel(position.startMonth, position.endMonth)} ·{" "}
+                  {durationLabel(position.months)}
+                </span>
+              </div>
+              <p class="cv-position-place">
+                {[position.place, position.mode].filter(Boolean).join(" · ")}
+              </p>
+              <p class="cv-position-summary">{position.summary}</p>
+              {position.achievements.length > 0 && (
+                <ul class="cv-position-list">
+                  {position.achievements.map((achievement) => (
+                    <li>{achievement}</li>
+                  ))}
+                </ul>
+              )}
+              {position.stack.length > 0 && (
+                <p class="cv-position-stack">
+                  {position.stack.map((item) => (
+                    <span class="pill">{item}</span>
+                  ))}
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-proyectos">
+      <div class="section-head">
+        <h2 class="section-title" id="cv-proyectos">Proyectos destacados</h2>
+        <span class="section-meta">selección</span>
+      </div>
+      <ul class="cv-projects">
+        {
+          highlights.map((project) => (
+            <li>
+              <div class="cv-project-head">
+                <h3>{project.name}</h3>
+                <span>{project.company}</span>
+              </div>
+              <p>{project.problem}</p>
+              <p class="cv-project-decision">
+                <strong>Decisión técnica:</strong> {project.decision}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="cv-projects-link no-print">
+        <a href="/projects/">Ver el portfolio completo</a>
+      </p>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-tecnologias">
+      <h2 class="section-title" id="cv-tecnologias">Tecnologías</h2>
+      <dl class="cv-stack">
+        {
+          STACK_GROUPS.map((group) => (
+            <div class="cv-stack-group">
+              <dt>{group.label}</dt>
+              <dd>{group.items.join(" · ")}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-formacion">
+      <h2 class="section-title" id="cv-formacion">Formación y certificaciones</h2>
+      <ul class="cv-education">
+        {
+          EDUCATION.map((item) => (
+            <li>
+              <span class="cv-education-year">{item.year}</span>
+              <span>
+                <strong>{item.title}</strong>
+                <span class="cv-education-org"> — {item.org}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-idiomas">
+      <h2 class="section-title" id="cv-idiomas">Idiomas</h2>
+      <dl class="cv-languages">
+        <div><dt>Español</dt><dd>Nativo</dd></div>
+        <div>
+          <dt>Inglés</dt>
+          <dd>Profesional · documentación y comunicación técnica con fabricantes</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="print-section" aria-labelledby="cv-enlaces">
+      <h2 class="section-title" id="cv-enlaces">Enlaces</h2>
+      <ul class="cv-links">
+        <li><a href={SITE.url}>{SITE.url.replace("https://", "")}</a></li>
+        <li><a href="/experience/">Experiencia detallada</a></li>
+        <li><a href="/projects/">Proyectos y casos de estudio</a></li>
+        {SITE.socials.map((social) => (
+          <li><a href={social.href} rel="me">{social.href.replace("https://", "")}</a></li>
+        ))}
+        <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+      </ul>
+    </section>
+  </article>
+</Layout>
+
+<script>
+  function bindPrint() {
+    const button = document.querySelector<HTMLButtonElement>("#cv-print");
+    if (!button || button.dataset.bound === "true") return;
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => window.print());
+  }
+
+  bindPrint();
+  document.addEventListener("astro:page-load", bindPrint);
+</script>
+
+<style>
+  .cv {
+    display: grid;
+    gap: 2.5rem;
+    max-inline-size: 58rem;
+  }
+
+  .cv-head {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cv-identity {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .cv-name {
+    font-family: var(--font-serif);
+    font-size: clamp(2.1rem, 5vw, 2.9rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .cv-role {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-lede {
+    max-inline-size: 46rem;
+    margin-top: 0.3rem;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-contact a {
+    text-decoration-color: var(--color-border);
+  }
+
+  .cv-range {
+    color: var(--color-ink-faint);
+  }
+
+  .print-note {
+    max-inline-size: 40rem;
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    color: var(--color-ink-faint);
+  }
+
+  .cv > section {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .specialty-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .specialty-list li {
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-muted);
+    background: var(--color-paper-warm);
+  }
+
+  .cv-positions {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .cv-position {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.1rem 0 0.9rem 0.9rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    border-inline-start: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  .cv-position-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.2rem 1.25rem;
+  }
+
+  .cv-position-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .cv-position-company {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-position-dates {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-position-place {
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-position-summary {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-position-list {
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.78125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-position-list li {
+    position: relative;
+    padding-inline-start: 0.85rem;
+  }
+
+  .cv-position-list li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.6em;
+    inline-size: 0.3rem;
+    block-size: 1px;
+    background: var(--color-ink-faint);
+  }
+
+  .cv-position-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.25rem;
+  }
+
+  .cv-projects {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .cv-project-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.75rem;
+  }
+
+  .cv-project-head h3 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .cv-project-head span {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-projects li {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .cv-projects p {
+    font-size: 0.78125rem;
+    line-height: 1.65;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-project-decision strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .cv-projects-link {
+    font-size: 0.75rem;
+  }
+
+  .cv-stack {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .cv-stack-group {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  @media (min-width: 640px) {
+    .cv-stack-group {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      align-items: baseline;
+      gap: 1rem;
+    }
+  }
+
+  .cv-stack dt {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-stack dd {
+    margin: 0;
+    font-size: 0.78125rem;
+    line-height: 1.65;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-education,
+  .cv-links {
+    display: grid;
+    gap: 0.45rem;
+    font-size: 0.78125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-education li {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  @media (min-width: 640px) {
+    .cv-education li {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  .cv-education-year {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-education strong {
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .cv-education-org {
+    color: var(--color-ink-muted);
+  }
+
+  .cv-languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+  }
+
+  .cv-languages dt {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .cv-languages dd {
+    margin: 0;
+    font-size: 0.78125rem;
+    color: var(--color-ink-muted);
+  }
+
+  .cv-links a {
+    font-size: 0.78125rem;
+  }
+
+  @media print {
+    .cv {
+      max-inline-size: none;
+      gap: 1.5rem;
+    }
+
+    .cv-position,
+    .cv-projects li {
+      break-inside: avoid;
+    }
+
+    .cv-head {
+      padding-bottom: 1rem;
+    }
+  }
+</style>

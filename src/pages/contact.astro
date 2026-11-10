@@ -1,0 +1,248 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE } from "../data/site";
+
+const jsonLd = [
+	{
+		"@type": "ContactPage",
+		"@id": new URL("/contact/", SITE.url).href + "#webpage",
+		url: new URL("/contact/", SITE.url).href,
+		name: "Contacto | Gabriel Alcántara",
+		description:
+			"Canales de contacto directo con Gabriel Alcántara para hablar de arquitectura de software, sistemas distribuidos y evolución de plataformas.",
+		inLanguage: "es-ES",
+		about: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+---
+
+<Layout
+  title="Contacto | Gabriel Alcántara"
+  description="Escríbeme para hablar de arquitectura de software, sistemas distribuidos, automatización, liderazgo técnico o evolución de una plataforma existente."
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "Contacto" }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Contacto</p>
+    <h1 class="display">Hablemos de tu próximo reto técnico.</h1>
+    <p class="lede">
+      Puedes escribirme si quieres hablar sobre arquitectura de software, sistemas
+      distribuidos, automatización, liderazgo técnico o evolución de una plataforma
+      existente.
+    </p>
+    <div class="meta-row">
+      <span class="is-available">{SITE.availability}</span>
+      <span>{SITE.location}</span>
+      <span>respuesta directa</span>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="canales-title">
+    <div class="section-head">
+      <h2 class="section-title" id="canales-title">Canales</h2>
+      <span class="section-meta">sin formulario intermedio</span>
+    </div>
+    <div class="channels">
+      <a class="channel channel--primary" href={`mailto:${SITE.email}`}>
+        <span class="channel-label">Email profesional</span>
+        <span class="channel-value">{SITE.email}</span>
+        <span class="channel-note">La forma más directa de empezar una conversación.</span>
+      </a>
+      {
+        SITE.socials.map((social) => (
+          <a class="channel" href={social.href} rel="me">
+            <span class="channel-label">{social.label}</span>
+            <span class="channel-value">{social.href.replace("https://", "")}</span>
+            <span class="channel-note">
+              {social.label === "GitHub"
+                ? "Código, pruebas y proyectos públicos."
+                : "Notas cortas sobre arquitectura y trabajo técnico."}
+            </span>
+          </a>
+        ))
+      }
+      <a class="channel" href="/cv/">
+        <span class="channel-label">CV</span>
+        <span class="channel-value">gabrielalcantara.com/cv</span>
+        <span class="channel-note">Versión completa en HTML, con descarga en PDF.</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="motivos-title">
+    <div class="section-head">
+      <h2 class="section-title" id="motivos-title">Para ayudarme a responder mejor</h2>
+      <span class="section-meta">contexto</span>
+    </div>
+    <div class="guidance">
+      <div>
+        <h3>Incluye en el mensaje</h3>
+        <ul>
+          <li>Qué problema estás intentando resolver.</li>
+          <li>En qué fase se encuentra el proyecto.</li>
+          <li>Qué tipo de ayuda necesitas.</li>
+          <li>Cómo prefieres continuar la conversación.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Motivos habituales</h3>
+        <ul>
+          <li>Revisar una arquitectura o una decisión técnica.</li>
+          <li>Diseñar o evolucionar un sistema distribuido.</li>
+          <li>Conectar software con operaciones o hardware.</li>
+          <li>Un rol de arquitectura o Software Engineer en plantilla.</li>
+          <li>Mentoría para perfiles senior.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="expectation">
+      Leo todos los mensajes. Si el tema encaja, propongo una primera conversación corta
+      para entender el contexto antes de hablar de alcance o de cualquier otra cosa.
+    </p>
+  </section>
+
+  <section class="closing" aria-labelledby="contacto-cierre">
+    <h2 class="section-title" id="contacto-cierre">¿Seguimos?</h2>
+    <p>
+      Si prefieres ver antes el detalle, puedes empezar por el CV, por los proyectos o por
+      los servicios.
+    </p>
+    <div class="actions">
+      <a class="btn" href={`mailto:${SITE.email}`}>Escribir un email</a>
+      <a class="btn btn--ghost" href="/cv/">Ver el CV</a>
+      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .channels {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  @media (min-width: 768px) {
+    .channels {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .channel {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-card) 70%, transparent);
+    text-decoration: none;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .channel:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 22%, transparent);
+    background: var(--color-card);
+  }
+
+  .channel--primary {
+    border-inline-start: 2px solid var(--color-ink);
+  }
+
+  .channel-label {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .channel-value {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--color-ink);
+    overflow-wrap: anywhere;
+  }
+
+  .channel-note {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .guidance {
+    display: grid;
+    gap: 2rem;
+    max-inline-size: 46rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .guidance {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .guidance h3 {
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .guidance ul {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .guidance li {
+    position: relative;
+    padding-inline-start: 0.9rem;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: var(--color-ink-muted);
+  }
+
+  .guidance li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.7em;
+    inline-size: 0.35rem;
+    block-size: 1px;
+    background: var(--color-ink-faint);
+  }
+
+  .expectation {
+    max-inline-size: 42rem;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>
