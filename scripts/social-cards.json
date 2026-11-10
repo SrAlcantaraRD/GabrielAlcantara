@@ -1,0 +1,34 @@
+{
+	"cards": [
+		{
+			"file": "/og/bodega-digital.png",
+			"page": "/projects/bodega-digital/",
+			"title": "Bodega Digital",
+			"sha256": "ac6a55392cece2f1643341179a25d63d9daac9547ce204169beb8696404aa59f"
+		},
+		{
+			"file": "/og/ddd-dominios-complejos.png",
+			"page": "/blog/ddd-dominios-complejos/",
+			"title": "DDD cuando el dominio es complejo",
+			"sha256": "93d1160ed0c16d707531a68252d13f1385832a59fc313a0c0636ae0a55101977"
+		},
+		{
+			"file": "/og/websockets-operaciones-tiempo-real.png",
+			"page": "/blog/websockets-operaciones-tiempo-real/",
+			"title": "WebSockets para operaciones en tiempo real",
+			"sha256": "17ae3466878fb1ae5fef9bae31ad177a6abed83747ea53a597cf310511e9919e"
+		},
+		{
+			"file": "/og/arquitectura-orientada-a-eventos.png",
+			"page": "/blog/arquitectura-orientada-a-eventos/",
+			"title": "Arquitectura orientada a eventos en sistemas reales",
+			"sha256": "f3a471e02c32d60e69bdf747742bf33c0aea52679501b1d0a5bc7a81b5637bc1"
+		},
+		{
+			"file": "/og/lecciones-plataforma-industrial.png",
+			"page": "/blog/lecciones-plataforma-industrial/",
+			"title": "Lecciones de diseñar una plataforma industrial conectada",
+			"sha256": "69347b107c82eb917f9876cac29315a1e3a114453d597f360209ebccf11eaa08"
+		}
+	]
+}

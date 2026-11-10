@@ -1,12 +1,12 @@
 {
-	"name": "Gabriel Alcántara — Solutions Architect",
+	"name": "Gabriel Alcántara — Software Architect & Software Engineer",
 	"short_name": "G. Alcántara",
-	"description": "Curioso empedernido. Diseño y construyo sistemas desde 2011: de full stack a solutions architect. Event-driven architecture, TDD, cloud e IA aplicada.",
+	"description": "Arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
-	"background_color": "#ffffff",
-	"theme_color": "#ffffff",
+	"background_color": "#faf8f5",
+	"theme_color": "#faf8f5",
 	"lang": "es-ES",
 	"icons": [
 		{
