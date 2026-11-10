@@ -1,0 +1,141 @@
+---
+/**
+ * The single place where page metadata and structured data are produced.
+ *
+ * Every page passes a unique title and description; the component derives the
+ * canonical URL, the Open Graph and Twitter tags, and a JSON-LD graph with the
+ * site-wide Person and WebSite plus the page-specific nodes.
+ */
+import { SITE, type Breadcrumb } from "../data/site";
+
+interface Props {
+	title: string;
+	description: string;
+	image?: string;
+	imageAlt?: string;
+	type?: "website" | "profile" | "article";
+	noindex?: boolean;
+	breadcrumbs?: Breadcrumb[];
+	jsonLd?: Record<string, unknown>[];
+	publishedTime?: string;
+	modifiedTime?: string;
+	articleSection?: string;
+	tags?: string[];
+}
+
+const {
+	title,
+	description,
+	image = "/og-image.png",
+	imageAlt = "Gabriel Alcántara — Software Architect & Software Engineer",
+	type = "website",
+	noindex = false,
+	breadcrumbs,
+	jsonLd = [],
+	publishedTime,
+	modifiedTime,
+	articleSection,
+	tags,
+} = Astro.props;
+
+// Static pages are emitted as directories; keep the canonical on that form.
+const pathname = Astro.url.pathname;
+const canonicalPath =
+	pathname.endsWith("/") || /\.[a-z0-9]+$/i.test(pathname)
+		? pathname
+		: `${pathname}/`;
+const canonical = new URL(canonicalPath, SITE.url);
+const socialImage = new URL(image, SITE.url);
+
+const personId = new URL("/#person", SITE.url).href;
+const websiteId = new URL("/#website", SITE.url).href;
+
+const person = {
+	"@type": "Person",
+	"@id": personId,
+	name: SITE.name,
+	url: SITE.url,
+	jobTitle: [...SITE.roles],
+	description: SITE.description,
+	email: `mailto:${SITE.email}`,
+	knowsAbout: [...SITE.knowsAbout],
+	knowsLanguage: ["es", "en"],
+	sameAs: SITE.socials.map((social) => social.href),
+	alumniOf: {
+		"@type": "CollegeOrUniversity",
+		name: "Universitat Oberta de Catalunya",
+	},
+};
+
+const website = {
+	"@type": "WebSite",
+	"@id": websiteId,
+	name: SITE.name,
+	url: SITE.url,
+	description: SITE.description,
+	inLanguage: "es-ES",
+	author: { "@id": personId },
+};
+
+const graph: Record<string, unknown>[] = [person, website];
+
+if (breadcrumbs && breadcrumbs.length > 0) {
+	graph.push({
+		"@type": "BreadcrumbList",
+		itemListElement: [
+			{ name: "Inicio", url: new URL("/", SITE.url).href },
+			...breadcrumbs.map((item) => ({
+				name: item.label,
+				...(item.href ? { url: new URL(item.href, SITE.url).href } : {}),
+			})),
+		].map((item, index) => ({
+			"@type": "ListItem",
+			position: index + 1,
+			...item,
+		})),
+	});
+}
+
+graph.push(...jsonLd);
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@graph": graph,
+};
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="author" content={SITE.name} />
+<meta name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
+<link rel="canonical" href={canonical.href} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:url" content={canonical.href} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={socialImage.href} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+{articleSection && <meta property="article:section" content={articleSection} />}
+{tags?.map((tag) => <meta property="article:tag" content={tag} />)}
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@SrAlcantaraRD" />
+<meta name="twitter:creator" content="@SrAlcantaraRD" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={socialImage.href} />
+<meta name="twitter:image:alt" content={imageAlt} />
+
+<!-- Structured data -->
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

@@ -1,0 +1,261 @@
+---
+import { NAV, SITE, isNavActive } from "../data/site";
+
+const pathname = Astro.url.pathname;
+const active = (href: string) => isNavActive(pathname, href);
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/">
+      <span class="brand-name">{SITE.name}</span>
+      <span class="brand-role">Software Architect · Software Engineer</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Navegación principal">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class:list={["nav-link", { "is-active": active(item.href) }]}
+            aria-current={active(item.href) ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="header-actions">
+      <a class="action-cv" href="/cv/">CV</a>
+      <a class="action-contact" href="/contact/">Contactar</a>
+    </div>
+
+    <details class="mobile-menu">
+      <summary>
+        <span>Menú</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </summary>
+      <nav aria-label="Navegación móvil">
+        <ul>
+          {
+            NAV.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={{ "is-active": active(item.href) }}
+                  aria-current={active(item.href) ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li><a href="/cv/">CV</a></li>
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-paper) 94%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    padding-block: 0.9rem;
+  }
+
+  .brand {
+    display: grid;
+    gap: 0.05rem;
+    margin-inline-end: auto;
+    text-decoration: none;
+  }
+
+  .brand-name {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-ink);
+  }
+
+  .brand-role {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .site-nav .nav-link {
+    padding-block: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+
+  .site-nav .nav-link:hover {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-border);
+  }
+
+  .site-nav .nav-link.is-active {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-ink);
+  }
+
+  .header-actions {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .action-cv,
+  .action-contact {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    font-size: 0.6875rem;
+    text-decoration: none;
+    transition:
+      border-color 140ms ease,
+      background 140ms ease,
+      color 140ms ease;
+  }
+
+  .action-cv {
+    color: var(--color-ink-muted);
+  }
+
+  .action-cv:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .action-contact {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .action-contact:hover {
+    background: #333;
+  }
+
+  .mobile-menu {
+    position: relative;
+  }
+
+  .mobile-menu summary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu summary svg {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  .mobile-menu[open] summary {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .mobile-menu nav {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(100% + 0.5rem);
+    z-index: 40;
+    min-inline-size: 12rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-card);
+    box-shadow: 0 12px 32px rgb(26 26 26 / 0.1);
+  }
+
+  .mobile-menu ul {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .mobile-menu a {
+    display: block;
+    padding: 0.45rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
+    text-decoration: none;
+  }
+
+  .mobile-menu a:hover,
+  .mobile-menu a.is-active {
+    background: var(--color-paper-warm);
+    color: var(--color-ink);
+  }
+
+  @media (min-width: 1024px) {
+    .header-inner {
+      flex-wrap: nowrap;
+      padding-block: 1rem;
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.05rem;
+    }
+
+    .header-actions {
+      display: flex;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .brand {
+      margin-inline-end: auto;
+    }
+  }
+</style>

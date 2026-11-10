@@ -1,0 +1,171 @@
+---
+import type { ProjectCase } from "../data/projects";
+import { spanLabel } from "../lib/period";
+
+interface Props {
+  project: ProjectCase;
+  /** Drops the decision line on dense lists. */
+  brief?: boolean;
+}
+
+const { project, brief = false } = Astro.props;
+---
+
+<article class:list={["project-card", { "is-featured": project.featured }]}>
+  <p class="project-area">{project.area}</p>
+
+  <h3 class="project-name">
+    {project.caseStudyHref ? (
+      <a href={project.caseStudyHref}>{project.name}</a>
+    ) : (
+      project.name
+    )}
+  </h3>
+
+  <p class="project-meta">
+    {project.company} · {spanLabel(project.startMonth, project.endMonth)}
+  </p>
+
+  <p class="project-problem">{project.problem}</p>
+
+  <dl class="project-facts">
+    <div>
+      <dt>Rol</dt>
+      <dd>{project.role}</dd>
+    </div>
+    {!brief && (
+      <div>
+        <dt>Decisión</dt>
+        <dd>{project.decision}</dd>
+      </div>
+    )}
+    <div>
+      <dt>Resultado</dt>
+      <dd>{project.outcome}</dd>
+    </div>
+  </dl>
+
+  {project.stack && project.stack.length > 0 && (
+    <div class="tag-row">
+      {project.stack.slice(0, 6).map((item) => <span class="pill">{item}</span>)}
+    </div>
+  )}
+
+  {project.caseStudyHref && (
+    <a class="project-link" href={project.caseStudyHref}>
+      Ver el caso de estudio
+      <span aria-hidden="true">→</span>
+    </a>
+  )}
+</article>
+
+<style>
+  .project-card {
+    display: grid;
+    gap: 0.7rem;
+    align-content: start;
+    padding: 1.4rem 1.5rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-card) 70%, transparent);
+    transition:
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .project-card:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 20%, transparent);
+    background: var(--color-card);
+  }
+
+  .project-area {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-terracotta);
+  }
+
+  .project-name {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .project-name a {
+    text-decoration: none;
+  }
+
+  .project-name a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 4px;
+  }
+
+  .project-meta {
+    font-family: var(--font-mono);
+    font-size: 0.656rem;
+    color: var(--color-ink-faint);
+  }
+
+  .project-problem {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+  }
+
+  .project-facts {
+    display: grid;
+    gap: 0.55rem;
+    margin-block: 0.1rem;
+    padding-block: 0.75rem;
+    border-block: 1px solid var(--color-border-subtle);
+  }
+
+  .project-facts div {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .project-facts dt {
+    font-family: var(--font-mono);
+    font-size: 0.594rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .project-facts dd {
+    margin: 0;
+    font-size: 0.78125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+
+  .project-link {
+    justify-self: start;
+    font-size: 0.75rem;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .project-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .is-featured {
+    padding: 1.75rem 1.9rem 1.9rem;
+    background: var(--color-card);
+  }
+
+  .is-featured .project-name {
+    font-size: 1.6rem;
+  }
+
+  .is-featured .project-problem {
+    font-size: 0.875rem;
+  }
+</style>

@@ -1,0 +1,241 @@
+---
+/**
+ * Architecture diagram for the Bodega Digital case study.
+ *
+ * Hand-authored SVG: no runtime, no external request, and readable text for
+ * search engines and agents. The surrounding page repeats the same structure
+ * as a text list, so the diagram is never the only place the information lives.
+ */
+---
+
+<figure class="diagram">
+  <div class="diagram-scroll">
+    <svg
+      viewBox="0 0 900 545"
+      role="img"
+      aria-labelledby="arch-title arch-desc"
+      preserveAspectRatio="xMidYMin meet"
+    >
+      <title id="arch-title">Arquitectura de Bodega Digital</title>
+      <desc id="arch-desc">
+        Un frontend reactivo por rol se conecta a una API, que delega en un core de
+        agentes —dictator, ranker y distributor—. El core publica y consume eventos
+        en un bus. Cada familia de dispositivo (carretillas, PLC, LEDs, picking y
+        cámaras) tiene su propio microservicio con adaptadores por modelo, versión y
+        protocolo, y conversa con el hardware real de la bodega.
+      </desc>
+
+      <defs>
+        <marker
+          id="arch-arrow"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" class="arch-arrowhead" />
+        </marker>
+      </defs>
+
+      <!-- Top row -->
+      <g>
+        <rect class="arch-box" x="20" y="16" width="270" height="74" rx="8" />
+        <text class="arch-title" x="38" y="43">Frontend por rol</text>
+        <text class="arch-sub" x="38" y="63">WebSocket · RBAC · admin y operador</text>
+        <text class="arch-sub" x="38" y="79">la interfaz se adapta al tipo de operador</text>
+      </g>
+
+      <g>
+        <rect class="arch-box" x="315" y="16" width="270" height="74" rx="8" />
+        <text class="arch-title" x="333" y="43">API y backend</text>
+        <text class="arch-sub" x="333" y="63">casos de uso · puertos y adaptadores</text>
+        <text class="arch-sub" x="333" y="79">autenticación y autorización</text>
+      </g>
+
+      <g>
+        <rect class="arch-box arch-box--soft" x="610" y="16" width="270" height="74" rx="8" />
+        <text class="arch-title" x="628" y="43">Operación y personas</text>
+        <text class="arch-sub" x="628" y="63">tareas, prioridades y estado</text>
+        <text class="arch-sub" x="628" y="79">cada rol ve lo que puede ejecutar</text>
+      </g>
+
+      <!-- Core -->
+      <g>
+        <rect class="arch-box arch-box--core" x="20" y="130" width="860" height="78" rx="8" />
+        <text class="arch-title" x="40" y="159">Core de agentes · tareas atómicas</text>
+        <text class="arch-sub" x="40" y="181">
+          dictator ordena · ranker prioriza · distributor delega entre dispositivos
+          disponibles
+        </text>
+        <text class="arch-sub" x="40" y="197">
+          abstracción por casos de uso: del dispositivo concreto a solo la familia y la acción
+        </text>
+      </g>
+
+      <!-- Bus -->
+      <g>
+        <rect class="arch-bus" x="20" y="248" width="860" height="44" rx="22" />
+        <text class="arch-bus-text" x="450" y="275">Bus de eventos · comunicación asíncrona entre servicios</text>
+      </g>
+
+      <!-- Device services -->
+      <g>
+        <rect class="arch-box" x="20" y="332" width="160" height="96" rx="8" />
+        <text class="arch-title arch-title--sm" x="36" y="359">Carretillas</text>
+        <text class="arch-sub" x="36" y="379">microservicio</text>
+        <text class="arch-sub" x="36" y="396">adaptador por</text>
+        <text class="arch-sub" x="36" y="413">modelo y versión</text>
+      </g>
+
+      <g>
+        <rect class="arch-box" x="195" y="332" width="160" height="96" rx="8" />
+        <text class="arch-title arch-title--sm" x="211" y="359">PLC</text>
+        <text class="arch-sub" x="211" y="379">microservicio</text>
+        <text class="arch-sub" x="211" y="396">señales y estados</text>
+        <text class="arch-sub" x="211" y="413">de la instalación</text>
+      </g>
+
+      <g>
+        <rect class="arch-box" x="370" y="332" width="160" height="96" rx="8" />
+        <text class="arch-title arch-title--sm" x="386" y="359">LEDs y sonido</text>
+        <text class="arch-sub" x="386" y="379">microservicio</text>
+        <text class="arch-sub" x="386" y="396">guía física al</text>
+        <text class="arch-sub" x="386" y="413">operador</text>
+      </g>
+
+      <g>
+        <rect class="arch-box" x="545" y="332" width="160" height="96" rx="8" />
+        <text class="arch-title arch-title--sm" x="561" y="359">Picking</text>
+        <text class="arch-sub" x="561" y="379">microservicio</text>
+        <text class="arch-sub" x="561" y="396">tareas de</text>
+        <text class="arch-sub" x="561" y="413">preparación</text>
+      </g>
+
+      <g>
+        <rect class="arch-box" x="720" y="332" width="160" height="96" rx="8" />
+        <text class="arch-title arch-title--sm" x="736" y="359">Cámaras</text>
+        <text class="arch-sub" x="736" y="379">microservicio</text>
+        <text class="arch-sub" x="736" y="396">lectura y</text>
+        <text class="arch-sub" x="736" y="413">verificación</text>
+      </g>
+
+      <!-- Hardware -->
+      <g>
+        <rect class="arch-hardware" x="20" y="462" width="860" height="46" rx="8" />
+        <text class="arch-bus-text" x="450" y="489">
+          Hardware real de la bodega · robots · PLC · LEDs · picking · cámaras
+        </text>
+      </g>
+
+      <!-- Arrows -->
+      <line class="arch-line" x1="450" y1="90" x2="450" y2="126" marker-end="url(#arch-arrow)" />
+      <line class="arch-line" x1="450" y1="208" x2="450" y2="244" marker-end="url(#arch-arrow)" />
+      <line class="arch-line" x1="450" y1="292" x2="450" y2="328" marker-end="url(#arch-arrow)" />
+      <line class="arch-line" x1="450" y1="428" x2="450" y2="458" marker-end="url(#arch-arrow)" />
+      <line class="arch-line" x1="100" y1="428" x2="100" y2="458" marker-end="url(#arch-arrow)" />
+      <line class="arch-line" x1="800" y1="428" x2="800" y2="458" marker-end="url(#arch-arrow)" />
+    </svg>
+  </div>
+
+  <figcaption>
+    Vista simplificada: el frontend y la API hablan con el core, el core coordina
+    por eventos y cada familia de dispositivo mantiene su propio servicio y sus
+    adaptadores. El despliegue corre en Docker sobre cloud, bajo VPN, con CI/CD y
+    QA gates sobre hardware físico real.
+  </figcaption>
+</figure>
+
+<style is:global>
+  .diagram {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .diagram-scroll {
+    overflow-x: auto;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .diagram svg {
+    inline-size: 100%;
+    min-inline-size: 44rem;
+    block-size: auto;
+  }
+
+  .arch-box {
+    fill: #fff;
+    stroke: #e6e0d6;
+    stroke-width: 1;
+  }
+
+  .arch-box--soft {
+    fill: #fbf9f5;
+  }
+
+  .arch-box--core {
+    fill: #eef3f7;
+    stroke: #cfdde6;
+  }
+
+  .arch-bus {
+    fill: #294c60;
+  }
+
+  .arch-bus-text {
+    fill: #f7f4ef;
+    font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    text-anchor: middle;
+  }
+
+  .arch-hardware {
+    fill: none;
+    stroke: #c9c1b4;
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+
+  .arch-hardware + .arch-bus-text {
+    fill: #4f4b47;
+  }
+
+  .arch-title {
+    fill: #1a1a1a;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .arch-title--sm {
+    font-size: 12px;
+  }
+
+  .arch-sub {
+    fill: #6f6960;
+    font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
+    font-size: 10.5px;
+  }
+
+  .arch-line {
+    stroke: #b8b0a3;
+    stroke-width: 1.2;
+  }
+
+  .arch-arrowhead {
+    fill: #b8b0a3;
+  }
+
+  .diagram figcaption {
+    max-inline-size: 46rem;
+    font-size: 0.75rem;
+    line-height: 1.65;
+    color: var(--color-ink-faint);
+  }
+</style>
