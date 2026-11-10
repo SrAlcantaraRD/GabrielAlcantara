@@ -1,0 +1,152 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import PostCard from "../../../components/PostCard.astro";
+import {
+	ACTIVE_CATEGORIES,
+	formatDate,
+	postsInCategory,
+	type Category,
+} from "../../../data/blog";
+import { SITE } from "../../../data/site";
+
+export function getStaticPaths() {
+	return ACTIVE_CATEGORIES.map((category) => ({
+		params: { category: category.slug },
+		props: { category },
+	}));
+}
+
+interface Props {
+	category: Category;
+}
+
+const { category } = Astro.props;
+const posts = postsInCategory(category.slug);
+const pageUrl = new URL(`/blog/categoria/${category.slug}/`, SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "CollectionPage",
+		"@id": `${pageUrl}#webpage`,
+		url: pageUrl,
+		name: `${category.label} | Blog de Gabriel Alcántara`,
+		description: category.description,
+		inLanguage: "es-ES",
+		isPartOf: { "@id": new URL("/blog/#blog", SITE.url).href },
+		about: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+---
+
+<Layout
+  title={`${category.label} | Blog de Gabriel Alcántara`}
+  description={`${category.description} Artículos de ${category.label.toLowerCase()} escritos desde proyectos reales por Gabriel Alcántara.`}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { label: "Blog", href: "/blog/" },
+    { label: category.label },
+  ]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Blog · tema</p>
+    <h1 class="display">{category.label}</h1>
+    <p class="lede">{category.description}</p>
+    <div class="meta-row">
+      <span>{posts.length} {posts.length === 1 ? "artículo" : "artículos"}</span>
+      <a href="/blog/">Ver todos los temas</a>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="posts-title">
+    <div class="section-head">
+      <h2 class="section-title" id="posts-title">Artículos</h2>
+      <span class="section-meta">
+        {posts.length > 0 ? formatDate(posts[0]!.date) : "próximamente"}
+      </span>
+    </div>
+    {
+      posts.length > 0 ? (
+        <div class="post-list">
+          {posts.map((post) => <PostCard post={post} />)}
+        </div>
+      ) : (
+        <p class="empty">
+          Todavía no hay artículos publicados en este tema. El resto del blog sigue
+          disponible en <a href="/blog/">la portada del blog</a>.
+        </p>
+      )
+    }
+  </section>
+
+  <section class="closing" aria-labelledby="categoria-cierre">
+    <h2 class="section-title" id="categoria-cierre">Otros temas</h2>
+    <ul class="other-topics">
+      {
+        ACTIVE_CATEGORIES.filter((item) => item.slug !== category.slug).map((item) => (
+          <li><a href={`/blog/categoria/${item.slug}/`}>{item.label}</a></li>
+        ))
+      }
+    </ul>
+    <div class="actions">
+      <a class="btn btn--ghost" href="/blog/">Ver todos los artículos</a>
+      <a class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escríbeme</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .post-list {
+    display: grid;
+  }
+
+  .meta-row a {
+    text-decoration: none;
+  }
+
+  .meta-row a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .empty {
+    font-size: 0.875rem;
+    color: var(--color-ink-muted);
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.9rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .other-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .other-topics a {
+    display: inline-flex;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-muted);
+    text-decoration: none;
+    background: var(--color-card);
+  }
+
+  .other-topics a:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+</style>

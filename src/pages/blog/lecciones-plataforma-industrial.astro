@@ -1,0 +1,123 @@
+---
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { postOf } from "../../data/blog";
+
+const post = postOf("lecciones-plataforma-industrial");
+---
+
+<ArticleLayout {...post}>
+  <p>
+    Un almacén automatizado enseña cosas que un CRUD no enseña. No porque la tecnología
+    sea más exótica, sino porque el sistema tiene que convivir con el mundo físico: los
+    dispositivos se caen, las versiones conviven y cada instalación tiene su propia
+    realidad. Estas son las lecciones que me llevé de diseñar la plataforma de Bodega
+    Digital.
+  </p>
+
+  <h2>El hardware no negocia</h2>
+  <p>
+    En una aplicación de negocio, el estado lo controla tu base de datos. En una bodega,
+    el estado lo controla el mundo: una carretilla bloqueada, un PLC que no responde o una
+    cámara que no lee una etiqueta. El software puede decidir qué debería pasar; no puede
+    decidir que haya pasado.
+  </p>
+  <p>
+    Asumir eso cambia el diseño. Las operaciones dejan de ser transacciones instantáneas y
+    pasan a ser <strong>tareas con estado</strong>: creadas, asignadas, en curso,
+    completadas o fallidas. Y ese ciclo necesita ser visible, idempotente y capaz de
+    repetirse sin efectos duplicados.
+  </p>
+
+  <h2>La variación es el caso normal</h2>
+  <p>
+    Cada almacén tiene su mapa, sus versiones de robot y sus reglas. Si el código trata
+    esa variación como una excepción, acaba lleno de condicionales por instalación. Si la
+    trata como un dato, el dominio se mantiene pequeño y la configuración crece.
+  </p>
+  <p>
+    Por eso trabajamos con DDD y TDD: las reglas de negocio, los mapas y las versiones de
+    robot se absorbían en el dominio, en lugar de repartirse en adaptadores y parches. La
+    variación baja al modelo; no se convierte en deuda dentro de cada servicio.
+  </p>
+
+  <h2>Separar la intención del protocolo</h2>
+  <p>
+    La decisión que más veces se pagó sola fue la abstracción por casos de uso, puertos y
+    adaptadores. El dominio expresa lo que quiere hacer; un adaptador concreto sabe cómo
+    hablar con el dispositivo. Cambiar una API o un modelo de robot no arrastra al
+    dominio.
+  </p>
+  <pre><code>// El dominio pide una intención, no un protocolo.
+export interface DevicePort &#123;
+  readonly family: DeviceFamily;
+  execute(task: AtomicTask): Promise&lt;TaskResult&gt;;
+&#125;</code></pre>
+  <p>
+    Con ese límite, cada familia de dispositivo —carretilla, PLC, LED, picking, cámara—
+    pudo ser su propio microservicio, con adaptadores por modelo, versión y protocolo. Un
+    fabricante nuevo se incorpora como un adaptador; no como un cambio en las reglas de
+    negocio.
+  </p>
+
+  <h2>El dominio no debería saber qué es un PLC</h2>
+  <p>
+    Es tentador modelar el sistema alrededor de los dispositivos: una entidad Robot, otra
+    PLC, otra Cámara. El problema es que el negocio no piensa en dispositivos, piensa en
+    mover un pallet de una posición a otra, preparar un pedido o liberar un hueco.
+  </p>
+  <p>
+    El core trabaja con tareas de distinto nivel de detalle: desde la que apunta a un
+    dispositivo concreto hasta la que solo expresa la familia y la acción. Esa
+    granularidad fue clave para que el sistema siga coordinando cuando un modelo no está
+    disponible o cuando un almacén incorpora una versión nueva.
+  </p>
+
+  <h2>Tiempo real no es tiempo real duro</h2>
+  <p>
+    El frontend por WebSocket servía para que el operador viera el estado de la operación
+    sin refrescar y para que la interfaz se adaptara a su rol. Eso es tiempo real de
+    <em>observación</em>, no un lazo de control industrial.
+  </p>
+  <p>
+    Confundir ambos planos lleva a decisiones equivocadas: meter la seguridad del canal
+    dentro de la UI, asumir que el mensaje llega siempre o que el orden es global. El
+    canal informa; el servidor decide. Y cuando el mensaje no llega, la interfaz se
+    reconcilia con el estado del servidor.
+  </p>
+
+  <h2>Probar sobre hardware real cambia el diseño</h2>
+  <p>
+    Los QA gates del pipeline se ejecutaban sobre hardware físico real, no solo sobre
+    mocks. Eso hace el pipeline más lento y dependiente de dispositivos, pero cambia la
+    conversación del equipo: los problemas aparecen antes y con nombre propio.
+  </p>
+  <p>
+    Un mock siempre responde. Un PLC real tarda, falla y a veces devuelve algo que no
+    esperabas. Diseñar para esa realidad —timeouts, reintentos, estados intermedios— es
+    más barato que descubrirlo en la instalación.
+  </p>
+
+  <h2>Lo que me llevo</h2>
+  <ul>
+    <li>
+      En sistemas industriales, el hardware marca el ritmo: la arquitectura tiene que
+      asumir fallo, cambio de versión y disponibilidad parcial.
+    </li>
+    <li>
+      Los contratos explícitos entre dominio y dispositivo ahorran más tiempo que
+      cualquier optimización prematura.
+    </li>
+    <li>
+      La variación por instalación se modela como dato, no como excepción en el código.
+    </li>
+    <li>
+      La documentación y el vocabulario compartido con fabricantes son parte de la
+      ingeniería.
+    </li>
+  </ul>
+  <p>
+    Si estás diseñando algo parecido, el orden que me funcionó fue: entender la operación,
+    separar los dominios y solo después elegir la tecnología de cada borde. La
+    arquitectura no empieza en el broker; empieza en el problema.
+  </p>
+</ArticleLayout>

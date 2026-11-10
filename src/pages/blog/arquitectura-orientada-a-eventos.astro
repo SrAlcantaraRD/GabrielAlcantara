@@ -1,0 +1,122 @@
+---
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { postOf } from "../../data/blog";
+
+const post = postOf("arquitectura-orientada-a-eventos");
+---
+
+<ArticleLayout {...post}>
+  <p>
+    La arquitectura orientada a eventos se vende a veces como una capa de mensajería que
+    se añade al final del sistema. En mi experiencia es lo contrario: los eventos son una
+    forma de repartir responsabilidades. Cuando se usan así, el sistema gana autonomía;
+    cuando se usan como un bus genérico, solo gana ceremonia.
+  </p>
+
+  <h2>Evento no es sinónimo de mensaje</h2>
+  <p>
+    Un <strong>comando</strong> pide que algo ocurra y espera un destinatario concreto. Un
+    <strong>evento</strong> declara que algo ya ocurrió y no le importa quién lo escucha.
+    La diferencia parece semántica hasta que hay que evolucionar el sistema: los comandos
+    acoplan al emisor con el receptor; los eventos permiten añadir consumidores sin tocar
+    al productor.
+  </p>
+  <p>
+    En una plataforma industrial esto se traduce en algo muy concreto: el core decide que
+    una tarea debe ejecutarse y publica el hecho. No necesita saber si el encargado de
+    moverla es una carretilla, un PLC o una persona con un LED indicándole dónde ir.
+  </p>
+
+  <h2>Qué lleva un evento</h2>
+  <p>
+    Un evento útil responde a cuatro preguntas sin obligar al consumidor a consultar al
+    productor: qué ocurrió, sobre qué, cuándo y con qué identidad. Eso suele traducirse en
+    un identificador de evento, el agregado afectado, una marca temporal y la carga
+    mínima necesaria para reaccionar.
+  </p>
+  <p>
+    La tentación es meter el estado completo del sistema en cada evento. Es cómodo al
+    principio y caro después: cada consumidor se acopla a un contrato enorme que ya no se
+    puede cambiar. Prefiero eventos pequeños con un identificador estable y una consulta
+    explícita cuando hace falta más contexto.
+  </p>
+
+  <h2>Los límites importan más que el broker</h2>
+  <p>
+    Elegir Kafka, RabbitMQ o un bus propio no arregla un sistema mal delimitado. Si dos
+    servicios comparten el mismo modelo de datos, el bus solo hace que el acoplamiento sea
+    asíncrono.
+  </p>
+  <p>
+    El trabajo real es decidir qué hechos pertenecen a qué dominio y quién es la fuente
+    de verdad de cada uno. En Bodega Digital, cada familia de dispositivo tenía su propio
+    servicio y sus adaptadores; el core coordinaba, pero no conocía protocolos. Esa
+    división hacía que los eventos tuvieran un dueño claro.
+  </p>
+
+  <h2>Consistencia: aceptar el retraso</h2>
+  <p>
+    Cuando un evento tarda en llegar, el sistema es consistente al final, no
+    instantáneamente. Esa frase suena bien en una presentación y exige decisiones muy
+    concretas en producción: qué muestra la interfaz mientras el estado converge, qué
+    operaciones se pueden repetir y cómo se reconcilia lo que el usuario cree que pasó con
+    lo que el sistema registró.
+  </p>
+  <p>
+    La solución no es esconder la asincronía. Es hacerla visible: estados intermedios,
+    marcas de tiempo, identificadores de correlación y una forma de volver a leer el
+    estado real.
+  </p>
+
+  <h2>Idempotencia y orden</h2>
+  <p>
+    El mismo evento puede llegar dos veces. El orden global no está garantizado y, aunque
+    lo estuviera, no siempre es el orden que el negocio necesita. Por eso los consumidores
+    tienen que ser idempotentes por diseño, no por suerte.
+  </p>
+  <ul>
+    <li>Identifica cada operación con una clave estable.</li>
+    <li>Registra lo ya aplicado antes de volver a aplicarlo.</li>
+    <li>Diseña transiciones de estado que toleren repetición.</li>
+    <li>No dependas del orden entre agregados distintos.</li>
+  </ul>
+  <p>
+    En una tarea industrial, repetir «mueve el pallet a la posición 4» no puede significar
+    moverlo dos veces ni perder la segunda intención si la primera ya estaba completada.
+    Esa es la clase de detalle que decide si un sistema basado en eventos aguanta la
+    operación real.
+  </p>
+
+  <h2>Aislar el fallo</h2>
+  <p>
+    Una ventaja concreta de la comunicación asíncrona es que un consumidor que deja de
+    responder no bloquea al productor. Pero el sistema debe decidir qué hacer con lo que
+    dependía de él: reintentar, marcar la tarea como no disponible o escalar a otra
+    familia de dispositivos.
+  </p>
+  <p>
+    Esa política no se improvisa. Conviene escribirla junto al contrato del evento, porque
+    es parte del comportamiento observable del sistema.
+  </p>
+
+  <h2>Cuándo no usar eventos</h2>
+  <p>
+    Si dos operaciones deben ser atómicas o el consumidor necesita una respuesta inmediata
+    para continuar, una llamada directa suele ser más honesta. Añadir un bus para un flujo
+    que siempre ocurre en el mismo orden y con el mismo destinatario solo introduce
+    complejidad operativa.
+  </p>
+  <p>
+    Mi regla es sencilla: eventos cuando varios consumidores pueden reaccionar al mismo
+    hecho, cuando el emisor no debe conocer a los receptores o cuando el trabajo puede
+    esperar. Llamadas directas cuando la respuesta es parte del resultado.
+  </p>
+
+  <h2>Cierre</h2>
+  <p>
+    Una arquitectura orientada a eventos bien hecha se nota menos en el diagrama que en la
+    operación: se puede añadir una capacidad sin tocar el core, un servicio caído no
+    arrastra a todos y cada hecho tiene un dueño. Si el bus es lo único que se ve en el
+    diseño, probablemente falte trabajo de límites.
+  </p>
+</ArticleLayout>

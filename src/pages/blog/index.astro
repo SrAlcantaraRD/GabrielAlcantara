@@ -1,0 +1,233 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PostCard from "../../components/PostCard.astro";
+import {
+	ACTIVE_CATEGORIES,
+	FEATURED_POST,
+	OTHER_POSTS,
+	POSTS,
+	formatDate,
+	postHref,
+	postsInCategory,
+} from "../../data/blog";
+import { SITE } from "../../data/site";
+
+const pageUrl = new URL("/blog/", SITE.url).href;
+
+const jsonLd = [
+	{
+		"@type": "Blog",
+		"@id": `${pageUrl}#blog`,
+		url: pageUrl,
+		name: "Blog de arquitectura de software, backend y sistemas distribuidos",
+		description:
+			"Artículos sobre arquitectura, sistemas distribuidos, DDD, backend en tiempo real y automatización industrial.",
+		inLanguage: "es-ES",
+		author: { "@id": new URL("/#person", SITE.url).href },
+		blogPost: POSTS.map((post) => ({
+			"@type": "BlogPosting",
+			headline: post.title,
+			url: new URL(postHref(post.slug), SITE.url).href,
+			datePublished: post.date,
+			dateModified: post.updated ?? post.date,
+			author: { "@id": new URL("/#person", SITE.url).href },
+		})),
+	},
+];
+---
+
+<Layout
+  title="Blog de arquitectura de software, backend y sistemas distribuidos"
+  description="Artículos sobre arquitectura, sistemas distribuidos, DDD, WebSockets y automatización industrial, escritos desde proyectos reales."
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: "Blog" }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">Blog</p>
+    <h1 class="display">Ideas sobre arquitectura, sistemas distribuidos y software que evoluciona.</h1>
+    <p class="lede">
+      Escribo sobre los problemas que aparecen al diseñar y mantener sistemas reales:
+      límites de dominio, comunicación entre servicios, automatización, testing,
+      despliegue y liderazgo técnico.
+    </p>
+    <div class="meta-row">
+      <span>{POSTS.length} artículos</span>
+      <span>{ACTIVE_CATEGORIES.length} temas</span>
+      <span>escritos desde proyectos reales</span>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="destacado-title">
+    <div class="section-head">
+      <h2 class="section-title" id="destacado-title">Artículo destacado</h2>
+      <span class="section-meta">{formatDate(FEATURED_POST.date)}</span>
+    </div>
+    <article class="featured-post">
+      <div class="featured-body">
+        <p class="eyebrow">Automatización industrial</p>
+        <h3 class="featured-title">
+          <a href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
+        </h3>
+        <p class="featured-text">{FEATURED_POST.description}</p>
+        <div class="meta-row">
+          <span>{formatDate(FEATURED_POST.date)}</span>
+          <span>{FEATURED_POST.readingMinutes} min de lectura</span>
+        </div>
+        <div class="tag-row">
+          {FEATURED_POST.tags.map((tag) => <span class="pill">{tag}</span>)}
+        </div>
+        <a class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
+      </div>
+      <aside class="topics" aria-labelledby="temas-title">
+        <h2 class="section-title" id="temas-title">Temas</h2>
+        <ul>
+          {
+            ACTIVE_CATEGORIES.map((category) => (
+              <li>
+                <a href={`/blog/categoria/${category.slug}/`}>
+                  <span>{category.label}</span>
+                  <span class="topic-count">{postsInCategory(category.slug).length}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </aside>
+    </article>
+  </section>
+
+  <section class="section" aria-labelledby="articulos-title">
+    <div class="section-head">
+      <h2 class="section-title" id="articulos-title">Todos los artículos</h2>
+      <span class="section-meta">más recientes primero</span>
+    </div>
+    <div class="post-list">
+      {OTHER_POSTS.map((post) => <PostCard post={post} />)}
+      <PostCard post={FEATURED_POST} />
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="blog-cierre">
+    <h2 class="section-title" id="blog-cierre">Explorar proyectos relacionados</h2>
+    <p>
+      Los artículos salen de proyectos concretos. Si quieres ver el problema completo, el
+      rol y las decisiones, están en el portfolio.
+    </p>
+    <div class="actions">
+      <a class="btn" href="/projects/">Ver proyectos</a>
+      <a class="btn btn--ghost" href="/contact/">Contactar</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .featured-post {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .featured-post {
+      grid-template-columns: minmax(0, 1.5fr) minmax(15rem, 1fr);
+      gap: 3rem;
+    }
+  }
+
+  .featured-body {
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    padding: 1.6rem 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-card);
+  }
+
+  .featured-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .featured-title a {
+    text-decoration: none;
+  }
+
+  .featured-title a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 6px;
+  }
+
+  .featured-text {
+    max-inline-size: 40rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+
+  .topics {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+
+  .topics .section-title {
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .topics ul {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .topics a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0.1rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
+    text-decoration: none;
+  }
+
+  .topics a:hover {
+    color: var(--color-ink);
+  }
+
+  .topic-count {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .post-list {
+    display: grid;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>
