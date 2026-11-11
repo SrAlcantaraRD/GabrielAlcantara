@@ -89,7 +89,9 @@ manifest stops it. Both checks also verify that every recorded card is still a
 
 The manifest does not record the PNG bytes. Chrome's rasteriser can shift a
 couple of antialiased pixels between two identical runs, so a byte hash would
-report drift nobody can see and would make every export dirty the tree.
+report drift nobody can see and fail the test for no reason. A re-export can
+still leave a PNG modified by a byte or two; that is the rasteriser, not the
+copy, and it is safe to keep or discard.
 
 ## Adding a page that needs its own card
 
