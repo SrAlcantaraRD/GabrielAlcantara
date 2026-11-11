@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revisión de voz — correcciones</title>
+  <style>
+    :root {
+      --paper: #faf8f5;
+      --paper-warm: #f5f1ea;
+      --card: #ffffff;
+      --ink: #1a1a1a;
+      --muted: #4f4b47;
+      --faint: #6f6960;
+      --border: #e6e0d6;
+      --border-subtle: #eeeae3;
+      --cobalt: #294c60;
+      --cobalt-tint: #eef3f7;
+      --sage: #3e5c49;
+      --sage-tint: #eff4f0;
+      --terracotta: #9e4e36;
+      --terracotta-tint: #f8efea;
+      --serif: "Newsreader", Georgia, "Times New Roman", serif;
+      --sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: #eae3d5;
+    }
+
+    .wrap {
+      max-width: 62rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* ---------- header ---------- */
+    .hero {
+      padding: 2.5rem 0 1.25rem;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      margin: 0 0 0.5rem;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0 0 0.6rem;
+    }
+
+    .hero p {
+      max-width: 46rem;
+      color: var(--muted);
+      margin: 0 0 0.4rem;
+    }
+
+    .hero .hint {
+      font-size: 0.8125rem;
+      color: var(--faint);
+    }
+
+    /* ---------- toolbar ---------- */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      margin: 0 -1.5rem;
+      padding: 0.7rem 1.5rem;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1rem;
+    }
+
+    .progress {
+      flex: 1 1 14rem;
+      min-width: 12rem;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      color: var(--faint);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .bar {
+      height: 6px;
+      border-radius: 99px;
+      background: var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--sage);
+      transition: width 180ms ease;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      border-radius: 99px;
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      border-color: color-mix(in srgb, var(--ink) 25%, transparent);
+    }
+
+    .chip[aria-pressed="true"] {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--paper);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 0.42rem 0.8rem;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+    }
+
+    .btn--primary {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn--primary:hover {
+      background: #000;
+    }
+
+    .btn--ghost {
+      background: transparent;
+    }
+
+    .save-state {
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      color: var(--faint);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      min-width: 5.5rem;
+    }
+
+    /* ---------- legend ---------- */
+    .legend {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .legend summary {
+      cursor: pointer;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .legend ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.1rem;
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    .legend b {
+      font-weight: 600;
+    }
+
+    /* ---------- sections ---------- */
+    .section {
+      margin-top: 2.25rem;
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin: 0 0 1rem;
+    }
+
+    /* ---------- cards ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      border-left: 3px solid var(--border);
+      padding: 1.1rem 1.25rem 1.15rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .card[data-state="aceptada"] {
+      border-left-color: var(--sage);
+    }
+
+    .card[data-state="rechazada"] {
+      border-left-color: var(--terracotta);
+    }
+
+    .card[data-state="propia"] {
+      border-left-color: var(--cobalt);
+    }
+
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem 0.75rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .id {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      background: var(--paper-warm);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.05rem 0.4rem;
+    }
+
+    .file {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--faint);
+    }
+
+    .pattern {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      color: var(--terracotta);
+      border: 1px solid color-mix(in srgb, var(--terracotta) 30%, transparent);
+      background: var(--terracotta-tint);
+      border-radius: 99px;
+      padding: 0.05rem 0.45rem;
+    }
+
+    .pattern--input {
+      color: var(--cobalt);
+      border-color: color-mix(in srgb, var(--cobalt) 30%, transparent);
+      background: var(--cobalt-tint);
+    }
+
+    .quotes {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .quote {
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      border-left: 2px solid var(--border);
+      background: var(--paper-warm);
+    }
+
+    .quote--after {
+      border-left-color: var(--cobalt);
+      background: var(--cobalt-tint);
+    }
+
+    .where {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: baseline;
+      margin: 0.1rem 0 0.15rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .where b {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 1.1rem;
+      margin: 0.25rem 0 0.6rem;
+      font-size: 0.78rem;
+    }
+
+    .links a {
+      color: var(--cobalt);
+      text-decoration: none;
+      border-bottom: 1px solid color-mix(in srgb, var(--cobalt) 30%, transparent);
+      padding-bottom: 1px;
+    }
+
+    .links a:hover {
+      border-bottom-color: var(--cobalt);
+    }
+
+    .context {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem 0.65rem;
+      margin-bottom: 0.55rem;
+      background: #fffdf9;
+    }
+
+    .context .quote-label {
+      margin-bottom: 0.25rem;
+    }
+
+    .context p {
+      margin: 0 0 0.4rem;
+      font-family: var(--serif);
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .context p:last-child {
+      margin-bottom: 0;
+    }
+
+    .context mark {
+      background: color-mix(in srgb, #f2d98c 60%, transparent);
+      color: var(--ink);
+      padding: 0 0.1em;
+      border-radius: 2px;
+    }
+
+    .quote-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 0.2rem;
+    }
+
+    .quote p {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .quote--after p {
+      font-size: 1rem;
+    }
+
+    .why {
+      margin: 0.6rem 0 0;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .why b {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-top: 0.8rem;
+    }
+
+    .seg {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .seg button {
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      padding: 0.32rem 0.65rem;
+      border: 0;
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .seg button+button {
+      border-left: 1px solid var(--border);
+    }
+
+    .seg button:hover {
+      background: var(--paper-warm);
+    }
+
+    .seg button[aria-pressed="true"][data-dec="aceptada"] {
+      background: var(--sage-tint);
+      color: var(--sage);
+      font-weight: 600;
+    }
+
+    .seg button[aria-pressed="true"][data-dec="rechazada"] {
+      background: var(--terracotta-tint);
+      color: var(--terracotta);
+      font-weight: 600;
+    }
+
+    .seg button[aria-pressed="true"][data-dec="pendiente"] {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .mine {
+      margin-top: 0.7rem;
+    }
+
+    .mine label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 0.3rem;
+    }
+
+    .mine textarea {
+      width: 100%;
+      min-height: 4.5rem;
+      resize: vertical;
+      font-family: var(--serif);
+      font-size: 0.98rem;
+      line-height: 1.5;
+      color: var(--ink);
+      background: #fffdf9;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+    }
+
+    .mine textarea:focus {
+      outline: 2px solid color-mix(in srgb, var(--cobalt) 45%, transparent);
+      outline-offset: 1px;
+      border-color: var(--cobalt);
+    }
+
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--faint);
+      font-size: 0.875rem;
+    }
+
+    .footnote {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--faint);
+    }
+
+    @media print {
+
+      .toolbar,
+      .legend,
+      .actions,
+      .seg,
+      .footnote {
+        display: none !important;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .card {
+        break-inside: avoid;
+        border-color: #ccc;
+      }
+
+      .mine textarea {
+        border: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header class="hero">
+      <p class="eyebrow">VOICE.md · revisión de la portada</p>
+      <h1>Correcciones de voz — la home</h1>
+      <p>Ronda cerrada y revisada dos veces: ocho puntos, todos con tu texto y todos aplicados — `src/pages/index.astro`, `site.ts`, `cv.ts` y `blog.ts`. El titular y la entradilla son los de la última versión; la tarjeta guarda lo que dijiste y lo que quedó en el código.</p>
+      <p class="hint">Cada tarjeta muestra dónde está la frase, el párrafo completo con la frase marcada y dos enlaces:
+        al sitio publicado y al servidor local (si tienes <code>astro dev</code> arrancado). Al terminar: «Copiar
+        Markdown» y pégalo en el chat. Se guarda solo.</p>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <div class="progress">
+          <div class="progress-top">
+            <span id="count-label">0 / 8 revisadas</span>
+            <span id="save-state" class="save-state" aria-live="polite"></span>
+          </div>
+          <div class="bar" role="progressbar" aria-label="Progreso de revisión" aria-valuemin="0" aria-valuemax="8"
+            aria-valuenow="0" id="bar"><i></i></div>
+        </div>
+        <div class="filters" role="group" aria-label="Filtros">
+          <button class="chip" data-filter="all" aria-pressed="true">Todas</button>
+          <button class="chip" data-filter="pendiente" aria-pressed="false">Pendientes</button>
+          <button class="chip" data-filter="aceptada" aria-pressed="false">Aceptadas</button>
+          <button class="chip" data-filter="rechazada" aria-pressed="false">Rechazadas</button>
+          <button class="chip" data-filter="propia" aria-pressed="false">Con mi versión</button>
+        </div>
+        <div class="actions">
+          <button class="btn btn--primary" id="copy">Copiar Markdown</button>
+          <button class="btn" id="download">Descargar .md</button>
+          <button class="btn btn--ghost" id="reset">Borrar todo</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="legend">
+      <summary>Patrones (por qué se nota el AISlop)</summary>
+      <ul>
+        <li><b>P1 — Simetría «no es X, es Y».</b> Rechazo explícito [E8]: «frase que jamás escribiría así».</li>
+        <li><b>P2 — Frase de encuadre.</b> Presenta el párrafo sin información [E9]: «puro ai-slop».</li>
+        <li><b>P3 — Titular de tarjeta de presentación.</b> Remate redondo [E8]: «no suena a mí».</li>
+        <li><b>P4 — Jerga de consultor o cliché.</b> «aporto valor», «plan ejecutable», «no es si, sino cuándo».</li>
+        <li><b>P5 — Abstracción sin dato.</b> §3.1: el dato sustituye al adjetivo.</li>
+      </ul>
+    </details>
+
+    <main id="app"></main>
+
+    <p class="footnote">Los textos «Antes» están copiados literalmente del sitio. Las propuestas son sugerencias, no
+      texto aprobado (VOICE.md §8.2). Tu versión gana siempre.</p>
+  </div>
+
+  <script type="application/json" id="data">
+[
+  {"id": "H1", "section": "A · Portada · hero", "file": "index.astro · hero · site.ts headlineLines", "pattern": "P2", "before": "Solutions Architect · Software Engineer · Distributed Systems", "after": "Antetítulo: «Software Engineer - Solutions Architect»\n\nH1:\n15 años construyendo.\n15 años resolviendo.\n15 años aprendiendo.", "why": "Dos rondas. La primera sustituyó el antetítulo duplicado y dejó el H1 en la lista de etapas («Quince años de evolución: Requisitos, Diseño, BBDD, FE, BE, Mobile, Cloud, AI»); la segunda la cambia por los tres tiempos. Ahora el H1 sale de `SITE.headlineLines` y `SITE.headline` se deriva de esas líneas, así que el titular y los metadatos no pueden separarse.", "decision": "aceptada", "note": "15 años construyendo.\n\n15 años resolviendo.\n\n15 años aprendiendo."},
+  {"id": "H2", "section": "A · Portada · hero", "file": "index.astro · hero · site.ts description + statement", "pattern": "P5", "before": "Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.", "after": "Me llamo Gabriel Alcántara. Llevo quince años diseñando y construyendo soluciones de software: desde entender el problema hasta definir la arquitectura y llevarla a producción, convirtiendo requisitos, a veces ambiguos, en soluciones robustas. He liderado equipos técnicos y gestionado proyectos.\n\nDisfruto construyendo soluciones que reduzcan la complejidad de las personas que los usan, sin crear otra en el proceso.", "why": "Tu texto, entero. Un solo arreglo: «convertido requisitos, a veces ambiguos en soluciones robustas» → «convirtiendo requisitos, a veces ambiguos, en soluciones robustas» (participio suelto y la coma que cierra la aposición). El primer párrafo es `SITE.description` y alimenta `meta description`, `llms.txt` y el JSON-LD; el segundo es `SITE.statement` y se ve sólo en la portada, porque una descripción es un párrafo y no dos. El cierre lo cambiaste después: «Me gusta construir sistemas» → «Disfruto construyendo soluciones».", "decision": "aceptada", "note": "Me llamo Gabriel Alcántara. Llevo quince años diseñando y construyendo soluciones de software: desde entender el problema hasta definir la arquitectura y llevarla a producción, convertido requisitos, a veces ambiguos en soluciones robustas. He liderado equipos técnicos y gestionado proyectos.\n\nDisfruto construyendo soluciones que reduzcan la complejidad de las personas que los usan, sin crear otra en el proceso."},
+  {"id": "H3", "section": "B · Portada · proyecto destacado", "file": "index.astro · L97", "pattern": "P3", "before": "Del dominio de negocio a la operación industrial", "after": "Sistemas Distribuidos en almacenes industriales robotizados", "why": "Remate de tarjeta encima de un título que ya nombra el proyecto. Aplicado: el antetítulo del destacado nombra el dominio concreto. «le damos una vuelta a esta idea» queda como comentario, no como copy.", "decision": "aceptada", "note": "Sistemas Distribuidos en almacenes industriales robotizados, le damos una vuelta a esta idea."},
+  {"id": "H4", "section": "C · Portada · proyectos seleccionados", "file": "index.astro · L131", "pattern": "P4", "before": "7 casos documentados", "after": "3 casos en portada · calculado con `selected.length`", "why": "El contador no coincidía con lo que hay debajo. Aplicado con el contador automático que pediste: `{selected.length} casos en portada`.", "decision": "aceptada", "note": "Tal vez se podría \"automtizar\" con un contador, de modo que añadir nuevos casos sea auto."},
+  {"id": "H5", "section": "D · Portada · experiencia", "file": "index.astro · L145-149", "pattern": "P5", "before": "He trabajado en productos digitales, plataformas empresariales y sistemas industriales, participando tanto en las decisiones de arquitectura como en su implementación y evolución.", "after": "He trabajado en producto digital, plataformas empresariales y sistemas industriales, liderando las decisiones técnicas y definiendo la implementación, las buenas prácticas y el agent-harness.", "why": "«Participando tanto en X como en Y» atenuaba un hecho que la lista de puestos demuestra. Ampliado con lo que pediste: decisiones técnicas, definición de la implementación, buenas prácticas y agent-harness.", "decision": "aceptada", "note": "ampliaría con liderando decisiónes técnica, definiendo la implementación, buenas practicas, Agent-harness.s"},
+  {"id": "H6", "section": "D · Portada · experiencia", "file": "index.astro · L160-162 · order/positions", "pattern": "P5", "before": "Basetis: Senior Technical Team Lead → Full Stack Developer → Full Stack Developer → Full Stack Developer → Siebel Developer → Web Software Developer · ACD: Full Stack Developer → Full Stack Developer → Product Owner & Developer → Full Stack Developer → Full Stack Developer → Junior Software Developer", "after": "Basetis: Web Software Developer → Full Stack Developer → Senior Technical Team Lead · ACD: Junior Software Developer → Full Stack Developer → Product Owner & Developer", "why": "Cadena deduplicada, en orden 2011→hoy y sin Siebel: `rolesOf()` en `index.astro`. Las etiquetas siguen siendo los títulos reales de `cv.ts`, porque «Frontend» y «Archi» no existen allí como puesto.", "decision": "aceptada", "note": "Algo más simple. Demasiado \"Developer\". El de siebel lo podemos quitar.  Junior -> Frontend -> FullStack > Team Lead > Archi"},
+  {"id": "H7", "section": "D · Portada · experiencia", "file": "data/cv.ts · acd-importador2 focus L258", "pattern": "P5 · necesita tu texto", "before": "nueva versión del importador", "after": "importador v2: CSV de más de 1 GB por memoria", "why": "Aplicado: el `focus` de la etapa es la etiqueta corta y tu relato, con tus palabras, es el `summary` del puesto en `cv.ts` (Velasquez→Velneo, memoria y punteros visuales, la idea sacada del código de VS Code, formateo de comas y fechas, C++ y ensamblador).", "decision": "aceptada", "note": "ACDAuditor tenía un importado que funcionaba por posiciones dentro de un fichero de texto, migrando directamente esas columnas dentro del sistema de Velazquez de Velneo,  el importador consistía en poder formatear documentos de +1gb csv, pero verlos de golpe era muy pesado. Así que se tenía que hacer por memoria y punteros visuales. La idea de como hacerlo vino que al abrirlo en VSC el edi iba suave, así que leyendo el repo pude ver como lo hacían y adapté esa forma la importador v2, haciendolo super fluido. Luego estaban las acciones para formatear el contenido: commas, fechas, espaciados, etc. Un proyecto muy tecnico en C++ con algunos algoritmos en ensamblador."},
+  {"id": "H8", "section": "E · Portada · blog", "file": "data/blog.ts · L107-108", "pattern": "P2", "before": "Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional.", "after": "Un almacén automatizado donde el hardware marca el ritmo, las necesidades del cliente marcan las versiones y la trazabilidad es crítica para el administrador, los operarios y la maquinaria.", "why": "Aplicado en `data/blog.ts` con tu frase: se añadió el verbo que faltaba («marcan») y se ajustó la concordancia («del cliente», «crítica»). Los tres actores se quedan.", "decision": "aceptada", "note": "Un almacén automatizado donde el hardware marca el ritmo, las necesidades de cliente las versiones y la trazabilidad es, literalmente, critica para el administrador, operarios y maquinaria."}
+]
+</script>
+
+  <script type="application/json" id="context">
+{
+  "H1": {"path": "/", "anchor": "#hero-title", "where": "Portada · antetítulo sobre el H1", "ctx": ["Solutions Architect · Software Engineer · Distributed Systems", "Quince años de evolución, de junior a ingeniero: requisitos, base de datos, backend, frontend, móvil y arquitectura.", "Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas."], "hl": ["Solutions Architect · Software Engineer · Distributed Systems"]},
+  "H2": {"path": "/", "anchor": "#hero-title", "where": "Portada · entradilla del hero", "ctx": ["Quince años de evolución, de junior a ingeniero: requisitos, base de datos, backend, frontend, móvil y arquitectura.", "Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.", "Ver proyectos · Descargar CV · Contactar conmigo"], "hl": ["Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas."]},
+  "H3": {"path": "/", "anchor": "#destacado-title", "where": "Portada · proyecto destacado · antetítulo", "ctx": ["Proyecto destacado", "Quabu Solutions", "Del dominio de negocio a la operación industrial", "Nakire TPS", "Coordinar personas, software y dispositivos industriales —robots, PLC, LEDs, cámaras y sonido— dentro de una operación de almacén que debía ser trazable y capaz de evolucionar."], "hl": ["Del dominio de negocio a la operación industrial"]},
+  "H4": {"path": "/", "anchor": "#proyectos-title", "where": "Portada · proyectos seleccionados · contador", "ctx": ["Proyectos seleccionados", "7 casos documentados", "Vino y agroalimentación · Bodega Digital", "Producto propio · Pachanga Community", "Producto digital · salud · LoveISDIN"], "hl": ["7 casos documentados"]},
+  "H5": {"path": "/", "anchor": "#experiencia-title", "where": "Portada · experiencia · entradilla", "ctx": ["Experiencia: producto, consultoría y arquitectura desde 2011", "14 puestos · 4 etapas", "He trabajado en productos digitales, plataformas empresariales y sistemas industriales, participando tanto en las decisiones de arquitectura como en su implementación y evolución."], "hl": ["He trabajado en productos digitales, plataformas empresariales y sistemas industriales, participando tanto en las decisiones de arquitectura como en su implementación y evolución."]},
+  "H6": {"path": "/", "anchor": "#experiencia-title", "where": "Portada · experiencia · cadena de puestos por etapa", "ctx": ["Basetis · ago 2017 — abr 2024", "Senior Technical Team Lead → Full Stack Developer → Full Stack Developer → Full Stack Developer → Siebel Developer → Web Software Developer", "ACD Sistemes SL · dic 2011 — abr 2017", "Full Stack Developer → Full Stack Developer → Product Owner & Developer → Full Stack Developer → Full Stack Developer → Junior Software Developer"], "hl": ["Senior Technical Team Lead → Full Stack Developer → Full Stack Developer → Full Stack Developer → Siebel Developer → Web Software Developer", "Full Stack Developer → Full Stack Developer → Product Owner & Developer → Full Stack Developer → Full Stack Developer → Junior Software Developer"]},
+  "H7": {"path": "/", "anchor": "#experiencia-title", "where": "Portada · experiencia · línea de foco de la etapa ACD", "ctx": ["ACD Sistemes SL · dic 2011 — abr 2017", "Full Stack Developer → Full Stack Developer → Product Owner & Developer → Full Stack Developer → Full Stack Developer → Junior Software Developer", "nueva versión del importador", "Quabu Solutions · arquitectura de producto y automatización industrial", "Pachanga Community · app móvil y web de fútbol amateur"], "hl": ["nueva versión del importador"]},
+  "H8": {"path": "/", "anchor": "#blog-title", "where": "Portada · artículo destacado · descripción", "ctx": ["Artículo destacado", "Lecciones de diseñar una plataforma industrial conectada", "Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional.", "Leer el artículo"], "hl": ["Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional."]}
+}
+</script>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "voice-review-home-v1";
+      var items = JSON.parse(document.getElementById("data").textContent);
+      var CTX = JSON.parse(document.getElementById("context").textContent);
+      var state = loadState();
+      // The decisions taken in this round ship with the page: a fresh browser
+      // opens the review already answered instead of asking the same questions.
+      function seedState(stored) {
+        items.forEach(function (it) {
+          if (stored[it.id] || !it.decision) return;
+          stored[it.id] = { decision: it.decision, text: it.note || "" };
+        });
+        return stored;
+      }
+      var filter = "all";
+      var app = document.getElementById("app");
+      var bar = document.getElementById("bar");
+      var countLabel = document.getElementById("count-label");
+      var saveState = document.getElementById("save-state");
+      var saveTimer = null;
+      var cards = {};
+
+      function loadState() {
+        var stored;
+        try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {}; }
+        catch (e) { stored = {}; }
+        return seedState(stored);
+      }
+
+      function persist(show) {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            if (show) flash("guardado");
+          } catch (e) { flash("no se pudo guardar"); }
+        }, 250);
+      }
+
+      function flash(text) {
+        saveState.textContent = text;
+        setTimeout(function () { saveState.textContent = ""; }, 1400);
+      }
+
+      function entry(id) {
+        if (!state[id]) state[id] = { decision: "pendiente", text: "" };
+        return state[id];
+      }
+
+      function isReviewed(it) {
+        var st = state[it.id];
+        if (!st) return false;
+        return st.decision !== "pendiente" || (st.text || "").trim().length > 0;
+      }
+
+      function displayState(it) {
+        var st = state[it.id];
+        var dec = (st && st.decision) || "pendiente";
+        if (dec === "aceptada" || dec === "rechazada") return dec;
+        if (st && (st.text || "").trim()) return "propia";
+        return "pendiente";
+      }
+
+      /* ---------- build cards ---------- */
+
+      function el(tag, cls, text) {
+        var node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text != null) node.textContent = text;
+        return node;
+      }
+
+      function textFragment(s) {
+        var t = (s || "").replace(/\s+/g, " ").trim();
+        if (t.length > 110) {
+          t = t.slice(0, 110);
+          t = t.slice(0, t.lastIndexOf(" "));
+        }
+        return "text=" + encodeURIComponent(t);
+      }
+
+      function highlight(text, phrases) {
+        var ranges = [];
+        (phrases || []).forEach(function (p) {
+          if (!p) return;
+          var from = 0, at;
+          while ((at = text.indexOf(p, from)) >= 0) {
+            ranges.push([at, at + p.length]);
+            from = at + p.length;
+          }
+        });
+        ranges.sort(function (a, b) { return a[0] - b[0]; });
+        var merged = [];
+        ranges.forEach(function (r) {
+          var last = merged[merged.length - 1];
+          if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+          else merged.push([r[0], r[1]]);
+        });
+        if (!merged.length) return [document.createTextNode(text)];
+        var nodes = [], pos = 0;
+        merged.forEach(function (r) {
+          if (r[0] > pos) nodes.push(document.createTextNode(text.slice(pos, r[0])));
+          var mark = document.createElement("mark");
+          mark.textContent = text.slice(r[0], r[1]);
+          nodes.push(mark);
+          pos = r[1];
+        });
+        if (pos < text.length) nodes.push(document.createTextNode(text.slice(pos)));
+        return nodes;
+      }
+
+      function buildCard(it) {
+        var card = el("article", "card");
+        card.id = "card-" + it.id;
+
+        var head = el("div", "card-head");
+        head.appendChild(el("span", "id", it.id));
+        head.appendChild(el("span", "file", it.file));
+        if (it.pattern) {
+          var pat = el("span", "pattern" + (it.pattern.indexOf("necesita") >= 0 ? " pattern--input" : ""), it.pattern);
+          head.appendChild(pat);
+        }
+        card.appendChild(head);
+
+        var meta = CTX[it.id] || {};
+
+        if (meta.where) {
+          var where = el("p", "where");
+          where.appendChild(el("b", null, "Dónde: "));
+          where.appendChild(document.createTextNode(meta.where));
+          card.appendChild(where);
+        }
+
+        if (meta.path != null) {
+          var frag = (meta.hl && meta.hl.length ? meta.hl[0] : it.before);
+          var suffix = (meta.anchor || "#") + ":~:" + textFragment(frag);
+          var links = el("div", "links");
+          var site = el("a", null, "Ver en el sitio ↗");
+          site.href = "https://gabrielalcantara.com" + meta.path + suffix;
+          site.target = "_blank";
+          site.rel = "noopener";
+          site.title = "Abre la página y salta a la frase (si el navegador lo soporta)";
+          links.appendChild(site);
+          var local = el("a", null, "En local ↗");
+          local.href = "http://localhost:4321" + meta.path + suffix;
+          local.target = "_blank";
+          local.rel = "noopener";
+          local.title = "Necesita el servidor de desarrollo: astro dev";
+          links.appendChild(local);
+          card.appendChild(links);
+        }
+
+        if (meta.ctx && meta.ctx.length) {
+          var ctxBox = el("div", "context");
+          ctxBox.appendChild(el("span", "quote-label", "Contexto en la página"));
+          meta.ctx.forEach(function (para) {
+            var p = document.createElement("p");
+            highlight(para, meta.hl && meta.hl.length ? meta.hl : [it.before]).forEach(function (n) {
+              p.appendChild(n);
+            });
+            ctxBox.appendChild(p);
+          });
+          card.appendChild(ctxBox);
+        }
+
+        var quotes = el("div", "quotes");
+        var qb = el("div", "quote");
+        qb.appendChild(el("span", "quote-label", "Antes"));
+        qb.appendChild(el("p", null, it.before));
+        quotes.appendChild(qb);
+
+        var qa = el("div", "quote quote--after");
+        qa.appendChild(el("span", "quote-label", "Propuesta"));
+        qa.appendChild(el("p", null, it.after || "— (necesita tu texto)"));
+        quotes.appendChild(qa);
+        card.appendChild(quotes);
+
+        var why = el("p", "why");
+        why.appendChild(el("b", null, "Por qué: "));
+        why.appendChild(document.createTextNode(it.why));
+        card.appendChild(why);
+
+        var controls = el("div", "controls");
+        var seg = el("div", "seg");
+        seg.setAttribute("role", "group");
+        seg.setAttribute("aria-label", "Decisión para " + it.id);
+        ["pendiente", "aceptada", "rechazada"].forEach(function (dec) {
+          var b = el("button", null, dec.charAt(0).toUpperCase() + dec.slice(1));
+          b.type = "button";
+          b.setAttribute("data-dec", dec);
+          b.addEventListener("click", function () {
+            var st = entry(it.id);
+            st.decision = st.decision === dec && dec !== "pendiente" ? "pendiente" : dec;
+            refresh(it);
+            persist(true);
+          });
+          seg.appendChild(b);
+        });
+        controls.appendChild(seg);
+        card.appendChild(controls);
+
+        var mine = el("div", "mine");
+        var label = el("label", null, "Cómo lo escribiría yo");
+        label.htmlFor = "text-" + it.id;
+        mine.appendChild(label);
+        var ta = el("textarea");
+        ta.id = "text-" + it.id;
+        ta.rows = 2;
+        ta.placeholder = "Escribe tu versión o tu comentario…";
+        ta.value = (state[it.id] && state[it.id].text) || "";
+        ta.addEventListener("input", function () {
+          entry(it.id).text = ta.value;
+          grow(ta);
+          refresh(it);
+          persist(false);
+        });
+        mine.appendChild(ta);
+        card.appendChild(mine);
+
+        cards[it.id] = { card: card, seg: seg, ta: ta };
+        refresh(it, true);
+        return card;
+      }
+
+      function grow(ta) {
+        ta.style.height = "auto";
+        ta.style.height = Math.max(72, ta.scrollHeight + 2) + "px";
+      }
+
+      function refresh(it, initial) {
+        var c = cards[it.id];
+        if (!c) return;
+        var st = state[it.id] || { decision: "pendiente", text: "" };
+        c.card.setAttribute("data-state", displayState(it));
+        Array.prototype.forEach.call(c.seg.querySelectorAll("button"), function (b) {
+          b.setAttribute("aria-pressed", String((st.decision || "pendiente") === b.getAttribute("data-dec")));
+        });
+        if (!initial) applyFilter();
+        updateCounters();
+      }
+
+      function updateCounters() {
+        var reviewed = items.filter(isReviewed).length;
+        countLabel.textContent = reviewed + " / " + items.length + " revisadas";
+        bar.querySelector("i").style.width = (items.length ? (reviewed / items.length) * 100 : 0) + "%";
+        bar.setAttribute("aria-valuenow", String(reviewed));
+      }
+
+      function applyFilter() {
+        items.forEach(function (it) {
+          var c = cards[it.id];
+          if (!c) return;
+          var st = state[it.id] || {};
+          var dec = st.decision || "pendiente";
+          var hasText = (st.text || "").trim().length > 0;
+          var show = filter === "all"
+            || (filter === "propia" && hasText)
+            || (filter === "pendiente" && !isReviewed(it))
+            || (filter === "aceptada" && dec === "aceptada")
+            || (filter === "rechazada" && dec === "rechazada");
+          c.card.style.display = show ? "" : "none";
+        });
+      }
+
+      function build() {
+        var sections = [];
+        items.forEach(function (it) {
+          if (!sections.length || sections[sections.length - 1].title !== it.section) {
+            sections.push({ title: it.section, items: [] });
+          }
+          sections[sections.length - 1].items.push(it);
+        });
+
+        sections.forEach(function (sec) {
+          var wrap = el("section", "section");
+          wrap.appendChild(el("h2", "section-title", sec.title));
+          sec.items.forEach(function (it) { wrap.appendChild(buildCard(it)); });
+          app.appendChild(wrap);
+        });
+
+        var empty = el("div", "empty", "No hay cambios con este filtro.");
+        empty.id = "empty";
+        empty.style.display = "none";
+        app.appendChild(empty);
+
+        items.forEach(function (it) { grow(cards[it.id].ta); });
+        updateCounters();
+        applyFilter();
+      }
+
+      /* ---------- filters ---------- */
+
+      Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (chip) {
+        chip.addEventListener("click", function () {
+          filter = chip.getAttribute("data-filter");
+          Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (c) {
+            c.setAttribute("aria-pressed", String(c === chip));
+          });
+          applyFilter();
+        });
+      });
+
+      /* ---------- export ---------- */
+
+      function buildMarkdown() {
+        var reviewed = items.filter(isReviewed);
+        var accepted = items.filter(function (it) { return (state[it.id] || {}).decision === "aceptada"; });
+        var rejected = items.filter(function (it) { return (state[it.id] || {}).decision === "rechazada"; });
+        var mine = items.filter(function (it) { return ((state[it.id] || {}).text || "").trim(); });
+
+        var lines = [];
+        lines.push("# Correcciones de voz — revisión de la portada");
+        lines.push("");
+        lines.push("Generado: " + new Date().toLocaleString("es-ES"));
+        lines.push("");
+        lines.push("Revisadas: " + reviewed.length + "/" + items.length
+          + " · Aceptadas: " + accepted.length
+          + " · Rechazadas: " + rejected.length
+          + " · Con mi versión: " + mine.length);
+        lines.push("");
+        var pending = items.filter(function (it) { return !isReviewed(it); }).map(function (it) { return it.id; });
+        if (pending.length) {
+          lines.push("Sin revisar: " + pending.join(", "));
+          lines.push("");
+        }
+
+        items.forEach(function (it) {
+          var st = state[it.id] || {};
+          var dec = st.decision || "pendiente";
+          var text = (st.text || "").trim();
+          if (dec === "pendiente" && !text) return;
+
+          lines.push("## " + it.id + " — " + it.file);
+          lines.push("");
+          lines.push("Decisión: " + dec);
+          lines.push("");
+          lines.push("**Antes:** «" + it.before + "»");
+          lines.push("");
+          lines.push("**Propuesta:** " + (it.after ? "«" + it.after + "»" : "(necesita tu texto)"));
+          lines.push("");
+          if (text) {
+            lines.push("**Mi versión / comentario:**");
+            lines.push("");
+            lines.push(text);
+            lines.push("");
+          }
+          lines.push("_Por qué: " + it.why + "_");
+          lines.push("");
+          lines.push("---");
+          lines.push("");
+        });
+
+        return lines.join("\n");
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { flash("copiado"); }, function () { fallbackCopy(text); });
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); flash("copiado"); }
+        catch (e) { flash("copia manual"); }
+        document.body.removeChild(ta);
+      }
+
+      document.getElementById("copy").addEventListener("click", function () {
+        copyText(buildMarkdown());
+      });
+
+      document.getElementById("download").addEventListener("click", function () {
+        var blob = new Blob([buildMarkdown()], { type: "text/markdown;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "correcciones-voz.md";
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+        flash("descargado");
+      });
+
+      document.getElementById("reset").addEventListener("click", function () {
+        if (!confirm("¿Borrar todas tus decisiones y comentarios? No se puede deshacer.")) return;
+        state = {};
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) { }
+        app.innerHTML = "";
+        cards = {};
+        build();
+        flash("borrado");
+      });
+
+      build();
+
+      // Mark empty state on filter switches.
+      var observer = new MutationObserver(function () {
+        var visible = items.some(function (it) {
+          var c = cards[it.id];
+          return c && c.card.style.display !== "none";
+        });
+        document.getElementById("empty").style.display = visible ? "none" : "";
+      });
+      items.forEach(function (it) { observer.observe(cards[it.id].card, { attributes: true, attributeFilter: ["style"] }); });
+    })();
+  </script>
+</body>
+
+</html>
