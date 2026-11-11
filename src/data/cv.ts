@@ -361,7 +361,7 @@ export const POSITIONS: Position[] = [
 		title: "Arquitecto de soluciones de software",
 		start: "2024.01",
 		end: "2026.08",
-		place: "Vilanova i la Geltrù",
+		place: "Vilanova i la Geltrú",
 		mode: "híbrido",
 		focus: "arquitectura de producto y automatización industrial",
 		summary:
@@ -789,6 +789,24 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 			"Atomic Design",
 		],
 	},
+	{
+		id: "pachanga-engine",
+		positionId: "pachanga-own",
+		name: "Pachanga Engine",
+		short: "engine",
+		start: "2026.07",
+		domain: "product",
+		pillars: ["data", "integration"],
+		summary:
+			"Motor de visión por computadora que convierte el vídeo de un partido de fútbol en un MatchModel JSON canónico: detección, seguimiento y OCR por etapas, con una app web local para revisar el resultado.",
+		achievements: [
+			"Pipeline de puertos y adaptadores: cada etapa del análisis se sustituye sin tocar las demás.",
+			"Detección con YOLO26 y seguimiento con ByteTrack; marcador y dorsales por OCR con PaddleOCR.",
+			"Evidencia en espacio de píxel y de campo fusionada en un mismo registro de eventos, con calibración, trayectorias y mapas de calor.",
+			"Puertas de calidad deterministas: cobertura al 100%, complejidad acotada y mutación sin supervivientes.",
+		],
+		stack: ["Python", "YOLO26", "ByteTrack", "PaddleOCR", "Pydantic"],
+	},
 ];
 
 export function resolvePositions(
@@ -993,6 +1011,7 @@ export const EXPERTISE: { label: string; items: string[] }[] = [
 			"Desarrollo Agéntico",
 			"Introducción a Machine Learning",
 			"IA en Bodega Digital",
+			"Visión por computadora",
 		],
 	},
 	{ label: "TDD", items: ["BDD", "CI/CD", "Jenkins"] },

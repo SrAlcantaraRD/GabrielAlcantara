@@ -440,7 +440,7 @@ describe("periods", () => {
 	it("keeps every authored position reachable", () => {
 		assert.equal(POSITIONS.length, 14);
 		assert.equal(COMPANIES.length, 4);
-		assert.equal(PROJECTS.length, 25);
+		assert.equal(PROJECTS.length, 26);
 	});
 });
 
