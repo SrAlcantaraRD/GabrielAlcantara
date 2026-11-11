@@ -167,19 +167,41 @@ export function relatedPosts(post: PostMeta): PostMeta[] {
 	return post.related.map(postOf);
 }
 
-const dateFormat = new Intl.DateTimeFormat("es-ES", {
-	day: "numeric",
-	month: "long",
-	year: "numeric",
-	timeZone: "UTC",
-});
+const DATE_FORMATS = {
+	es: new Intl.DateTimeFormat("es-ES", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+	en: new Intl.DateTimeFormat("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+	ca: new Intl.DateTimeFormat("ca-ES", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+} as const;
 
 export function formatDate(iso: string): string {
-	return dateFormat.format(new Date(`${iso}T00:00:00Z`));
+	return DATE_FORMATS.es.format(new Date(`${iso}T00:00:00Z`));
+}
+
+export function formatDateIn(iso: string, lang: "es" | "en" | "ca"): string {
+	return DATE_FORMATS[lang].format(new Date(`${iso}T00:00:00Z`));
 }
 
 export function postHref(slug: string): string {
 	return `/blog/${slug}/`;
+}
+
+export function postHrefIn(lang: "es" | "en" | "ca", slug: string): string {
+	return lang === "es" ? postHref(slug) : `/${lang}/blog/${slug}/`;
 }
 
 export function categoryHref(slug: string): string {

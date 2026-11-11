@@ -1,0 +1,227 @@
+---
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+---
+
+<LocalizedCaseLayout
+  lang="en"
+  projectId="bodega-digital"
+  related={["ddd-dominios-complejos"]}
+  publishedTime="2026-11-10"
+>
+  <h2 id="resumen">Executive summary</h2>
+  <p>
+    Bodega Digital is a smart tool for managing wine inventory in wineries and
+    companies that handle large numbers of bottles. The project, funded by the
+    Ministry of Industry, Trade and Tourism and by the European NextGenerationEU
+    fund, was planned in two phases: radio-frequency identification (RFID) of
+    bottles with demand forecasting, and inventory refinement through computer
+    vision.
+  </p>
+  <p>
+    Quabu Solutions took part as the consortium's technology partner, contributing
+    software development and integration. My work was the architecture and the
+    domain model, on a monorepo monolith with frontend, backend and database in the
+    same repository, with DDD for boundaries and TDD for business logic.
+  </p>
+  <p>
+    It was built in two phases —March to July 2024 and October 2024 to February
+    2025—, separated by the development of Quabu's Atlassian Addons. One deployment
+    and one integration cycle for both phases.
+  </p>
+
+  <h2 id="contexto">Context: a winery is not just any warehouse</h2>
+  <p>
+    In a winery, bottles can spend up to fifteen years ageing, with different
+    operations during that time. And references look very similar to each other:
+    the year, the variety, the plot change. Knowing how many bottles there are, of
+    which one and where they are is a real business problem, not an inventory
+    detail.
+  </p>
+  <p>
+    The project was born for the wine sector, with the idea of later expanding to
+    other areas —manufacturing, airports, agrifood or medicine— where identifying
+    individual units inside a stock also matters.
+  </p>
+
+  <h2 id="problema">The problem</h2>
+  <ul>
+    <li>
+      Identify each bottle individually, not by reference: vintage, variety and plot
+      make every unit a different case.
+    </li>
+    <li>
+      Read those labels in an environment hostile to radio frequency: the liquid in
+      the bottle alters readings, and a full shelf concentrates hundreds of tags.
+    </li>
+    <li>
+      Anticipate demand to avoid stock-outs and improve availability for the end
+      customer.
+    </li>
+    <li>
+      Maintain traceability across the entire wine value chain.
+    </li>
+  </ul>
+
+  <h2 id="restricciones">Constraints</h2>
+  <ul>
+    <li>
+      <strong>RFID over liquid.</strong> UHF tags had to be evaluated for the bottle
+      neck while minimising read errors.
+    </li>
+    <li>
+      <strong>High density.</strong> Antennas had to work with many bottles
+      together, not with one isolated label.
+    </li>
+    <li>
+      <strong>Consortium project.</strong> Six partners —Clúster Digital de
+      Catalunya, INNOVI, Grupo ICA, Raw Data, DO5 Hispanobodegas and Quabu
+      Solutions— with public funding and committed phases.
+    </li>
+    <li>
+      <strong>Two phases.</strong> The first with RFID and demand forecasting; the
+      second with computer vision to refine inventory.
+    </li>
+  </ul>
+
+  <h2 id="rol">My role</h2>
+  <p>
+    My work focused on architecture and the domain model: which pieces existed,
+    where the boundaries were and how business logic was tested. I was part of a
+    team and a consortium: what follows distinguishes what I designed from what was
+    collective work.
+  </p>
+  <ul>
+    <li>
+      I designed the monorepo monolith: frontend, backend and database in the same
+      repository, with a single deployment.
+    </li>
+    <li>
+      I modelled the domain with DDD: bottle, reference, vintage, batch and position
+      as vocabulary shared with the business.
+    </li>
+    <li>
+      I supported the logic with TDD, so inventory rules could change without
+      breaking the ones that already worked.
+    </li>
+    <li>
+      I placed each integration —RFID readers, computer vision, the prediction
+      model— behind its own adapter.
+    </li>
+  </ul>
+
+  <h2 id="arquitectura">Architecture: a monorepo monolith</h2>
+  <p>
+    Three pieces in one repository: frontend, backend and database. One deployment,
+    one integration cycle and the client-server contract versioned alongside, so an
+    API change was visible in the same place as its consumer.
+  </p>
+  <p>
+    A monolith does not mean an unstructured block. Separation happened inside: use
+    cases, layers and domain boundaries. The infrastructure was one, but the code
+    was not one big pile.
+  </p>
+  <p>
+    That is where I brought backend architecture into the frontend for the first
+    time: the same DDD logic layer used by the server, combined with Atomic Design
+    in the interface.
+  </p>
+
+  <h2 id="ddd-tdd">DDD and TDD inside the monolith</h2>
+  <p>
+    DDD provided the language and boundaries. The code used the winery's vocabulary
+    —bottles, references, vintages, batches, positions— instead of talking about
+    tables and forms, and each context could change without dragging the others.
+  </p>
+  <p>
+    TDD provided the safety net. Inventory rules were written as tests before
+    implementation, so the model could change without fear of breaking a rule
+    nobody remembered. In a monolith that net is especially profitable: the whole
+    domain is tested in one process, without standing up distributed infrastructure
+    to check it.
+  </p>
+
+  <h2 id="integraciones">RFID, vision and forecasting</h2>
+  <p>
+    The first phase combined radio-frequency identification and machine-learning
+    demand forecasting. The second added computer vision to collect additional
+    information and improve inventory accuracy. In advanced phases, the project
+    planned to integrate Blockchain alongside RFID to provide full traceability
+    across the value chain.
+  </p>
+  <p>
+    Each of those pieces enters through an adapter. The domain expresses what it
+    needs —identify a bottle, know its position, anticipate a stock-out— and the
+    adapter handles how a reader, a camera or a model solves it. Changing hardware
+    or model does not force changes to business rules.
+  </p>
+
+  <h2 id="evolucion">What remained of the monolith</h2>
+  <p>
+    The monolith lasted through both product phases: one deployment, one integration
+    cycle and the domain in one repository. What survived the project was the domain
+    model, the language shared with operations and the way of testing.
+  </p>
+  <p>
+    <a href="/en/projects/nakire-tps/">Nakire TPS</a> is an in-house product, with
+    services and events. What it takes from here is the way of working: the monolith
+    was not a shortcut that had to be undone, it was the place where the domain was
+    understood well enough for the model to serve later in another system.
+  </p>
+
+  <h2 id="decisiones">Technical decisions</h2>
+  <ul>
+    <li>
+      <strong>Monorepo monolith instead of services.</strong> One deployment and one
+      integration cycle, in exchange for assuming a single scaling rhythm.
+    </li>
+    <li>
+      <strong>DDD inside the monolith.</strong> Domain boundaries in the code, in
+      exchange for modelling effort that is only recovered if the domain is
+      respected.
+    </li>
+    <li>
+      <strong>TDD over business logic.</strong> Tests first in the domain, in
+      exchange for writing more code than strictly needed to start.
+    </li>
+    <li>
+      <strong>One adapter per integration.</strong> RFID, vision and forecasting
+      change at their own pace, in exchange for keeping the port contract stable.
+    </li>
+  </ul>
+
+  <h2 id="resultados">Outcomes</h2>
+  <p>
+    The outcomes I can state are the ones the project declares, not invented
+    metrics:
+  </p>
+  <ul>
+    <li>
+      Each bottle is identified individually, with its vintage, variety and plot.
+    </li>
+    <li>
+      Product availability is queried quickly and in detail, instead of by estimate.
+    </li>
+    <li>
+      Demand forecasting makes it possible to anticipate stock-outs.
+    </li>
+    <li>
+      Traceability follows the bottle along the value chain.
+    </li>
+  </ul>
+
+  <h2 id="aprendizajes">Lessons learned</h2>
+  <ul>
+    <li>
+      Separation is decided inside the code before it is decided in infrastructure:
+      a monolith with clear boundaries can be split later; one without them cannot.
+    </li>
+    <li>
+      DDD and TDD are not distributed-architecture ceremony: they support a product
+      that still fits in one deployment just as well.
+    </li>
+    <li>
+      In projects with public funding and several partners, shared vocabulary is
+      part of the delivery.
+    </li>
+  </ul>
+</LocalizedCaseLayout>

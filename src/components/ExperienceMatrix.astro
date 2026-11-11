@@ -697,9 +697,20 @@ const payload = {
     --lane-h: calc(var(--bar-h) + var(--bar-gap));
     --step: 6.25%;
     --offset: 0%;
-    --terracotta: #9e4e36;
-    --sage: #3e5c49;
-    --cobalt: #294c60;
+    --terracotta: var(--color-terracotta);
+    --sage: var(--color-sage);
+    --cobalt: var(--color-cobalt);
+  }
+
+  [data-theme="dark"] .bar {
+    color: #fdfbf8;
+    background: color-mix(in srgb, var(--bar-color) 82%, #000);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 92%, #000);
+  }
+
+  [data-theme="dark"] .bar:hover,
+  [data-theme="dark"] .bar:focus-visible {
+    background: color-mix(in srgb, var(--bar-color) 90%, #000);
   }
 
   .matrix-controls {

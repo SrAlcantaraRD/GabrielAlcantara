@@ -1,0 +1,242 @@
+---
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+import PachangaDiagram from "../../../components/PachangaDiagram.astro";
+---
+
+<LocalizedCaseLayout
+  lang="en"
+  projectId="pachanga-community"
+  related={["ddd-dominios-complejos"]}
+  publishedTime="2026-11-11"
+>
+  <h2 id="resumen">Executive summary</h2>
+  <p>
+    Pachanga Community organises a group's football matches: calendar, teams,
+    statistics and community in one place, instead of scattered across a chat. The
+    app is published on the App Store and Play Store, and the website serves as a
+    shop window, the host for universal links and a support channel.
+  </p>
+  <p>
+    There is no team behind it: product, design, app, website, infrastructure and
+    support are all the same person. I have written very little code: 95% of it was
+    written by LaIA, which is what I call my use of LLMs and agents. I have been
+    playing Tony Stark, delegating as much as I can and still struggling to keep up,
+    because many pieces have to work at once —infrastructure, cloud, web, stores,
+    revenue, monitoring, PostHog and more— to give the user a careful, elegant,
+    simple and direct experience that solves their problem. Everything runs on
+    optimistic updates and on guiding the user by anticipating the action they want
+    to take.
+  </p>
+  <p>
+    The idea dates from 2019; back then I lacked the knowledge to take it all the way.
+    In January 2026 I picked it up again from scratch, published it in the stores and
+    now work on distribution and revenue while continuing to add features.
+  </p>
+
+  <h2 id="contexto">Context</h2>
+  <p>
+    In a group of friends who play every week, organisation lives in a chat: who
+    plays, who cancels at the last minute, how teams are split and who keeps score.
+    When the group grows, the chat stops being a tool and becomes the problem.
+  </p>
+  <p>
+    The product attacks that: an app for the group, with privacy as a design
+    decision. Changes are saved on the phone and synced with the cloud; there are no
+    indexed public profiles and no data selling.
+  </p>
+
+  <h2 id="problema">The problem</h2>
+  <ul>
+    <li>
+      Coordinate a group that changes every week: call-ups, absences and balanced
+      teams.
+    </li>
+    <li>
+      Keep statistics people want to look at, without turning it into a professional
+      league.
+    </li>
+    <li>
+      Work with poor coverage on a football pitch, without depending on the network
+      for every screen.
+    </li>
+    <li>
+      Publish in two stores, in three languages and with no support team behind it.
+    </li>
+  </ul>
+
+  <h2 id="restricciones">Constraints</h2>
+  <ul>
+    <li>
+      <strong>One person.</strong> Every architecture decision has to reduce the cost
+      of maintaining it six months later.
+    </li>
+    <li>
+      <strong>Two stores.</strong> App Store and Play Store with their reviews, builds
+      and universal links.
+    </li>
+    <li>
+      <strong>Three languages.</strong> Spanish, English and Catalan, in both the app
+      and the website.
+    </li>
+    <li>
+      <strong>Infrastructure cost.</strong> A cheap and reproducible self-hosted
+      deployment, not a managed platform for convenience.
+    </li>
+  </ul>
+
+  <h2 id="rol">My role</h2>
+  <p>
+    Everything. Architecture, domain, mobile app, website, identity design,
+    deployment, stores and support. What follows describes the decisions, not a
+    division of work.
+  </p>
+
+  <h2 id="movil">Mobile architecture: hexagonal over DDD</h2>
+  <p>
+    The app is React Native with Expo and TypeScript. The structure is hexagonal over
+    DDD: the flow goes from the screen to domain hooks, from there to use cases and
+    from there to ports, which are implemented by Supabase or in-memory adapters.
+  </p>
+  <p>
+    The domain layer is just TypeScript, without React Native, Expo or a database:
+    the types and one line of Zod validation control the data that enters, leaves
+    and moves inside the app. Use cases are tested without infrastructure, and
+    changing provider means writing another adapter. The interface is organised with
+    Atomic Design —atoms, molecules, organisms, layouts and screens— so a visual
+    change does not force changes in the logic.
+  </p>
+
+  <PachangaDiagram />
+
+  <p class="diagram-alt">
+    In text: the app and its screens call domain hooks; hooks call use cases; use
+    cases depend on ports; adapters implement those ports against Supabase, memory or
+    cache. The interface is composed of particles, atoms, molecules, organisms,
+    layouts and screens.
+  </p>
+
+  <h2 id="dominio">A domain that is not a CRUD</h2>
+  <p>
+    The model has team, season, match and player, but the interesting part is at the
+    edges. A player belongs to a team with their own name and attributes; matches
+    allow ghost players who later claim their profile with a one-time code; ratings
+    between teammates calculate a relative level within the group, not an absolute
+    score.
+  </p>
+  <p>
+    Each of those rules has a use case and its tests. It is the part of the project I
+    have reused most: when the domain is isolated, the app can change shape without
+    the business noticing.
+  </p>
+
+  <h2 id="web">Web architecture: Ghost, generated theme and three languages</h2>
+  <p>
+    The website is Ghost with a custom Handlebars theme. The theme is not edited by
+    hand: it is generated from its own sources —templates and translation files— and
+    the build writes the variants for each language. A new page in three languages
+    therefore does not mean three templates drifting apart.
+  </p>
+  <p>
+    Besides being a shop window, the website hosts universal links and is a
+    discovery surface: support, privacy and terms routes per language, an
+    `llms.txt`, a catalogue for agents and a `robots.txt` with a content signal.
+  </p>
+
+  <h2 id="enlaces">Universal links and fallback</h2>
+  <p>
+    A link shared in a chat has to open the app if it is installed and take you to the
+    store if it is not. That is two pieces: `apple-app-site-association` for iOS and
+    `assetlinks.json` for Android, served by its own nginx; and a web fallback that
+    redirects to the store when the link reaches a mobile browser.
+  </p>
+  <p>
+    The awkward case is the claim link for a ghost player: if the person opening it
+    does not have the app, they cannot be left on an error page. That is why the
+    localised 404 also redirects to the store, instead of leaving the user in a dead
+    end.
+  </p>
+
+  <h2 id="despliegue">Deployment and operations</h2>
+  <p>
+    Locally, everything starts with Docker Compose. In production, the website runs
+    on a stack with Traefik over Dokploy, with the Ghost container, the database and
+    the nginx for universal links. The app is built and published with EAS and
+    Fastlane for both stores.
+  </p>
+  <p>
+    None of that is glamorous, but it is what makes the product exist: certificates,
+    routes, Traefik priorities, environment variables and a build that fails early
+    if a configuration file is not where it should be.
+  </p>
+
+  <h2 id="harness">How the code is written: the agent harness</h2>
+  <p>
+    A good part of Pachanga's code is written by agents. They implement and test; I
+    define the problem, review and decide. The harness is what makes that division
+    work: `.instructions` files that say how each piece is written, Biome plugins
+    that stop what should never reach review, and deterministic scripts that check
+    what a visual review cannot see.
+  </p>
+  <p>
+    I am not trying to write more code faster. I am trying to make the agent write
+    better: the same criteria across every layer, fewer repeated decisions and more
+    of my time on what moves the business. When the pattern is the same from top to
+    bottom, review stops being archaeology.
+  </p>
+
+  <h2 id="decisiones">Technical decisions</h2>
+  <ul>
+    <li>
+      <strong>Hexagonal over DDD on mobile.</strong> Pure domain and interchangeable
+      adapters, in exchange for more files per feature.
+    </li>
+    <li>
+      <strong>Local-first with Supabase.</strong> The app works without a network, in
+      exchange for assuming sync and conflicts.
+    </li>
+    <li>
+      <strong>Generated web theme.</strong> One source for three languages, in
+      exchange for a build step you have to understand.
+    </li>
+    <li>
+      <strong>Own infrastructure on Dokploy.</strong> Control and low cost, in
+      exchange for operating it myself.
+    </li>
+  </ul>
+
+  <h2 id="resultados">Outcomes</h2>
+  <ul>
+    <li>App published on the App Store and Play Store, with its website and support channel.</li>
+    <li>
+      A domain tested without infrastructure, with adapters for Supabase and memory.
+    </li>
+    <li>
+      Three languages in app and website from a single copy source per page.
+    </li>
+    <li>
+      Links that open the app when installed and take you to the store when not.
+    </li>
+  </ul>
+
+  <h2 id="aprendizajes">Lessons learned</h2>
+  <ul>
+    <li>
+      Owning the whole product changes your judgement: every piece has to be obvious
+      to the version of you six months from now.
+    </li>
+    <li>
+      I like making the complex simple. When the whole project follows the same
+      pattern with clear rules —enum → entity → port → use case, with hooks injecting
+      the adapter that implements the port— knowing where each piece lives is fast. In
+      Pachanga I have changed adapters fairly often, reimplementing them so the e2e,
+      unit and mock tests passed; without that architecture, every change would have
+      crossed the entire app. It is dependency injection, the backend kind, brought to
+      the frontend. Along with the Biome plugins and deterministic scripts, it is one
+      of the pieces of the project's agent harness.
+    </li>
+    <li>
+      Universal links, stores and deployment are invisible to everyone, and they
+      decide whether the product is finished or merely published.
+    </li>
+  </ul>
+</LocalizedCaseLayout>

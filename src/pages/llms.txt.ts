@@ -4,6 +4,7 @@ import { POSTS, categoryOf, postHref } from "../data/blog.ts";
 import { COMPANIES } from "../data/cv.ts";
 import { OTHER_PROJECTS, PROJECT_CASES } from "../data/projects.ts";
 import { SERVICES, SITE } from "../data/site.ts";
+import { PROFILE } from "../i18n/profile.ts";
 import { STATIC_PAGES, casePath } from "../lib/seo.ts";
 
 /**
@@ -63,6 +64,27 @@ export const GET: APIRoute = () => {
 		...SITE.socials.map((social) => `- ${social.label}: ${social.href}`),
 	];
 
+	const translated = [
+		`- [English profile](${absolute("/en/")}): ${PROFILE.en.metaDescription}`,
+		`- [Perfil en català](${absolute("/ca/")}): ${PROFILE.ca.metaDescription}`,
+		`- [English writing](${absolute("/en/blog/")}): ${PROFILE.en.writing.title}`,
+		`- [Articles en català](${absolute("/ca/blog/")}): ${PROFILE.ca.writing.title}`,
+		`- [English projects](${absolute("/en/projects/")}): ${PROFILE.en.selected.title}`,
+		`- [Projectes en català](${absolute("/ca/projects/")}): ${PROFILE.ca.selected.title}`,
+		...POSTS.map(
+			(post) =>
+				`- [${PROFILE.en.posts[post.slug].title}](${absolute(`/en/blog/${post.slug}/`)}) · ${PROFILE.en.posts[post.slug].category}`,
+		),
+		...POSTS.map(
+			(post) =>
+				`- [${PROFILE.ca.posts[post.slug].title}](${absolute(`/ca/blog/${post.slug}/`)}) · ${PROFILE.ca.posts[post.slug].category}`,
+		),
+		...PROJECT_CASES.filter((item) => item.caseStudyHref).flatMap((item) => [
+			`- [${item.name} (English)](${absolute(`/en${item.caseStudyHref}`)})`,
+			`- [${item.name} (català)](${absolute(`/ca${item.caseStudyHref}`)})`,
+		]),
+	];
+
 	const body = [
 		`# ${SITE.name}`,
 		"",
@@ -87,6 +109,10 @@ export const GET: APIRoute = () => {
 		"## Artículos",
 		"",
 		...articles,
+		"",
+		"## Contenido traducido",
+		"",
+		...translated,
 		"",
 		"## Contacto",
 		"",

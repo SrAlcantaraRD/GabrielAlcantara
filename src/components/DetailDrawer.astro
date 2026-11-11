@@ -277,9 +277,9 @@ const payload = {
     display: flex;
     flex-direction: column;
     inline-size: min(28rem, 100vw);
-    background: #fcfaf7;
+    background: var(--color-paper);
     border-inline-start: 1px solid var(--color-border);
-    box-shadow: -16px 0 40px rgb(26 26 26 / 0.08);
+    box-shadow: -16px 0 40px var(--shadow);
     transform: translateX(101%);
     visibility: hidden;
     transition:
@@ -473,7 +473,7 @@ const payload = {
   }
 
   .drawer-ok:hover {
-    background: #333;
+    background: var(--color-ink-hover);
   }
 
   @media (max-width: 640px) {

@@ -6,16 +6,31 @@ import { PROJECT_CASES } from "../data/projects";
 import { SITE } from "../data/site";
 import {
 	categoryOf,
-	formatDate,
-	postHref,
+	formatDateIn,
+	postHrefIn,
 	relatedPosts,
 	type PostMeta,
 } from "../data/blog";
+import { EDITORIAL } from "../i18n/editorial";
+import { PROFILE } from "../i18n/profile";
+import type { Locale } from "../i18n/routing";
 
-interface Props extends PostMeta {}
+interface Props extends PostMeta {
+	lang?: Locale;
+	alternates?: Record<string, string>;
+}
 
-const post = Astro.props;
+const { lang = "es", alternates, ...post } = Astro.props as Props;
 const category = categoryOf(post.category);
+const localized = lang === "es" ? undefined : PROFILE[lang].posts[post.slug];
+const editorial = lang === "es" ? undefined : EDITORIAL[lang];
+const title = localized?.title ?? post.title;
+const description = localized?.description ?? post.description;
+const categoryLabel = localized?.category ?? category.label;
+const tags = lang === "es" ? post.tags : EDITORIAL[lang].posts[post.slug].tags;
+const readingLabel = editorial?.article.readingTime ?? "min de lectura";
+const blogHref = lang === "es" ? "/blog/" : `/${lang}/blog/`;
+const projectsHref = lang === "es" ? "/projects/" : `/${lang}/projects/`;
 const related = relatedPosts(post);
 const projects = post.projectIds.flatMap((id) => {
 	const project = PROJECTS.find((item) => item.id === id);
@@ -24,23 +39,31 @@ const projects = post.projectIds.flatMap((id) => {
 
 /** Case-study URL for a project, when one exists; the index otherwise. */
 const caseHref = new Map(
-	PROJECT_CASES.map((item) => [item.id, item.caseStudyHref]),
+	PROJECT_CASES.map((item) => [
+		item.id,
+		item.caseStudyHref
+			? lang === "es"
+				? item.caseStudyHref
+				: `/${lang}${item.caseStudyHref}`
+			: undefined,
+	]),
 );
 
-const articleUrl = new URL(postHref(post.slug), SITE.url).href;
+const articleUrl = new URL(postHrefIn(lang, post.slug), SITE.url).href;
 const personId = new URL("/#person", SITE.url).href;
+const inLanguage = lang === "es" ? "es-ES" : lang === "en" ? "en-GB" : "ca-ES";
 
 const jsonLd = [
 	{
 		"@type": "BlogPosting",
 		"@id": `${articleUrl}#article`,
-		headline: post.title,
-		description: post.description,
+		headline: title,
+		description,
 		datePublished: post.date,
 		dateModified: post.updated ?? post.date,
-		inLanguage: "es-ES",
-		articleSection: category.label,
-		keywords: post.tags.join(", "),
+		inLanguage,
+		articleSection: categoryLabel,
+		keywords: tags.join(", "),
 		url: articleUrl,
 		mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
 		author: { "@id": personId },
@@ -51,38 +74,49 @@ const jsonLd = [
 ---
 
 <Layout
-  title={`${post.title} | Gabriel Alcántara`}
-  description={post.description}
+  title={`${title} | Gabriel Alcántara`}
+  description={description}
   image={post.image ?? `/og/${post.slug}.png`}
-  imageAlt={`${post.cardTitle ?? post.title} — Gabriel Alcántara`}
+  imageAlt={`${post.cardTitle ?? title} — Gabriel Alcántara`}
   type="article"
+  lang={lang}
+  alternates={alternates}
   publishedTime={post.date}
   modifiedTime={post.updated ?? post.date}
-  articleSection={category.label}
-  tags={post.tags}
+  articleSection={categoryLabel}
+  tags={tags}
   jsonLd={jsonLd}
   breadcrumbs={[
-    { label: "Blog", href: "/blog/" },
-    { label: category.label, href: `/blog/categoria/${category.slug}/` },
-    { label: post.title },
+    { label: "Blog", href: blogHref },
+    ...(lang === "es"
+      ? [{ label: category.label, href: `/blog/categoria/${category.slug}/` }]
+      : []),
+    { label: title },
   ]}
 >
   <article class="article">
     <header class="article-head">
       <p class="kicker">
-        <a href={`/blog/categoria/${category.slug}/`}>{category.label}</a>
+        {lang === "es" ? (
+          <a href={`/blog/categoria/${category.slug}/`}>{categoryLabel}</a>
+        ) : (
+          <span>{categoryLabel}</span>
+        )}
         <span aria-hidden="true">·</span>
-        <time datetime={post.date}>{formatDate(post.date)}</time>
+        <time datetime={post.date}>{formatDateIn(post.date, lang)}</time>
         <span aria-hidden="true">·</span>
-        <span>{post.readingMinutes} min de lectura</span>
+        <span>{post.readingMinutes} {readingLabel}</span>
       </p>
-      <h1 class="display">{post.title}</h1>
-      <p class="lede">{post.description}</p>
+      <h1 class="display">{title}</h1>
+      <p class="lede">{description}</p>
       <div class="tag-row">
-        {post.tags.map((tag) => <span class="pill">{tag}</span>)}
+        {tags.map((tag) => <span class="pill">{tag}</span>)}
       </div>
       {post.updated && (
-        <p class="updated">Actualizado el {formatDate(post.updated)}</p>
+        <p class="updated">
+          {editorial?.article.updated ?? "Actualizado el"}{" "}
+          {formatDateIn(post.updated, lang)}
+        </p>
       )}
     </header>
 
@@ -95,17 +129,19 @@ const jsonLd = [
         projects.length > 0 && (
           <section class="related-projects" aria-labelledby="proyectos-relacionados">
             <h2 class="section-title" id="proyectos-relacionados">
-              Proyecto relacionado
+              {editorial?.article.relatedProject ?? "Proyecto relacionado"}
             </h2>
             <ul>
               {projects.map((project) => (
                 <li>
-                  <a
-                    href={caseHref.get(project.id) ?? "/projects/"}
-                  >
+                  <a href={caseHref.get(project.id) ?? projectsHref}>
                     <strong>{project.name}</strong>
                     <span>
-                      {project.company} · {project.summary}
+                      {project.company} ·{" "}
+                      {lang === "es"
+                        ? project.summary
+                        : PROFILE[lang].projects[project.id]?.outcome ??
+                          project.summary}
                     </span>
                   </a>
                 </li>
@@ -119,25 +155,33 @@ const jsonLd = [
         related.length > 0 && (
           <section class="related-posts" aria-labelledby="articulos-relacionados">
             <h2 class="section-title" id="articulos-relacionados">
-              Artículos relacionados
+              {editorial?.article.relatedArticles ?? "Artículos relacionados"}
             </h2>
             <div class="related-list">
-              {related.map((item) => <PostCard post={item} compact />)}
+              {related.map((item) => <PostCard post={item} compact lang={lang} />)}
             </div>
           </section>
         )
       }
 
       <section class="cta" aria-labelledby="cta-articulo">
-        <h2 class="section-title" id="cta-articulo">Siguiente paso</h2>
+        <h2 class="section-title" id="cta-articulo">
+          {editorial?.article.nextTitle ?? "Siguiente paso"}
+        </h2>
         <p>
-          Si estás trabajando en un problema parecido y quieres contrastarlo, puedes
-          escribirme. También puedes ver el resto de proyectos o descargar el CV.
+          {editorial?.article.nextBody ??
+            "Si estás trabajando en un problema parecido y quieres contrastarlo, puedes escribirme. También puedes ver el resto de proyectos o descargar el CV."}
         </p>
         <div class="actions">
-          <a class="btn" href={`mailto:${SITE.email}`}>Escríbeme</a>
-          <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
-          <a class="btn btn--ghost" href="/cv/">Ver CV</a>
+          <a class="btn" href={`mailto:${SITE.email}`}>
+            {editorial?.article.writeCta ?? "Escríbeme"}
+          </a>
+          <a class="btn btn--ghost" href={projectsHref}>
+            {editorial?.article.projectsCta ?? "Ver proyectos"}
+          </a>
+          <a class="btn btn--ghost" href="/cv/">
+            {editorial?.article.cvCta ?? "Ver CV"}
+          </a>
         </div>
       </section>
     </footer>

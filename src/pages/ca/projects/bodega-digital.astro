@@ -1,0 +1,231 @@
+---
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+---
+
+<LocalizedCaseLayout
+  lang="ca"
+  projectId="bodega-digital"
+  related={["ddd-dominios-complejos"]}
+  publishedTime="2026-11-10"
+>
+  <h2 id="resumen">Resum executiu</h2>
+  <p>
+    Bodega Digital és una eina intel·ligent per gestionar l'inventari de vi en
+    cellers i empreses que manegen grans quantitats d'ampolles. El projecte,
+    finançat pel Ministeri d'Indústria, Comerç i Turisme i pel fons europeu
+    NextGenerationEU, es va plantejar en dues fases: identificació d'ampolles per
+    radiofreqüència (RFID) amb predicció de demanda, i refinament de l'inventari
+    mitjançant visió per computador.
+  </p>
+  <p>
+    Quabu Solutions va participar com a soci tecnològic del consorci, aportant
+    desenvolupament de programari i integració. La meva feina va ser l'arquitectura i
+    el model de domini, sobre un monòlit monorepo amb frontend, backend i base de
+    dades al mateix repositori, amb DDD per als límits i TDD per a la lògica de
+    negoci.
+  </p>
+  <p>
+    Es va construir en dues fases —de març a juliol del 2024 i d'octubre del 2024 a
+    febrer del 2025—, separades pel desenvolupament dels Atlassian Addons de Quabu.
+    Un sol desplegament i un sol cicle d'integració per a les dues fases.
+  </p>
+
+  <h2 id="contexto">Context: un celler no és un magatzem qualsevol</h2>
+  <p>
+    En un celler, les ampolles poden passar fins a quinze anys en criança, amb
+    operacions diferents durant aquest temps. I les referències s'assemblen molt
+    entre elles: canvien l'any, la varietat, la parcel·la. Saber quantes ampolles hi
+    ha, de quina i on són és un problema real de negoci, no un detall d'inventari.
+  </p>
+  <p>
+    El projecte va néixer per al sector vitivinícola, amb la idea de poder estendre's
+    després a altres àmbits —manufactura, aeroports, indústria agroalimentària o
+    medicina— on identificar unitats individuals dins d'un estoc també importa.
+  </p>
+
+  <h2 id="problema">El problema</h2>
+  <ul>
+    <li>
+      Identificar cada ampolla de manera individual, no per referència: l'anyada, la
+      varietat i la parcel·la converteixen cada unitat en un cas diferent.
+    </li>
+    <li>
+      Llegir aquestes etiquetes en un entorn hostil per a la radiofreqüència: el
+      líquid de l'ampolla altera les lectures, i una prestatgeria plena concentra
+      centenars de tags.
+    </li>
+    <li>
+      Anticipar la demanda per evitar trencaments d'estoc i millorar la
+      disponibilitat per al client final.
+    </li>
+    <li>
+      Mantenir la traçabilitat al llarg de tota la cadena de valor del vi.
+    </li>
+  </ul>
+
+  <h2 id="restricciones">Restriccions</h2>
+  <ul>
+    <li>
+      <strong>RFID sobre líquid.</strong> Calia avaluar tags UHF que poguessin anar al
+      coll de l'ampolla minimitzant els errors de lectura.
+    </li>
+    <li>
+      <strong>Alta densitat.</strong> Les antenes havien de funcionar amb moltes
+      ampolles juntes, no amb una etiqueta aïllada.
+    </li>
+    <li>
+      <strong>Projecte en consorci.</strong> Sis socis —Clúster Digital de
+      Catalunya, INNOVI, Grupo ICA, Raw Data, DO5 Hispanobodegas i Quabu
+      Solutions— amb finançament públic i fases compromeses.
+    </li>
+    <li>
+      <strong>Dues fases.</strong> La primera amb RFID i predicció de demanda; la
+      segona amb visió per computador per refinar l'inventari.
+    </li>
+  </ul>
+
+  <h2 id="rol">El meu rol</h2>
+  <p>
+    La meva feina es va centrar en l'arquitectura i el model de domini: quines peces
+    existien, on eren els límits i com es provava la lògica de negoci. Formava part
+    d'un equip i d'un consorci: el que segueix distingeix el que vaig dissenyar del
+    que va ser treball col·lectiu.
+  </p>
+  <ul>
+    <li>
+      Vaig dissenyar el monòlit monorepo: frontend, backend i base de dades al mateix
+      repositori, amb un únic desplegament.
+    </li>
+    <li>
+      Vaig modelar el domini amb DDD: ampolla, referència, anyada, lot i posició com
+      a vocabulari compartit amb negoci.
+    </li>
+    <li>
+      Vaig sostenir la lògica amb TDD, de manera que les regles d'inventari es
+      poguessin canviar sense trencar les que ja funcionaven.
+    </li>
+    <li>
+      Vaig deixar cada integració —lectors RFID, visió per computador, model de
+      predicció— darrere del seu propi adaptador.
+    </li>
+  </ul>
+
+  <h2 id="arquitectura">Arquitectura: un monòlit monorepo</h2>
+  <p>
+    Tres peces al mateix repositori: frontend, backend i base de dades. Un únic
+    desplegament, un únic cicle d'integració i el contracte entre client i servidor
+    versionat al costat, de manera que un canvi d'API es veia al mateix lloc que el
+    seu consumidor.
+  </p>
+  <p>
+    Monòlit no significa un bloc sense estructura. La separació es feia per dins:
+    casos d'ús, capes i límits de domini. La infraestructura era una sola, però el
+    codi no era un únic munt.
+  </p>
+  <p>
+    Aquí va ser on vaig portar per primera vegada l'arquitectura de backend al
+    frontend: la mateixa capa de lògica de DDD que usava el servidor, combinada amb
+    Atomic Design a la interfície.
+  </p>
+
+  <h2 id="ddd-tdd">DDD i TDD dins del monòlit</h2>
+  <p>
+    DDD va aportar el llenguatge i els límits. El codi usava el vocabulari del celler
+    —ampolles, referències, anyades, lots, posicions— en lloc de parlar de taules i
+    formularis, i cada context podia canviar sense arrossegar els altres.
+  </p>
+  <p>
+    TDD va aportar la xarxa. Les regles d'inventari s'escrivien amb proves abans que
+    amb implementació, així que el model podia canviar sense por de trencar una regla
+    que ningú recordava. En un monòlit aquesta xarxa és especialment rendible: tot
+    el domini es prova en un mateix procés, sense muntar infraestructura distribuïda
+    per comprovar-ho.
+  </p>
+
+  <h2 id="integraciones">RFID, visió i predicció</h2>
+  <p>
+    La primera fase va unir identificació per radiofreqüència i predicció de demanda
+    amb machine learning. La segona va afegir visió per computador per recollir
+    informació addicional i guanyar precisió a l'inventari. En fases avançades, el
+    projecte plantejava integrar Blockchain al costat del RFID per donar traçabilitat
+    completa al llarg de la cadena de valor.
+  </p>
+  <p>
+    Cada una d'aquestes peces entra per un adaptador. El domini expressa què
+    necessita —identificar una ampolla, conèixer la seva posició, anticipar un
+    trencament d'estoc— i l'adaptador s'encarrega de com ho resol un lector, una
+    càmera o un model. Canviar de maquinari o de model no obliga a tocar les regles
+    de negoci.
+  </p>
+
+  <h2 id="evolucion">El que va quedar del monòlit</h2>
+  <p>
+    El monòlit va aguantar les dues fases del producte: un desplegament, un cicle
+    d'integració i el domini en un mateix repositori. Del projecte van sobreviure el
+    model de domini, el llenguatge compartit amb l'operació i la manera de provar.
+  </p>
+  <p>
+    <a href="/ca/projects/nakire-tps/">Nakire TPS</a> és un desenvolupament propi,
+    amb serveis i esdeveniments. El que porta d'aquí és la manera de treballar: el
+    monòlit no va ser un atall que calgués desfer, va ser el lloc on el domini es va
+    entendre prou bé perquè el model servís després en un altre sistema.
+  </p>
+
+  <h2 id="decisiones">Decisions tècniques</h2>
+  <ul>
+    <li>
+      <strong>Monòlit monorepo en lloc de serveis.</strong> Un sol desplegament i un
+      sol cicle d'integració, a canvi d'assumir un únic ritme d'escalat.
+    </li>
+    <li>
+      <strong>DDD dins del monòlit.</strong> Límits de domini al codi, a canvi d'un
+      esforç de modelatge que només es recupera si el domini es respecta.
+    </li>
+    <li>
+      <strong>TDD sobre la lògica de negoci.</strong> Proves primer al domini, a
+      canvi d'escriure més codi de l'estrictament necessari per arrencar.
+    </li>
+    <li>
+      <strong>Un adaptador per integració.</strong> RFID, visió i predicció canvien al
+      seu ritme, a canvi de mantenir estable el contracte del port.
+    </li>
+  </ul>
+
+  <h2 id="resultados">Resultats</h2>
+  <p>
+    Els resultats que puc afirmar són els que declara el projecte, no mètriques
+    inventades:
+  </p>
+  <ul>
+    <li>
+      Cada ampolla s'identifica de manera individual, amb la seva anyada, varietat i
+      parcel·la.
+    </li>
+    <li>
+      La disponibilitat de gènere es consulta de manera ràpida i detallada, en lloc
+      d'una estimació.
+    </li>
+    <li>
+      La predicció de demanda permet anticipar trencaments d'estoc.
+    </li>
+    <li>
+      La traçabilitat acompanya l'ampolla al llarg de la cadena de valor.
+    </li>
+  </ul>
+
+  <h2 id="aprendizajes">Aprenentatges</h2>
+  <ul>
+    <li>
+      La separació es decideix dins del codi abans que a la infraestructura: un
+      monòlit amb límits clars es pot repartir després; un sense límits, no.
+    </li>
+    <li>
+      DDD i TDD no són cerimònia d'arquitectura distribuïda: sostenen igual de bé un
+      producte que encara cap en un desplegament.
+    </li>
+    <li>
+      En projectes amb finançament públic i diversos socis, el vocabulari compartit
+      forma part del lliurament.
+    </li>
+  </ul>
+</LocalizedCaseLayout>

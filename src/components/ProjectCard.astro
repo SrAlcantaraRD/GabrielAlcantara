@@ -1,47 +1,67 @@
 ---
 import type { ProjectCase } from "../data/projects";
-import { spanLabel } from "../lib/period";
+import { spanLabelIn } from "../lib/period";
+import { PROFILE } from "../i18n/profile";
+import { EDITORIAL } from "../i18n/editorial";
+import type { Locale } from "../i18n/routing";
 
 interface Props {
   project: ProjectCase;
   /** Drops the decision line on dense lists. */
   brief?: boolean;
+  lang?: Locale;
 }
 
-const { project, brief = false } = Astro.props;
+const { project, brief = false, lang = "es" } = Astro.props;
+const copy = lang === "es" ? undefined : PROFILE[lang].projects[project.id];
+const area = copy?.area ?? project.area;
+const role = copy?.role ?? project.role;
+const problem = copy?.problem ?? project.problem;
+const decision = copy?.decision ?? project.decision;
+const outcome = copy?.outcome ?? project.outcome;
+const href = project.caseStudyHref
+  ? lang === "es"
+    ? project.caseStudyHref
+    : `/${lang}${project.caseStudyHref}`
+  : undefined;
+const labels =
+  lang === "es"
+    ? { role: "Rol", decision: "Decisión", outcome: "Resultado", case: "Ver el caso de estudio" }
+    : {
+        role: EDITORIAL[lang].case.role,
+        decision: lang === "en" ? "Decision" : "Decisió",
+        outcome: lang === "en" ? "Outcome" : "Resultat",
+        case: lang === "en" ? "Read the case study" : "Llegir el cas d'estudi",
+      };
 ---
 
 <article class:list={["project-card", { "is-featured": project.featured }]}>
-  <p class="project-area">{project.area}</p>
+  <p class="project-area">{area}</p>
 
   <h3 class="project-name">
-    {project.caseStudyHref ? (
-      <a href={project.caseStudyHref}>{project.name}</a>
-    ) : (
-      project.name
-    )}
+    {href ? <a href={href}>{project.name}</a> : project.name}
   </h3>
 
   <p class="project-meta">
-    {project.company} · {spanLabel(project.startMonth, project.endMonth)}
+    {project.company} · {spanLabelIn(project.startMonth, project.endMonth, lang)}
   </p>
 
-  <p class="project-problem">{project.problem}</p>
+  <p class="project-problem">{problem}</p>
 
   <dl class="project-facts">
     <div>
-      <dt>Rol</dt>
-      <dd>{project.role}</dd>
+      <dt>{labels.role}</dt>
+      <dd>{role}</dd>
     </div>
     {!brief && (
       <div>
-        <dt>Decisión</dt>
-        <dd>{project.decision}</dd>
+        <dt>{labels.decision}</dt>
+        <dd>{decision}</dd>
       </div>
     )}
     <div>
-      <dt>Resultado</dt>
-      <dd>{project.outcome}</dd>
+      <dt>{labels.outcome}</dt>
+      <dd>{outcome}</dd>
     </div>
   </dl>
 
@@ -51,9 +71,9 @@ const { project, brief = false } = Astro.props;
     </div>
   )}
 
-  {project.caseStudyHref && (
-    <a class="project-link" href={project.caseStudyHref}>
-      Ver el caso de estudio
+  {href && (
+    <a class="project-link" href={href}>
+      {labels.case}
       <span aria-hidden="true">→</span>
     </a>
   )}

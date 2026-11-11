@@ -62,6 +62,18 @@ export const STATIC_PAGES: PageEntry[] = [
 		summary: "tipos de colaboración técnica",
 	},
 	{ path: "/contact/", label: "Contacto", summary: "canales directos" },
+	{
+		path: "/en/",
+		label: "English profile",
+		summary:
+			"translated profile: about, selected work, experience, writing and services",
+	},
+	{
+		path: "/ca/",
+		label: "Perfil en català",
+		summary:
+			"perfil traduït: sobre mi, treball seleccionat, experiència, articles i serveis",
+	},
 ];
 
 /**
@@ -80,9 +92,15 @@ export function casePath(item: { caseStudyHref?: string }): string | undefined {
 export function sitemapEntries(): SitemapEntry[] {
 	const entries: SitemapEntry[] = STATIC_PAGES.map(({ path }) => ({ path }));
 
+	for (const path of ["/en/blog/", "/ca/blog/", "/en/projects/", "/ca/projects/"]) {
+		entries.push({ path });
+	}
+
 	for (const item of PROJECT_CASES) {
 		const path = casePath(item);
-		if (path) entries.push({ path });
+		if (path) {
+			entries.push({ path }, { path: `/en${path}` }, { path: `/ca${path}` });
+		}
 	}
 
 	for (const category of ACTIVE_CATEGORIES) {
@@ -90,10 +108,12 @@ export function sitemapEntries(): SitemapEntry[] {
 	}
 
 	for (const post of POSTS) {
-		entries.push({
-			path: postHref(post.slug),
-			lastmod: post.updated ?? post.date,
-		});
+		const lastmod = post.updated ?? post.date;
+		entries.push(
+			{ path: postHref(post.slug), lastmod },
+			{ path: `/en/blog/${post.slug}/`, lastmod },
+			{ path: `/ca/blog/${post.slug}/`, lastmod },
+		);
 	}
 
 	return dedupe(entries);

@@ -1,0 +1,130 @@
+---
+import ArticleLayout from "../../../layouts/ArticleLayout.astro";
+import { postOf } from "../../../data/blog";
+import { alternateEditorialPaths } from "../../../i18n/routing";
+
+const post = postOf("arquitectura-orientada-a-eventos");
+---
+
+<ArticleLayout
+  {...post}
+  lang="ca"
+  alternates={alternateEditorialPaths("/blog/arquitectura-orientada-a-eventos/")}
+>
+  <p>
+    L'arquitectura orientada a esdeveniments es ven de vegades com una capa de
+    missatgeria que s'afegeix al final del sistema. En la meva experiència és el
+    contrari: els esdeveniments són una manera de repartir responsabilitats. Quan
+    s'usen així, el sistema guanya autonomia; quan s'usen com un bus genèric, només
+    guanya cerimònia.
+  </p>
+
+  <h2>Esdeveniment no és sinònim de missatge</h2>
+  <p>
+    Una <strong>comanda</strong> demana que passi alguna cosa i espera un
+    destinatari concret. Un <strong>esdeveniment</strong> declara que alguna cosa ja
+    ha passat i no li importa qui l'escolta. La diferència sembla semàntica fins que
+    cal evolucionar el sistema: les comandes acoblen emissor i receptor; els
+    esdeveniments permeten afegir consumidors sense tocar el productor.
+  </p>
+  <p>
+    En una plataforma industrial això es tradueix en una cosa molt concreta: el core
+    decideix que una tasca s'ha d'executar i publica el fet. No necessita saber si
+    l'encarregat de moure-la és una carretilla, un PLC o una persona amb un LED que
+    li indica on anar.
+  </p>
+
+  <h2>Què porta un esdeveniment</h2>
+  <p>
+    Un esdeveniment útil respon quatre preguntes sense obligar el consumidor a
+    consultar el productor: què va passar, sobre què, quan i amb quina identitat.
+    Això sol traduir-se en un identificador d'esdeveniment, l'agregat afectat, una
+    marca temporal i la càrrega mínima necessària per reaccionar.
+  </p>
+  <p>
+    La temptació és posar l'estat complet del sistema a cada esdeveniment. És còmode
+    al principi i car després: cada consumidor s'acobla a un contracte enorme que ja
+    no es pot canviar. Prefereixo esdeveniments petits amb un identificador estable
+    i una consulta explícita quan cal més context.
+  </p>
+
+  <h2>Els límits importen més que el broker</h2>
+  <p>
+    Triar Kafka, RabbitMQ o un bus propi no arregla un sistema mal delimitat. Si dos
+    serveis comparteixen el mateix model de dades, el bus només fa que
+    l'acoblament sigui asíncron.
+  </p>
+  <p>
+    La feina real és decidir quins fets pertanyen a quin domini i qui és la font de
+    veritat de cadascun. A Nakire TPS, cada família de dispositiu tenia el seu propi
+    servei i els seus adaptadors; el core coordinava, però no coneixia protocols.
+    Aquesta divisió feia que els esdeveniments tinguessin un amo clar.
+  </p>
+
+  <h2>Consistència: acceptar el retard</h2>
+  <p>
+    Quan un esdeveniment tarda a arribar, el sistema és consistent al final, no
+    instantàniament. Aquesta frase sona bé en una presentació i exigeix decisions
+    molt concretes en producció: què mostra la interfície mentre l'estat convergeix,
+    quines operacions es poden repetir i com es reconcilia el que l'usuari creu que
+    va passar amb el que el sistema va registrar.
+  </p>
+  <p>
+    La solució no és amagar l'asincronia. És fer-la visible: estats intermedis,
+    marques de temps, identificadors de correlació i una manera de tornar a llegir
+    l'estat real.
+  </p>
+
+  <h2>Idempotència i ordre</h2>
+  <p>
+    El mateix esdeveniment pot arribar dues vegades. L'ordre global no està
+    garantit i, encara que ho estigués, no sempre és l'ordre que necessita el
+    negoci. Per això els consumidors han de ser idempotents per disseny, no per
+    sort.
+  </p>
+  <ul>
+    <li>Identifica cada operació amb una clau estable.</li>
+    <li>Registra el que ja s'ha aplicat abans de tornar-ho a aplicar.</li>
+    <li>Dissenya transicions d'estat que tolerin la repetició.</li>
+    <li>No depenguis de l'ordre entre agregats diferents.</li>
+  </ul>
+  <p>
+    En una tasca industrial, repetir «mou el pallet a la posició 4» no pot
+    significar moure'l dues vegades ni perdre la segona intenció si la primera ja
+    estava completada. Aquesta és la classe de detall que decideix si un sistema
+    basat en esdeveniments aguanta l'operació real.
+  </p>
+
+  <h2>Aïllar el fallo</h2>
+  <p>
+    Un avantatge concret de la comunicació asíncrona és que un consumidor que deixa
+    de respondre no bloqueja el productor. Però el sistema ha de decidir què fer amb
+    el que depenia d'ell: reintentar, marcar la tasca com a no disponible o escalar
+    a una altra família de dispositius.
+  </p>
+  <p>
+    Aquesta política no s'improvisa. Convé escriure-la al costat del contracte de
+    l'esdeveniment, perquè és part del comportament observable del sistema.
+  </p>
+
+  <h2>Quan no usar esdeveniments</h2>
+  <p>
+    Si dues operacions han de ser atòmiques o el consumidor necessita una resposta
+    immediata per continuar, una crida directa sol ser més honesta. Afegir un bus a
+    un flux que sempre passa en el mateix ordre i amb el mateix destinatari només
+    introdueix complexitat operativa.
+  </p>
+  <p>
+    La meva regla és senzilla: esdeveniments quan diversos consumidors poden
+    reaccionar al mateix fet, quan l'emissor no ha de conèixer els receptors o quan
+    la feina pot esperar. Crides directes quan la resposta és part del resultat.
+  </p>
+
+  <h2>Tancament</h2>
+  <p>
+    Una arquitectura d'esdeveniments està ben posada quan afegir una capacitat no
+    toca el core, un servei caigut no arrossega els altres i cada fet té un amo. Si
+    en el disseny només es veu el bus, falta feina de límits: el bus transporta
+    fets, no els defineix.
+  </p>
+</ArticleLayout>

@@ -1,35 +1,59 @@
 ---
 import type { PostMeta } from "../data/blog";
-import { categoryOf, formatDate, postHref } from "../data/blog";
+import { categoryOf, formatDateIn, postHref, postHrefIn } from "../data/blog";
+import { PROFILE } from "../i18n/profile";
+import type { Locale } from "../i18n/routing";
+import { EDITORIAL } from "../i18n/editorial";
 
 interface Props {
   post: PostMeta;
   /** Compact variant for sidebars and related lists. */
   compact?: boolean;
+  /** Language of the card; Spanish is the default for the original pages. */
+  lang?: Locale;
 }
 
-const { post, compact = false } = Astro.props;
+const { post, compact = false, lang = "es" } = Astro.props;
 const category = categoryOf(post.category);
+const localized = lang === "es" ? undefined : PROFILE[lang].posts[post.slug];
+const editorial = lang === "es" ? undefined : EDITORIAL[lang];
+const title = localized?.title ?? post.title;
+const description = localized?.description ?? post.description;
+const categoryLabel = localized?.category ?? category.label;
+const tags = tagsFor(lang, post);
+const href = postHrefIn(lang, post.slug);
+const categoryHref =
+  lang === "es" ? `/blog/categoria/${category.slug}/` : undefined;
+const readingLabel = editorial?.article.readingTime ?? "min de lectura";
+
+function tagsFor(locale: Locale, item: PostMeta): string[] {
+  if (locale === "es") return item.tags;
+  return EDITORIAL[locale].posts[item.slug]?.tags ?? item.tags;
+}
 ---
 
 <article class:list={["post-card", { "is-compact": compact }]}>
   <p class="post-kicker">
-    <a href={`/blog/categoria/${category.slug}/`}>{category.label}</a>
+    {categoryHref ? (
+      <a href={categoryHref}>{categoryLabel}</a>
+    ) : (
+      <span>{categoryLabel}</span>
+    )}
     <span aria-hidden="true">·</span>
-    <time datetime={post.date}>{formatDate(post.date)}</time>
+    <time datetime={post.date}>{formatDateIn(post.date, lang)}</time>
     <span aria-hidden="true">·</span>
-    <span>{post.readingMinutes} min de lectura</span>
+    <span>{post.readingMinutes} {readingLabel}</span>
   </p>
 
   <h3 class="post-title">
-    <a href={postHref(post.slug)}>{post.title}</a>
+    <a href={href}>{title}</a>
   </h3>
 
-  {!compact && <p class="post-description">{post.description}</p>}
+  {!compact && <p class="post-description">{description}</p>}
 
   {!compact && (
     <div class="tag-row">
-      {post.tags.map((tag) => <span class="pill">{tag}</span>)}
+      {tags.map((tag) => <span class="pill">{tag}</span>)}
     </div>
   )}
 </article>

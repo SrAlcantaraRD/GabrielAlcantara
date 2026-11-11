@@ -95,7 +95,7 @@ async function checkPersistentChrome(page, viewport) {
 	const desktop = viewport.name === "desktop";
 	const activeSelector = desktop
 		? ".site-nav a[aria-current='page']"
-		: ".mobile-menu a[aria-current='page']";
+		: ".mobile-menu a[data-nav-key][aria-current='page']";
 	const errors = [];
 	page.on("pageerror", (error) => errors.push(error.message));
 	page.on("console", (message) => {
@@ -179,6 +179,12 @@ async function checkPersistentChrome(page, viewport) {
 			.locator(".header-crumbs .breadcrumbs")
 			.evaluate((element) => element.hidden),
 	);
+	check(
+		`${label} · inicio fuera del header`,
+		(await page
+			.locator('.site-nav a[data-nav-key="home"], .mobile-menu a[data-nav-key="home"]')
+			.count()) === 0,
+	);
 
 	await go("/about/");
 	await waitCrumbs(["Inicio", "Sobre mí"]);
@@ -231,8 +237,14 @@ async function checkPersistentChrome(page, viewport) {
 	await page.waitForFunction(
 		() => document.querySelector(".header-crumbs .breadcrumbs")?.hidden === true,
 	);
-	await waitActive("Inicio");
-	check(`${label} · inicio activo de nuevo`, (await activeLabel()) === "Inicio");
+	await page.waitForFunction(
+		(selector) => document.querySelectorAll(selector).length === 0,
+		activeSelector,
+	);
+	check(
+		`${label} · sin nav activo al volver al inicio`,
+		(await page.locator(activeSelector).count()) === 0,
+	);
 	check(
 		`${label} · header persiste al inicio`,
 		await sameNode(".site-header", "__persistedHeader"),

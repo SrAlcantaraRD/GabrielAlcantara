@@ -1,0 +1,243 @@
+---
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+import PachangaDiagram from "../../../components/PachangaDiagram.astro";
+---
+
+<LocalizedCaseLayout
+  lang="ca"
+  projectId="pachanga-community"
+  related={["ddd-dominios-complejos"]}
+  publishedTime="2026-11-11"
+>
+  <h2 id="resumen">Resum executiu</h2>
+  <p>
+    Pachanga Community organitza els partits de futbol d'un grup: calendari, equips,
+    estadístiques i comunitat en un sol lloc, en lloc de repartits per un xat. L'app
+    està publicada a l'App Store i Play Store, i la web fa d'aparador, d'amfitrió
+    d'enllaços universals i de canal de suport.
+  </p>
+  <p>
+    Aquí no hi ha equip darrere: hi ha producte, disseny, app, web, infraestructura i
+    suport en la mateixa persona. He picat poc codi: el 95% l'ha escrit LaIA, que és
+    com anomeno l'ús de LLM i agents. Vinc sent Tony Stark, delegant tant com puc i
+    tot i així no dono l'abast, perquè són moltes les peces que han de funcionar
+    alhora —infraestructura, cloud, web, stores, ingressos, monitoring, PostHog,
+    etc.— per donar a l'usuari una experiència cuidada, elegant, senzilla i directa
+    que resolgui el seu problema. Tot va sobre optimistic update i sobre guiar
+    l'usuari, intuint l'acció que vol fer.
+  </p>
+  <p>
+    La idea és del 2019; llavors em faltava el coneixement per portar-la fins al
+    final. El gener del 2026 la vaig reprendre des de zero, la vaig publicar a les
+    botigues i ara treballo la distribució i els ingressos mentre continuo afegint
+    funcionalitats.
+  </p>
+
+  <h2 id="contexto">Context</h2>
+  <p>
+    En un grup d'amics que juga cada setmana, l'organització viu en un xat: qui juga,
+    qui avisa a última hora, com es reparteixen els equips i qui porta el compte.
+    Quan el grup creix, el xat deixa de ser una eina i passa a ser el problema.
+  </p>
+  <p>
+    El producte ataca això: una app per al grup, amb privacitat com a decisió de
+    disseny. Els canvis es guarden al mòbil i se sincronitzen amb el núvol; no hi ha
+    perfils públics indexats ni venda de dades.
+  </p>
+
+  <h2 id="problema">El problema</h2>
+  <ul>
+    <li>
+      Coordinar un grup que canvia cada setmana: convocats, absències i equips
+      equilibrats.
+    </li>
+    <li>
+      Portar estadístiques que la gent vulgui mirar, sense convertir-ho en una lliga
+      professional.
+    </li>
+    <li>
+      Funcionar amb mala cobertura en un camp de futbol, sense dependre de la xarxa
+      per a cada pantalla.
+    </li>
+    <li>
+      Publicar en dues botigues, en tres idiomes i sense equip de suport darrere.
+    </li>
+  </ul>
+
+  <h2 id="restricciones">Restriccions</h2>
+  <ul>
+    <li>
+      <strong>Una sola persona.</strong> Cada decisió d'arquitectura ha de reduir el
+      cost de mantenir-la sis mesos després.
+    </li>
+    <li>
+      <strong>Dues botigues.</strong> App Store i Play Store amb les seves revisions,
+      els seus builds i els seus enllaços universals.
+    </li>
+    <li>
+      <strong>Tres idiomes.</strong> Castellà, anglès i català, tant a l'app com a la
+      web.
+    </li>
+    <li>
+      <strong>Cost d'infraestructura.</strong> Un desplegament propi barat i
+      reproduïble, no una plataforma gestionada per comoditat.
+    </li>
+  </ul>
+
+  <h2 id="rol">El meu rol</h2>
+  <p>
+    Tot. Arquitectura, domini, app mòbil, web, disseny de la identitat, desplegament,
+    botigues i suport. El que segueix descriu les decisions, no un repartiment de
+    feina.
+  </p>
+
+  <h2 id="movil">Arquitectura mòbil: hexagonal sobre DDD</h2>
+  <p>
+    L'app és React Native amb Expo i TypeScript. L'estructura és hexagonal sobre DDD:
+    el flux va de la pantalla als hooks de domini, d'aquí als casos d'ús i d'aquí als
+    ports, que implementen adaptadors de Supabase o en memòria.
+  </p>
+  <p>
+    La capa de domini és només TypeScript, sense React Native, sense Expo i sense base
+    de dades: els tipus i una línia de validació amb Zod controlen la dada que entra,
+    surt i es mou dins de l'app. Els casos d'ús es proven sense infraestructura, i
+    canviar de proveïdor és escriure un altre adaptador. La interfície s'organitza en
+    Atomic Design —àtoms, molècules, organismes, layouts i pantalles— perquè un canvi
+    visual no obligui a tocar la lògica.
+  </p>
+
+  <PachangaDiagram />
+
+  <p class="diagram-alt">
+    En text: l'app i les seves pantalles criden hooks de domini; els hooks criden
+    casos d'ús; els casos d'ús depenen de ports; els adaptadors implementen aquests
+    ports contra Supabase, memòria o caché. La interfície es compon de particles,
+    atoms, molecules, organisms, layouts i screens.
+  </p>
+
+  <h2 id="dominio">Un domini que no és un CRUD</h2>
+  <p>
+    El model té equip, temporada, partit i jugador, però l'interessant és a les vores.
+    Un jugador pertany a un equip amb el seu propi nom i els seus atributs; els
+    partits admeten jugadors fantasma que després reclamen el seu perfil amb un codi
+    d'un sol ús; les valoracions entre companys calculen un nivell relatiu dins del
+    grup, no una puntuació absoluta.
+  </p>
+  <p>
+    Cada una d'aquestes regles té un cas d'ús i les seves proves. És la part del
+    projecte que més he reutilitzat: quan el domini està aïllat, l'app pot canviar de
+    forma sense que el negoci se n'adoni.
+  </p>
+
+  <h2 id="web">Arquitectura web: Ghost, tema generat i tres idiomes</h2>
+  <p>
+    La web és Ghost amb un tema propi de Handlebars. El tema no s'edita a mà: es genera
+    des de fonts pròpies —plantilles i fitxers de traducció— i el build escriu les
+    variants de cada idioma. Així, una pàgina nova en tres idiomes no significa tres
+    plantilles que es desincronitzen.
+  </p>
+  <p>
+    A més d'aparador, la web és l'amfitrió dels enllaços universals i una superfície
+    de descobriment: rutes de suport, privacitat i termes per idioma, un `llms.txt`,
+    un catàleg per a agents i `robots.txt` amb senyal de contingut.
+  </p>
+
+  <h2 id="enlaces">Enllaços universals i fallback</h2>
+  <p>
+    Un enllaç compartit per xat ha d'obrir l'app si està instal·lada i portar a la
+    botiga si no ho està. Això són dues peces: `apple-app-site-association` per a iOS
+    i `assetlinks.json` per a Android, servits per un nginx propi; i un fallback a la
+    web que redirigeix a la botiga quan l'enllaç arriba a un navegador mòbil.
+  </p>
+  <p>
+    El cas incòmode és l'enllaç de reclamació d'un jugador fantasma: si qui l'obre no
+    té l'app, no pot quedar-se en una pàgina d'error. Per això el 404 localitzat també
+    redirigeix a la botiga, en lloc de deixar l'usuari en un carreró sense sortida.
+  </p>
+
+  <h2 id="despliegue">Desplegament i operació</h2>
+  <p>
+    En local, tot arrenca amb Docker Compose. En producció, la web corre en un stack
+    amb Traefik sobre Dokploy, amb el contenidor de Ghost, la base de dades i el nginx
+    dels enllaços universals. L'app es compila i publica amb EAS i Fastlane per a les
+    dues botigues.
+  </p>
+  <p>
+    Res d'això és glamurós, però és el que fa que el producte existeixi:
+    certificats, rutes, prioritats de Traefik, variables d'entorn i un build que falla
+    a la primera si un fitxer de configuració no és on toca.
+  </p>
+
+  <h2 id="harness">Com s'escriu el codi: l'agent-harness</h2>
+  <p>
+    Bona part del codi de Pachanga l'escriuen agents. A ells els toca implementar i
+    provar; a mi, definir el problema, revisar i decidir. El harness és el que fa que
+    aquesta divisió funcioni: fitxers `.instructions` que diuen com s'escriu cada
+    peça, plugins de Biome que aturen el que no hauria d'arribar ni a revisió i
+    scripts deterministes que comproven el que una revisió a ull no veu.
+  </p>
+  <p>
+    No busco escriure més codi més ràpid. Busco que l'agent escrigui millor: el mateix
+    criteri a totes les capes, menys decisions repetides i més temps meu en el que mou
+    el negoci. Quan el patró és el mateix de dalt a baix, revisar deixa de ser
+    arqueologia.
+  </p>
+
+  <h2 id="decisiones">Decisions tècniques</h2>
+  <ul>
+    <li>
+      <strong>Hexagonal sobre DDD al mòbil.</strong> Domini pur i adaptadors
+      intercanviables, a canvi de més fitxers per funcionalitat.
+    </li>
+    <li>
+      <strong>Local-first amb Supabase.</strong> L'app funciona sense xarxa, a canvi
+      d'assumir sincronització i conflictes.
+    </li>
+    <li>
+      <strong>Tema web generat.</strong> Una font per a tres idiomes, a canvi d'un pas
+      de build que cal entendre.
+    </li>
+    <li>
+      <strong>Infraestructura pròpia sobre Dokploy.</strong> Control i cost baix, a
+      canvi d'operar-la jo.
+    </li>
+  </ul>
+
+  <h2 id="resultados">Resultats</h2>
+  <ul>
+    <li>App publicada a l'App Store i Play Store, amb la seva web i el seu canal de suport.</li>
+    <li>
+      Un domini provat sense infraestructura, amb adaptadors per a Supabase i per a
+      memòria.
+    </li>
+    <li>
+      Tres idiomes en app i web des d'una sola font de còpia per pàgina.
+    </li>
+    <li>
+      Enllaços que obren l'app quan està instal·lada i porten a la botiga quan no.
+    </li>
+  </ul>
+
+  <h2 id="aprendizajes">Aprenentatges</h2>
+  <ul>
+    <li>
+      Portar tot el producte canvia el criteri: cada peça ha de ser òbvia per al teu
+      jo de dins de sis mesos.
+    </li>
+    <li>
+      M'agrada fer de la complexitat una cosa senzilla. Quan tot el projecte segueix
+      el mateix patró amb regles clares —enum → entitat → port → cas d'ús, amb els
+      hooks injectant l'adaptador que implementa el port—, saber on viu cada peça és
+      ràpid. A Pachanga he canviat els adaptadors amb una certa freqüència,
+      reimplementant-los perquè passessin els e2e, els unitaris i els mocks; sense
+      aquesta arquitectura, cada canvi hauria travessat l'app sencera. És injecció de
+      dependències, el de backend, portat al frontend. Juntament amb els plugins de
+      Biome i els scripts deterministes, és una de les peces de l'agent-harness del
+      projecte.
+    </li>
+    <li>
+      Els enllaços universals, les botigues i el desplegament no els veu ningú, i són
+      els que decideixen si el producte està acabat o només publicat.
+    </li>
+  </ul>
+</LocalizedCaseLayout>

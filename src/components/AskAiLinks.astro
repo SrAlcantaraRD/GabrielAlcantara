@@ -1,13 +1,28 @@
 ---
-import { ASK_ASSISTANTS } from "../data/site";
+import { ASK_ASSISTANTS, type AskAssistant } from "../data/site";
+import type { Locale } from "../i18n/routing";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
 
 interface Props {
 	/** `bar` sits in the header strip; `menu` lives in the mobile menu. */
 	variant?: "bar" | "menu";
 	class?: string;
+	lang?: Locale;
 }
 
-const { variant = "bar", class: className } = Astro.props;
+const {
+	variant = "bar",
+	class: className,
+	lang = getLangFromUrl(Astro.url),
+} = Astro.props;
+const t = useTranslations(lang);
+const question = encodeURIComponent(t("askPrompt"));
+
+const HREFS: Record<AskAssistant["id"], string> = {
+	chatgpt: `https://chatgpt.com/?q=${question}`,
+	claude: `https://claude.ai/new?q=${question}`,
+	gemini: `https://www.google.com/search?udm=50&q=${question}`,
+};
 
 /**
  * Monochrome brand marks: the header stays in the site's ink palette, and the
@@ -25,14 +40,14 @@ const MARKS: Record<string, string> = {
 
 <nav
 	class:list={["ask-ai", `ask-ai--${variant}`, className]}
-	aria-label="Pregúntale a la IA sobre Gabriel Alcántara"
+	aria-label={t("askAria")}
 >
-	<p class="ask-ai-label">Pregúntale sobre mí a</p>
+	<p class="ask-ai-label">{t("askLabel")}</p>
 	<ul>
 		{
 			ASK_ASSISTANTS.map((assistant) => (
 				<li>
-					<a href={assistant.href} target="_blank" rel="noopener noreferrer">
+					<a href={HREFS[assistant.id]} target="_blank" rel="noopener noreferrer">
 						<svg
 							class="ask-ai-mark"
 							viewBox="0 0 24 24"

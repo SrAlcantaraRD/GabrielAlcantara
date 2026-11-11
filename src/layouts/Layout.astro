@@ -10,6 +10,8 @@ import { ClientRouter } from "astro:transitions";
 
 import Seo from "../components/Seo.astro";
 import type { Breadcrumb } from "../data/site";
+import type { Locale } from "../i18n/routing";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import EasterEgg from "../components/EasterEgg.astro";
@@ -27,19 +29,39 @@ interface Props {
 	modifiedTime?: string;
 	articleSection?: string;
 	tags?: string[];
+	lang?: Locale;
+	alternates?: Record<string, string>;
 }
 
-const { breadcrumbs, ...seo } = Astro.props;
+const { breadcrumbs, lang, alternates, ...seo } = Astro.props;
+const locale = lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(locale);
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={locale}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script is:inline>
+			(() => {
+				const root = document.documentElement;
+				try {
+					const stored = localStorage.getItem("theme");
+					const system = matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light";
+					const theme = stored === "light" || stored === "dark" ? stored : system;
+					root.dataset.theme = theme;
+					root.style.colorScheme = theme;
+				} catch {
+					root.dataset.theme = "light";
+				}
+			})();
+		</script>
 
 		<ClientRouter />
-		<Seo {...seo} breadcrumbs={breadcrumbs} />
+		<Seo {...seo} breadcrumbs={breadcrumbs} lang={locale} alternates={alternates} />
 
 		<!-- Icons & PWA -->
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -47,17 +69,17 @@ const { breadcrumbs, ...seo } = Astro.props;
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.json" />
 		<meta name="theme-color" content="#faf8f5" />
-		<meta name="color-scheme" content="light" />
+		<meta name="color-scheme" content="light dark" />
 
 		<meta name="generator" content={Astro.generator} />
 	</head>
 	<body>
-		<a class="skip-link" href="#contenido">Saltar al contenido</a>
-		<SiteHeader breadcrumbs={breadcrumbs} />
+		<a class="skip-link" href="#contenido">{t("skip")}</a>
+		<SiteHeader breadcrumbs={breadcrumbs} lang={locale} />
 		<main id="contenido" class="main container">
 			<slot />
 		</main>
-		<SiteFooter />
+		<SiteFooter lang={locale} />
 		<EasterEgg />
 		<div
 			id="page-breadcrumbs"
@@ -67,6 +89,7 @@ const { breadcrumbs, ...seo } = Astro.props;
 		></div>
 		<script>
 			import "../lib/title-morph";
+			import "../lib/client/site";
 		</script>
 	</body>
 </html>

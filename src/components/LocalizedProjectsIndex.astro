@@ -1,0 +1,114 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProjectCard from "./ProjectCard.astro";
+import { FEATURED_CASE, PROJECT_CASES, SELECTED_CASES } from "../data/projects";
+import { SITE } from "../data/site";
+import { EDITORIAL } from "../i18n/editorial";
+import {
+  alternateEditorialPaths,
+  type TranslatedLocale,
+} from "../i18n/routing";
+
+interface Props {
+  lang: TranslatedLocale;
+}
+
+const { lang } = Astro.props;
+const copy = EDITORIAL[lang].projects;
+const pageUrl = new URL(`/${lang}/projects/`, SITE.url).href;
+const inLanguage = lang === "en" ? "en-GB" : "ca-ES";
+
+const jsonLd = [
+  {
+    "@type": "CollectionPage",
+    "@id": `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: copy.metaTitle,
+    description: copy.metaDescription,
+    inLanguage,
+    about: { "@id": new URL("/#person", SITE.url).href },
+  },
+  {
+    "@type": "ItemList",
+    "@id": `${pageUrl}#projects`,
+    name: copy.selected,
+    itemListElement: PROJECT_CASES.map((project, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: project.name,
+      ...(project.caseStudyHref
+        ? { url: new URL(`/${lang}${project.caseStudyHref}`, SITE.url).href }
+        : {}),
+    })),
+  },
+];
+---
+
+<Layout
+  title={copy.metaTitle}
+  description={copy.metaDescription}
+  lang={lang}
+  alternates={alternateEditorialPaths("/projects/")}
+  jsonLd={jsonLd}
+  breadcrumbs={[{ label: copy.eyebrow }]}
+>
+  <header class="page-head">
+    <p class="eyebrow">{copy.eyebrow}</p>
+    <h1 class="display">{copy.title}</h1>
+    <p class="lede">{copy.lede}</p>
+    <div class="meta-row">
+      <span>{PROJECT_CASES.length} {copy.metaCases}</span>
+      <span>{copy.metaStructure}</span>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="destacado-title">
+    <div class="section-head">
+      <h2 class="section-title" id="destacado-title">{copy.featured}</h2>
+      <span class="section-meta">{FEATURED_CASE.company}</span>
+    </div>
+    <ProjectCard project={FEATURED_CASE} lang={lang} />
+  </section>
+
+  <section class="section" aria-labelledby="seleccionados-title">
+    <div class="section-head">
+      <h2 class="section-title" id="seleccionados-title">{copy.selected}</h2>
+      <span class="section-meta">{SELECTED_CASES.length} {copy.cases}</span>
+    </div>
+    <div class="grid grid--2">
+      {SELECTED_CASES.map((project) => <ProjectCard project={project} lang={lang} />)}
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="projects-cierre">
+    <h2 class="section-title" id="projects-cierre">{copy.closingTitle}</h2>
+    <p>{copy.closingBody}</p>
+    <div class="actions">
+      <a class="btn" href={`/${lang}/#contacto`}>{copy.contactCta}</a>
+      <a class="btn btn--ghost" href={`/${lang}/blog/`}>{copy.blogCta}</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .section {
+    display: grid;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>

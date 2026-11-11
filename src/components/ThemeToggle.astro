@@ -1,0 +1,77 @@
+---
+import type { Locale } from "../i18n/routing";
+import { useTranslations } from "../i18n/utils";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<button
+	type="button"
+	class="theme-toggle"
+	data-theme-toggle
+	data-theme-label-light={t("themeToLight")}
+	data-theme-label-dark={t("themeToDark")}
+	aria-label={t("themeToDark")}
+	title={t("themeToDark")}
+	aria-pressed="false"
+>
+	<svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+		<path d="M20.1 14.3A8.2 8.2 0 0 1 9.7 3.9 8.6 8.6 0 1 0 20.1 14.3Z" />
+	</svg>
+	<svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+		<circle cx="12" cy="12" r="3.6" />
+		<path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+	</svg>
+</button>
+
+<style>
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		inline-size: 1.85rem;
+		block-size: 1.85rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 5px;
+		background: transparent;
+		color: var(--color-ink-muted);
+		cursor: pointer;
+		transition:
+			border-color 140ms ease,
+			color 140ms ease,
+			background 140ms ease;
+	}
+
+	.theme-toggle:hover {
+		border-color: var(--color-ink);
+		color: var(--color-ink);
+	}
+
+	.theme-icon {
+		inline-size: 0.9rem;
+		block-size: 0.9rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.theme-icon--sun {
+		display: none;
+	}
+
+	.theme-toggle[data-theme-state="dark"] .theme-icon--moon {
+		display: none;
+	}
+
+	.theme-toggle[data-theme-state="dark"] .theme-icon--sun {
+		display: block;
+	}
+</style>

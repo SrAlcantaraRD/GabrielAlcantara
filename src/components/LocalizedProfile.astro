@@ -1,0 +1,631 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
+import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
+import { SORTED_POSTS, postHrefIn } from "../data/blog";
+import { SITE } from "../data/site";
+import { PROFILE } from "../i18n/profile";
+import {
+	alternateProfilePaths,
+	type TranslatedLocale,
+} from "../i18n/routing";
+import { spanLabelIn } from "../lib/period";
+
+interface Props {
+	lang: TranslatedLocale;
+}
+
+const { lang } = Astro.props;
+const copy = PROFILE[lang];
+
+const caseHref = (href: string) => `/${lang}${href}`;
+const postHref = (slug: string) => postHrefIn(lang, slug);
+
+const pageUrl = new URL(`/${lang}/`, SITE.url).href;
+const jsonLd = [
+	{
+		"@type": "ProfilePage",
+		"@id": `${pageUrl}#webpage`,
+		url: pageUrl,
+		name: copy.metaTitle,
+		description: copy.metaDescription,
+		inLanguage: lang,
+		about: { "@id": new URL("/#person", SITE.url).href },
+		mainEntity: { "@id": new URL("/#person", SITE.url).href },
+	},
+];
+
+const stages = COMPANIES.map((company) => {
+	const own = POSITION_VIEWS.filter(
+		(position) => position.companyId === company.id,
+	).sort((a, b) => a.startMonth - b.startMonth);
+	const from = Math.min(...own.map((position) => position.startMonth));
+	const to = Math.max(...own.map((position) => position.endMonth));
+	return {
+		company,
+		period: spanLabelIn(from, to, lang),
+		copy: copy.experience.stages[company.id],
+	};
+}).filter((stage) => stage.copy);
+
+const selected = [FEATURED_CASE, ...SELECTED_CASES.slice(0, 2)];
+
+const dateFormat = new Intl.DateTimeFormat(lang, {
+	day: "numeric",
+	month: "short",
+	year: "numeric",
+	timeZone: "UTC",
+});
+const formatDate = (iso: string) =>
+	dateFormat.format(new Date(`${iso}T00:00:00Z`));
+---
+
+<Layout
+  title={copy.metaTitle}
+  description={copy.metaDescription}
+  lang={lang}
+  type="profile"
+  jsonLd={jsonLd}
+  alternates={alternateProfilePaths()}
+>
+  <header class="profile-hero" aria-labelledby="profile-title">
+    <p class="eyebrow">{copy.eyebrow}</p>
+    <h1 class="display profile-title" id="profile-title">{copy.heroTitle}</h1>
+    <p class="lede">{copy.heroLede}</p>
+    <div class="actions">
+      <a class="btn" href="#proyectos">{copy.ctaProjects}</a>
+      <a class="btn btn--ghost" href="#cv">{copy.ctaCv}</a>
+      <a class="btn btn--link" href="#contacto">{copy.ctaContact}</a>
+    </div>
+    <div class="meta-row">
+      <span class="is-available">{copy.availability}</span>
+      <span>{copy.location}</span>
+      <span>{PROJECTS.length} {copy.metaProjects}</span>
+      <span>{copy.metaSince}</span>
+    </div>
+  </header>
+
+  <section class="section" id="sobre" aria-labelledby="sobre-title">
+    <div class="section-head">
+      <h2 class="section-title" id="sobre-title">{copy.about.title}</h2>
+      <span class="section-meta">{copy.about.lede}</span>
+    </div>
+    <div class="profile-about">
+      {copy.about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+    </div>
+  </section>
+
+  <section class="section" id="especialidades" aria-labelledby="especialidades-title">
+    <div class="section-head">
+      <h2 class="section-title" id="especialidades-title">{copy.expertise.title}</h2>
+      <span class="section-meta">{copy.expertise.meta}</span>
+    </div>
+    <div class="grid grid--4">
+      {
+        copy.expertise.items.map((item) => (
+          <div class="card">
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section" id="proyectos" aria-labelledby="proyectos-title">
+    <div class="section-head">
+      <h2 class="section-title" id="proyectos-title">{copy.selected.title}</h2>
+      <span class="section-meta">{copy.selected.meta}</span>
+    </div>
+    <div class="profile-projects">
+      {
+        selected.map((project, index) => {
+          const projectCopy = copy.projects[project.id];
+          if (!projectCopy) return null;
+          return (
+            <article class:list={["project", { "is-featured": index === 0 }]}>
+              <div class="project-head">
+                <p class="eyebrow">{projectCopy.area}</p>
+                <h3>
+                  {project.caseStudyHref ? (
+                    <a href={caseHref(project.caseStudyHref)}>
+                      {project.name}
+                    </a>
+                  ) : (
+                    project.name
+                  )}
+                </h3>
+                <p class="project-meta">
+                  {project.company} · {projectCopy.role}
+                </p>
+              </div>
+              <p class="project-problem">{projectCopy.problem}</p>
+              <dl class="facts">
+                <dt>{copy.selected.role}</dt>
+                <dd>{projectCopy.role}</dd>
+                <dt>{copy.selected.decision}</dt>
+                <dd>{projectCopy.decision}</dd>
+                <dt>{copy.selected.outcome}</dt>
+                <dd>{projectCopy.outcome}</dd>
+              </dl>
+              {project.stack && project.stack.length > 0 && (
+                <div class="tag-row">
+                  {project.stack.slice(0, 6).map((item) => (
+                    <span class="pill">{item}</span>
+                  ))}
+                </div>
+              )}
+              {project.caseStudyHref && (
+                <a class="project-link" href={caseHref(project.caseStudyHref)}>
+                  {copy.selected.readCase} <span aria-hidden="true">→</span>
+                </a>
+              )}
+            </article>
+          );
+        })
+      }
+    </div>
+    <p class="profile-note">{copy.selected.note}</p>
+    <div class="actions">
+      <a class="btn btn--ghost" href={`/${lang}/projects/`}>{copy.selected.allProjects}</a>
+    </div>
+  </section>
+
+  <section class="section" id="experiencia" aria-labelledby="experiencia-title">
+    <div class="section-head">
+      <h2 class="section-title" id="experiencia-title">{copy.experience.title}</h2>
+      <span class="section-meta">{copy.experience.meta}</span>
+    </div>
+    <ol class="profile-stages">
+      {
+        stages.map((stage) => (
+          <li class:list={["profile-stage", `accent-${stage.company.accent}`]}>
+            <div class="profile-stage-head">
+              <h3>{stage.company.name}</h3>
+              <span>{stage.period}</span>
+            </div>
+            <p class="profile-stage-roles">{stage.copy?.roles}</p>
+            <p class="profile-stage-focus">{stage.copy?.focus}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="profile-note">{copy.experience.note}</p>
+    <div class="actions">
+      <a class="btn btn--ghost" href="/experience/">{copy.experience.fullCareer}</a>
+    </div>
+  </section>
+
+  <section class="section" id="blog" aria-labelledby="blog-title">
+    <div class="section-head">
+      <h2 class="section-title" id="blog-title">{copy.writing.title}</h2>
+      <span class="section-meta">{copy.writing.meta}</span>
+    </div>
+    <div class="profile-posts">
+      {
+        SORTED_POSTS.map((post) => {
+          const postCopy = copy.posts[post.slug];
+          if (!postCopy) return null;
+          return (
+            <article class="profile-post">
+              <p class="profile-post-kicker">
+                <span>{postCopy.category}</span>
+                <span aria-hidden="true">·</span>
+                <time datetime={post.date}>{formatDate(post.date)}</time>
+              </p>
+              <h3>
+                <a href={postHref(post.slug)}>{postCopy.title}</a>
+              </h3>
+              <p>{postCopy.description}</p>
+              <a class="project-link" href={postHref(post.slug)}>
+                {copy.writing.read} <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          );
+        })
+      }
+    </div>
+    <p class="profile-note">{copy.writing.note}</p>
+  </section>
+
+  <section class="section" id="servicios" aria-labelledby="servicios-title">
+    <div class="section-head">
+      <h2 class="section-title" id="servicios-title">{copy.services.title}</h2>
+      <span class="section-meta">{copy.services.meta}</span>
+    </div>
+    <div class="grid grid--2">
+      {
+        copy.services.items.map((item) => (
+          <div class="card">
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="profile-note">{copy.services.note}</p>
+  </section>
+
+  <section class="section" id="cv" aria-labelledby="cv-title">
+    <div class="section-head">
+      <h2 class="section-title" id="cv-title">{copy.cv.title}</h2>
+      <span class="section-meta">{copy.cv.meta}</span>
+    </div>
+    <div class="profile-cv">
+      <p class="lede">{copy.cv.lede}</p>
+      <ul>
+        {copy.cv.points.map((point) => <li>{point}</li>)}
+      </ul>
+      <p class="profile-note">{copy.cv.note}</p>
+      <div class="actions">
+        <a class="btn" href="/cv/" hreflang="es">{copy.cv.cta}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contacto" aria-labelledby="contacto-title">
+    <div class="section-head">
+      <h2 class="section-title" id="contacto-title">{copy.contact.title}</h2>
+      <span class="section-meta">{copy.contact.meta}</span>
+    </div>
+    <p class="profile-lede">{copy.contact.lede}</p>
+    <div class="profile-channels">
+      <a class="profile-channel profile-channel--primary" href={`mailto:${SITE.email}`}>
+        <span class="profile-channel-label">{copy.contact.emailLabel}</span>
+        <span class="profile-channel-value">{SITE.email}</span>
+        <span class="profile-channel-note">{copy.contact.emailNote}</span>
+      </a>
+      {
+        SITE.socials.map((social) => (
+          <a class="profile-channel" href={social.href} rel="me">
+            <span class="profile-channel-label">{social.label}</span>
+            <span class="profile-channel-value">
+              {social.href.replace("https://", "")}
+            </span>
+            <span class="profile-channel-note">
+              {social.label === "GitHub"
+                ? copy.contact.githubNote
+                : copy.contact.socialNote}
+            </span>
+          </a>
+        ))
+      }
+      <a class="profile-channel" href="/cv/" hreflang="es">
+        <span class="profile-channel-label">{copy.contact.cvLabel}</span>
+        <span class="profile-channel-value">{copy.contact.cvValue}</span>
+        <span class="profile-channel-note">{copy.contact.cvNote}</span>
+      </a>
+    </div>
+    <div class="profile-closing">
+      <h3>{copy.contact.closingTitle}</h3>
+      <p>{copy.contact.closingBody}</p>
+      <div class="actions">
+        <a class="btn" href={`mailto:${SITE.email}`}>{copy.contact.emailLabel}</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+	.profile-hero {
+		display: grid;
+		gap: 1.1rem;
+		max-inline-size: 58rem;
+		padding-block: 1rem 0.5rem;
+	}
+
+	.profile-title {
+		max-inline-size: 50rem;
+		font-size: clamp(2.2rem, 6vw, 3.7rem);
+	}
+
+	.profile-hero .eyebrow {
+		color: var(--color-terracotta);
+	}
+
+	.profile-about {
+		display: grid;
+		gap: 1rem;
+		max-inline-size: 48rem;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-about p {
+		line-height: 1.8;
+	}
+
+	.profile-note,
+	.profile-lede {
+		max-inline-size: 48rem;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-note {
+		margin-top: 1rem;
+		font-size: 0.75rem;
+		line-height: 1.7;
+		color: var(--color-ink-faint);
+	}
+
+	.profile-lede {
+		font-family: var(--font-serif);
+		font-size: 1.1rem;
+		line-height: 1.6;
+	}
+
+	.profile-projects {
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	.project {
+		display: grid;
+		gap: 0.85rem;
+		padding: 1.4rem 1.5rem 1.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--color-card) 70%, transparent);
+	}
+
+	.project.is-featured {
+		padding: 1.75rem 1.9rem;
+		background: var(--color-card);
+	}
+
+	.project-head {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.project-head h3 {
+		font-family: var(--font-serif);
+		font-size: 1.35rem;
+		font-weight: 500;
+		line-height: 1.25;
+	}
+
+	.project.is-featured .project-head h3 {
+		font-size: 1.7rem;
+	}
+
+	.project-head h3 a {
+		text-decoration: none;
+	}
+
+	.project-head h3 a:hover {
+		text-decoration: underline;
+		text-decoration-color: var(--color-border);
+		text-underline-offset: 5px;
+	}
+
+	.project-meta {
+		font-family: var(--font-mono);
+		font-size: 0.656rem;
+		color: var(--color-ink-faint);
+	}
+
+	.project-problem {
+		max-inline-size: 44rem;
+		font-size: 0.875rem;
+		line-height: 1.75;
+		color: var(--color-ink-muted);
+	}
+
+	.project .facts {
+		padding-block: 0.65rem;
+		border-block: 1px solid var(--color-border-subtle);
+	}
+
+	.project-link {
+		justify-self: start;
+		font-size: 0.75rem;
+		color: var(--color-ink);
+		text-decoration: none;
+	}
+
+	.project-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.profile-stages {
+		display: grid;
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.profile-stage {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1.1rem 0.1rem 1.1rem 1rem;
+		border-bottom: 1px solid var(--color-border-subtle);
+		border-inline-start: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+	}
+
+	.profile-stage-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.25rem 1.5rem;
+	}
+
+	.profile-stage-head h3 {
+		font-family: var(--font-serif);
+		font-size: 1.15rem;
+		font-weight: 500;
+	}
+
+	.profile-stage-head span {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		color: var(--color-ink-faint);
+	}
+
+	.profile-stage-roles {
+		font-size: 0.78125rem;
+		line-height: 1.6;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-stage-focus {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		color: var(--accent);
+	}
+
+	.profile-posts {
+		display: grid;
+		gap: 0;
+	}
+
+	.profile-post {
+		display: grid;
+		gap: 0.45rem;
+		padding-block: 1.1rem;
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.profile-post-kicker {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		color: var(--color-ink-faint);
+	}
+
+	.profile-post h3 {
+		font-family: var(--font-serif);
+		font-size: 1.25rem;
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.profile-post h3 a {
+		text-decoration: none;
+	}
+
+	.profile-post h3 a:hover {
+		text-decoration: underline;
+		text-decoration-color: var(--color-border);
+		text-underline-offset: 4px;
+	}
+
+	.profile-post > p:not(.profile-post-kicker) {
+		font-size: 0.8125rem;
+		line-height: 1.7;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-cv {
+		display: grid;
+		gap: 1rem;
+		max-inline-size: 48rem;
+	}
+
+	.profile-cv ul {
+		display: grid;
+		gap: 0.45rem;
+		padding-inline-start: 1.1rem;
+		list-style: none;
+	}
+
+	.profile-cv li {
+		position: relative;
+		padding-inline-start: 0.85rem;
+		font-size: 0.8125rem;
+		line-height: 1.65;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-cv li::before {
+		content: "";
+		position: absolute;
+		inset-inline-start: 0;
+		inset-block-start: 0.72em;
+		inline-size: 0.35rem;
+		block-size: 1px;
+		background: var(--color-ink-faint);
+	}
+
+	.profile-channels {
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	@media (min-width: 768px) {
+		.profile-channels {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	.profile-channel {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1.15rem 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--color-card) 70%, transparent);
+		text-decoration: none;
+	}
+
+	.profile-channel:hover {
+		border-color: color-mix(in srgb, var(--color-ink) 22%, transparent);
+		background: var(--color-card);
+	}
+
+	.profile-channel--primary {
+		border-inline-start: 2px solid var(--color-ink);
+	}
+
+	.profile-channel-label {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-ink-faint);
+	}
+
+	.profile-channel-value {
+		font-family: var(--font-serif);
+		font-size: 1.05rem;
+		color: var(--color-ink);
+		overflow-wrap: anywhere;
+	}
+
+	.profile-channel-note {
+		font-size: 0.75rem;
+		line-height: 1.6;
+		color: var(--color-ink-muted);
+	}
+
+	.profile-closing {
+		display: grid;
+		gap: 0.6rem;
+		justify-items: start;
+		margin-top: 1.5rem;
+		padding: 1.5rem 1.6rem;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-paper-warm);
+	}
+
+	.profile-closing h3 {
+		font-family: var(--font-serif);
+		font-size: 1.3rem;
+		font-weight: 500;
+	}
+
+	.profile-closing p {
+		max-inline-size: 42rem;
+		font-size: 0.8125rem;
+		line-height: 1.7;
+		color: var(--color-ink-muted);
+	}
+
+	@media (min-width: 900px) {
+		.profile-projects {
+			gap: 1.5rem;
+		}
+	}
+</style>

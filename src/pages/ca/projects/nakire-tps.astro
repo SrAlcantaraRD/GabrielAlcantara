@@ -1,0 +1,316 @@
+---
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+import ArchitectureDiagram from "../../../components/ArchitectureDiagram.astro";
+---
+
+<LocalizedCaseLayout
+  lang="ca"
+  projectId="nakire-tps"
+  related={[
+    "lecciones-plataforma-industrial",
+    "arquitectura-orientada-a-eventos",
+    "websockets-operaciones-tiempo-real",
+  ]}
+  publishedTime="2026-11-10"
+>
+  <h2 id="resumen">Resum executiu</h2>
+  <p>
+    Nakire TPS connecta l'operació física d'un magatzem amb el programari que la
+    coordina. El sistema uneix persones, aplicacions i dispositius industrials
+    —robots, PLC, LEDs, picking, càmeres i so— en un mateix flux de treball, amb
+    traçabilitat i capacitat d'evolucionar magatzem a magatzem.
+  </p>
+  <p>
+    La solució es va organitzar al voltant de dominis i serveis amb responsabilitats
+    clares, comunicació orientada a esdeveniments i canals en temps real per
+    reflectir l'estat de les operacions. La meva feina va combinar arquitectura,
+    modelatge de dominis, desenvolupament de serveis, integració amb dispositius i
+    definició dels fluxos de comunicació.
+  </p>
+  <p>
+    Es va desenvolupar en dues fases: un MVP entre abril i juliol del 2025 i una
+    segona fase de setembre del 2025 a juny del 2026.
+  </p>
+
+  <h2 id="origen">D'on ve l'arquitectura</h2>
+  <p>
+    Nakire TPS és un desenvolupament propi. El que ve de més enrere és la manera de
+    pensar el sistema, no el seu codi: el primer motor que vaig escriure va ser el
+    cercador de Basetis, amb consultes entre claudàtors —AND, OR, NOT, NOR— i un
+    validador per expressions regulars. A LoveISDIN vaig portar el frontend i em vaig
+    trobar per primera vegada amb DDD i hexagonal al backend; la part visual, que
+    fins llavors creixia en components enormes, va passar a Atomic Design amb una
+    capa prèvia: partícules, àtoms, molècules, organismes, layouts i pàgines.
+  </p>
+  <p>
+    A <a href="/ca/projects/bodega-digital/">Bodega Digital</a> vaig portar per
+    primera vegada aquella arquitectura de backend al frontend, dins d'un monòlit:
+    un sol desplegament i límits de domini al codi. Nakire TPS porta la idea a
+    microserveis: cada família de dispositius amb el seu propi servei, un core de
+    domini que coneix les tasques i regles iguals a tots els mòduls.
+  </p>
+
+  <h2 id="contexto">Context industrial</h2>
+  <p>
+    En un magatzem automatitzat, moure un pallet no és una operació aïllada: implica
+    una tasca, un dispositiu disponible, un operador que necessita saber què fer i un
+    registre del que ha passat. El programari ha de coordinar aquests actors sense
+    convertir-se en un coll d'ampolla i sense perdre de vista qui pot fer què.
+  </p>
+  <p>
+    Cada magatzem arriba amb el seu mapa, les seves versions de robot i les seves
+    regles de negoci. El sistema havia d'absorbir aquesta variació sense multiplicar
+    el codi ni dependre d'un fabricant concret.
+  </p>
+
+  <h2 id="problema">El problema</h2>
+  <ul>
+    <li>
+      Coordinar tasques entre famílies de dispositius molt diferents, cadascuna amb
+      el seu propi protocol i el seu propi cicle de vida.
+    </li>
+    <li>
+      Permetre que la configuració d'un magatzem —mapa, robots, versions— canviï
+      sense reescriure el domini.
+    </li>
+    <li>
+      Reflectir l'estat de l'operació en temps real perquè les persones puguin actuar
+      sobre el que està passant.
+    </li>
+    <li>
+      Mantenir límits clars entre el que decideix el negoci i el que decideix el
+      maquinari.
+    </li>
+  </ul>
+
+  <h2 id="restricciones">Restriccions</h2>
+  <ul>
+    <li>
+      <strong>Maquinari heterogeni.</strong> Carretilles, PLC, LEDs, picking i
+      càmeres no comparteixen model, versió ni protocol.
+    </li>
+    <li>
+      <strong>Validació sobre maquinari real.</strong> Els QA gates del pipeline
+      s'executaven sobre dispositius físics, no només sobre mocks.
+    </li>
+    <li>
+      <strong>Desplegament al núvol sota VPN.</strong> El programari viu al núvol i
+      es connecta a la instal·lació industrial a través d'una VPN.
+    </li>
+    <li>
+      <strong>Fabricants i documentació.</strong> La comunicació tècnica i la
+      documentació amb fabricants xinesos es feia en anglès.
+    </li>
+    <li>
+      <strong>Traçabilitat i rols.</strong> Cada operador havia de veure i executar
+      només el que el seu rol permetia.
+    </li>
+  </ul>
+
+  <h2 id="rol">El meu rol</h2>
+  <p>
+    La meva feina va combinar el disseny de l'arquitectura, el modelatge de dominis,
+    el desenvolupament de serveis, la integració amb dispositius, la definició dels
+    fluxos de comunicació i l'acompanyament de les decisions tècniques. Formava part
+    d'un equip: el que segueix distingeix el que vaig dissenyar i dirigir del que va
+    ser treball col·lectiu.
+  </p>
+  <ul>
+    <li>
+      Vaig dissenyar i implementar un sistema orientat a esdeveniments sobre DDD, TDD
+      i microserveis, amb un monòlit agrupat en frontend, backend, core i un
+      subconjunt de dispositius.
+    </li>
+    <li>
+      Vaig definir el core d'agents que ordena, prioritza i reparteix la feina entre
+      els dispositius disponibles.
+    </li>
+    <li>
+      Vaig separar cada família de dispositiu en el seu propi microservei, amb
+      adaptadors per model, versió i protocol.
+    </li>
+    <li>
+      Vaig definir el frontend reactiu per WebSocket i el control d'accés per rol i
+      tipus d'operador.
+    </li>
+    <li>
+      Vaig acompanyar el desplegament en Docker sobre núvol sota VPN, amb CI/CD i QA
+      gates sobre maquinari físic real.
+    </li>
+  </ul>
+
+  <h2 id="arquitectura">Arquitectura</h2>
+  <p>
+    El frontend i l'API parlen amb un core que coneix les tasques; el core no coneix
+    els protocols de cada dispositiu, només les seves capacitats.
+  </p>
+
+  <ArchitectureDiagram />
+
+  <p class="diagram-alt">
+    En text: el frontend es connecta a l'API; l'API delega en el core d'agents
+    —dictator, ranker i distributor—; el core publica i consumeix esdeveniments al
+    bus; cada família de dispositiu té el seu microservei amb adaptadors per model,
+    versió i protocol; i aquests serveis conversen amb el maquinari real del
+    magatzem.
+  </p>
+
+  <h2 id="dominios">Dominis i serveis</h2>
+  <p>
+    DDD i TDD es van fer servir per absorbir les regles de negoci, els mapes i les
+    versions de robot diferents de cada magatzem. L'abstracció es va fer per casos
+    d'ús, ports i adaptadors: canviar una API o un dispositiu no arrossega el domini.
+  </p>
+  <p>
+    El core treballa amb tasques de diferent nivell de detall, des de la tasca que
+    apunta a un dispositiu concret fins a la que només expressa la família i l'acció.
+    Aquesta granularitat permet que el sistema continuï coordinant quan un model de
+    robot no està disponible o quan un magatzem incorpora una versió nova.
+  </p>
+  <p>
+    Els agents reparteixen la feina: <strong>dictator</strong> ordena,
+    <strong>ranker</strong> prioritza i <strong>distributor</strong> delega.
+    L'objectiu és maximitzar la disponibilitat dels dispositius i minimitzar els
+    moviments necessaris per completar les tasques.
+  </p>
+  <p>
+    Cada mòdul tenia la seva API, el seu backoffice i el seu frontend, i compartia un
+    DDD core amb la resta: les regles de negoci vivien al domini del mòdul. El
+    control d'accés per rol travessava el sistema sencer, de manera que el mateix
+    operador veia el que li tocava a qualsevol mòdul.
+  </p>
+
+  <h2 id="eventos">Esdeveniments i comunicació</h2>
+  <p>
+    La comunicació entre serveis és asíncrona i orientada a esdeveniments. El bus
+    d'esdeveniments del sistema permet que el core publiqui el que ha decidit i que
+    cada servei reaccioni sense que el productor conegui els seus consumidors.
+    Afegir una família de dispositius o una nova capacitat no obliga a tocar el core.
+  </p>
+  <p>
+    Aquesta separació també acota el fallo: un servei de dispositius que deixa de
+    respondre no bloqueja la coordinació de la resta, encara que el sistema hagi de
+    decidir què fer amb les tasques que depenien d'ell. La persistència acompanya
+    aquesta divisió: time-series per a mètriques, PostgreSQL i Redis per a
+    transaccions.
+  </p>
+
+  <h2 id="reglas">Regles del sistema</h2>
+  <p>
+    Un cas d'ús pot emetre els esdeveniments que decideixi el negoci, però cada
+    esdeveniment el consumeix un sol cas d'ús. La regla sembla petita i canvia el
+    sistema sencer: deixa una traça neta de qui va fer què i un únic punt d'error,
+    sempre al mateix lloc, pel qual passen tots els esdeveniments.
+  </p>
+  <p>
+    Aquesta traçabilitat es va pensar per a l'operació: quan una tasca no avança, hi
+    ha un lloc on mirar. Amb la mateixa lògica, el temps real es declara al cas d'ús.
+  </p>
+
+  <h2 id="hardware">Integració amb maquinari</h2>
+  <p>
+    Cada família de dispositiu —carretilla, PLC, LED, picking, càmera— és el seu
+    propi microservei, amb adaptadors segons model, versió i protocol. El domini
+    expressa la intenció; l'adaptador s'encarrega de traduir-la al protocol concret.
+  </p>
+  <p>
+    Aquest límit va ser la decisió que més vegades es va pagar sola: un fabricant nou
+    o una versió diferent de robot s'incorporava com un adaptador, no com un canvi a
+    les regles de negoci. També va permetre documentar i comunicar les integracions
+    en anglès amb els fabricants sense barrejar el seu vocabulari amb el del domini.
+  </p>
+
+  <h2 id="tiempo-real">Temps real i rols</h2>
+  <p>
+    El frontend és reactiu i es comunica per WebSocket: la interfície reflecteix
+    l'estat de l'operació sense que l'operador hagi de refrescar. Sobre aquest canal
+    s'aplica RBAC, de manera que la interfície s'adapta al rol —admin o operador— i
+    al tipus d'operador.
+  </p>
+  <p>
+    La conseqüència pràctica és que l'operador veu la següent acció que li
+    correspon, amb el context del que està passant al magatzem, i no una pantalla
+    genèrica amb totes les possibilitats.
+  </p>
+  <p>
+    A més del WebSocket, el sistema usava SSE per a les actualitzacions delta: el cas
+    d'ús decideix si un canvi d'estat —una tasca que passa de PENDING a IN_PROGRESS—
+    mereix un enviament, el publica al bus i el handler el reparteix entre els
+    listeners subscrits a aquella tasca. La subscripció la declara el client en obrir
+    la tasca.
+  </p>
+
+  <h2 id="despliegue">CI/CD i desplegament</h2>
+  <p>
+    La plataforma es desplega amb Docker i Kubernetes al núvol, sota VPN cap a la
+    instal·lació. El pipeline inclou CI/CD i QA gates deterministes sobre maquinari
+    físic real: la validació no es quedava a l'entorn d'integració, arribava als
+    dispositius que després operen al magatzem.
+  </p>
+
+  <h2 id="decisiones">Decisions tècniques</h2>
+  <ul>
+    <li>
+      <strong>Core d'agents en lloc d'una orquestració rígida.</strong> Permet
+      prioritzar i repartir feina segons disponibilitat, a canvi d'assumir estat i
+      idempotència a les tasques.
+    </li>
+    <li>
+      <strong>Un microservei per família de dispositius.</strong> Aïlla protocols i
+      versions, a canvi de més serveis per desplegar i observar.
+    </li>
+    <li>
+      <strong>Tasques amb granularitat variable.</strong> El mateix model serveix per
+      a un dispositiu concret i per a una família sencera, a canvi d'un contracte de
+      tasca més ric.
+    </li>
+    <li>
+      <strong>DDD i TDD per al domini.</strong> Absorbeixen regles que canvien per
+      magatzem, a canvi d'un esforç inicial de modelatge que es recupera a cada
+      variant.
+    </li>
+    <li>
+      <strong>QA sobre maquinari real.</strong> Detecta el que cap mock detecta, a
+      canvi d'un pipeline més lent i dependent de dispositius.
+    </li>
+  </ul>
+
+  <h2 id="resultados">Resultats</h2>
+  <p>
+    El sistema va permetre connectar programari i operació industrial, millorar la
+    traçabilitat dels processos i automatitzar interaccions que abans requerien
+    coordinació manual. Els resultats que puc afirmar són observables, no mètriques
+    inventades:
+  </p>
+  <ul>
+    <li>Les tasques queden registrades i associades al seu dispositiu i al seu operador.</li>
+    <li>
+      La interfície reflecteix l'estat de l'operació en temps real i s'adapta al rol
+      de qui la fa servir.
+    </li>
+    <li>
+      Incorporar un model o una versió de dispositiu no exigeix refer el domini.
+    </li>
+    <li>
+      El desplegament i la validació estan automatitzats, inclosa la comprovació
+      sobre maquinari real.
+    </li>
+  </ul>
+
+  <h2 id="aprendizajes">Aprenentatges</h2>
+  <ul>
+    <li>
+      En sistemes industrials, el maquinari marca el ritme: l'arquitectura ha
+      d'assumir que els dispositius fallen, canvien de versió i no sempre estan
+      disponibles.
+    </li>
+    <li>
+      Els contractes explícits entre domini i dispositiu estalvien més temps que
+      qualsevol optimització prematura.
+    </li>
+    <li>
+      La documentació i el vocabulari compartit amb fabricants són part de
+      l'enginyeria, no un tràmit.
+    </li>
+  </ul>
+</LocalizedCaseLayout>

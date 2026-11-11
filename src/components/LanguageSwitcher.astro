@@ -1,0 +1,73 @@
+---
+import {
+	LOCALE_META,
+	LOCALES,
+	localizedEntry,
+	type Locale,
+} from "../i18n/routing";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+interface Props {
+	lang?: Locale;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const pathname = Astro.url.pathname;
+const hash = Astro.url.hash;
+const t = useTranslations(lang);
+---
+
+<nav class="locale-switcher" aria-label={t("language")}>
+	{
+		LOCALES.map((locale) => {
+			const active = locale === lang;
+			return (
+				<a
+					href={localizedEntry(locale, pathname, hash)}
+					hreflang={locale}
+					lang={locale}
+					data-locale-link={locale}
+					class:list={["locale-link", { "is-active": active }]}
+					aria-current={active ? "true" : undefined}
+					title={LOCALE_META[locale].label}
+				>
+					{LOCALE_META[locale].short}
+				</a>
+			);
+		})
+	}
+</nav>
+
+<style>
+	.locale-switcher {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.1rem;
+		padding: 0.1rem;
+		border: 1px solid var(--color-border);
+		border-radius: 5px;
+	}
+
+	.locale-link {
+		padding: 0.16rem 0.32rem;
+		border-radius: 3px;
+		font-family: var(--font-mono);
+		font-size: 0.59375rem;
+		line-height: 1.3;
+		letter-spacing: 0.04em;
+		color: var(--color-ink-faint);
+		text-decoration: none;
+		transition:
+			background 140ms ease,
+			color 140ms ease;
+	}
+
+	.locale-link:hover {
+		color: var(--color-ink);
+	}
+
+	.locale-link.is-active {
+		background: var(--color-paper-warm);
+		color: var(--color-ink);
+	}
+</style>

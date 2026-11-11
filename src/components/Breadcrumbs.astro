@@ -1,15 +1,24 @@
 ---
+import { localeRoot, type Locale } from "../i18n/routing";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
 interface Props {
   items: { label: string; href?: string }[];
   hidden?: boolean;
+  lang?: Locale;
 }
 
-const { items, hidden = false } = Astro.props;
+const {
+  items,
+  hidden = false,
+  lang = getLangFromUrl(Astro.url),
+} = Astro.props;
+const t = useTranslations(lang);
 ---
 
-<nav class="breadcrumbs" aria-label="Ruta de navegación" hidden={hidden}>
+<nav class="breadcrumbs" aria-label={t("breadcrumbs")} hidden={hidden}>
   <ol>
-    <li><a href="/">Inicio</a></li>
+    <li><a href={localeRoot(lang)}>{t("nav.home")}</a></li>
     {
       items.map((item) => (
         <li>

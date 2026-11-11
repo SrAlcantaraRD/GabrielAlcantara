@@ -1,33 +1,59 @@
 ---
-import { NAV, SITE, isNavActive, type Breadcrumb } from "../data/site";
+import type { Breadcrumb } from "../data/site";
+import { SITE } from "../data/site";
+import { localeRoot, type Locale } from "../i18n/routing";
+import { navItems } from "../i18n/ui";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import AskAiLinks from "./AskAiLinks.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
-  breadcrumbs?: Breadcrumb[];
+	breadcrumbs?: Breadcrumb[];
+	lang?: Locale;
 }
 
-const { breadcrumbs } = Astro.props;
+const { breadcrumbs, lang } = Astro.props;
+const locale = lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(locale);
+const items = navItems(locale).filter((item) => item.key !== "home");
 const showBreadcrumbs = breadcrumbs && breadcrumbs.length > 0;
-
 const pathname = Astro.url.pathname;
-const active = (href: string) => isNavActive(pathname, href);
+const home = localeRoot(locale);
+const localized = locale !== "es";
+
+const active = (item: (typeof items)[number]) => {
+	if (!localized) {
+		if (item.href === "/") return pathname === "/";
+		return pathname === item.href || pathname.startsWith(item.href);
+	}
+	return item.key === "home" && pathname === home;
+};
+
+const cvHref = localized ? "#cv" : "/cv/";
+const contactHref = localized ? "#contacto" : "/contact/";
 ---
 
-<header class="site-header" transition:persist="site-header">
+<header
+  class="site-header"
+  transition:persist={`site-header-${locale}`}
+  data-locale={locale}
+>
   <div class="container header-inner">
-    <a class="brand" href="/">
+    <a class="brand" href={home}>
       <span class="brand-name">{SITE.name}</span>
-      <span class="brand-role">Software Architect · Software Engineer</span>
+      <span class="brand-role">Solutions Architect · Software Engineer</span>
     </a>
 
-    <nav class="site-nav" aria-label="Navegación principal">
+    <nav class="site-nav" aria-label={t("mainNav")}>
       {
-        NAV.map((item) => (
+        items.map((item) => (
           <a
             href={item.href}
-            class:list={["nav-link", { "is-active": active(item.href) }]}
-            aria-current={active(item.href) ? "page" : undefined}
+            class:list={["nav-link", { "is-active": active(item) }]}
+            aria-current={active(item) ? "page" : undefined}
+            data-nav-key={item.key}
           >
             {item.label}
           </a>
@@ -35,48 +61,58 @@ const active = (href: string) => isNavActive(pathname, href);
       }
     </nav>
 
+    <div class="header-tools">
+      <LanguageSwitcher lang={locale} />
+      <ThemeToggle lang={locale} />
+    </div>
+
     <div class="header-actions">
-      <a class="action-cv" href="/cv/">CV</a>
-      <a class="action-contact" href="/contact/">Contactar</a>
+      <a class="action-cv" href={cvHref}>{t("cv")}</a>
+      <a class="action-contact" href={contactHref}>{t("contact")}</a>
     </div>
 
     <details class="mobile-menu">
       <summary>
-        <span>Menú</span>
+        <span>{t("menu")}</span>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </summary>
       <div class="menu-panel">
-        <nav aria-label="Navegación móvil">
+        <nav aria-label={t("mobileNav")}>
           <ul>
             {
-              NAV.map((item) => (
+              items.map((item) => (
                 <li>
                   <a
                     href={item.href}
-                    class:list={{ "is-active": active(item.href) }}
-                    aria-current={active(item.href) ? "page" : undefined}
+                    class:list={{ "is-active": active(item) }}
+                    aria-current={active(item) ? "page" : undefined}
+                    data-nav-key={item.key}
                   >
                     {item.label}
                   </a>
                 </li>
               ))
             }
-            <li><a href="/cv/">CV</a></li>
+            <li><a href={cvHref}>{t("cv")}</a></li>
           </ul>
         </nav>
         <div class="menu-ask">
-          <AskAiLinks variant="menu" />
+          <AskAiLinks variant="menu" lang={locale} />
         </div>
       </div>
     </details>
   </div>
 
   <div class="container header-crumbs">
-    <Breadcrumbs items={breadcrumbs ?? []} hidden={!showBreadcrumbs} />
+    <Breadcrumbs
+      items={breadcrumbs ?? []}
+      hidden={!showBreadcrumbs}
+      lang={locale}
+    />
     <div class="header-ask">
-      <AskAiLinks />
+      <AskAiLinks lang={locale} />
     </div>
   </div>
 </header>
@@ -92,9 +128,25 @@ const active = (href: string) => isNavActive(pathname, href);
 
   function syncNav() {
     const path = window.location.pathname;
+    const hash = window.location.hash;
+    const locale = path.startsWith("/en/") ? "en" : path.startsWith("/ca/") ? "ca" : "es";
     const links = document.querySelectorAll<HTMLAnchorElement>(
-      ".site-nav .nav-link, .mobile-menu nav a",
+      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
     );
+
+    if (locale !== "es") {
+      for (const link of links) {
+        const target = new URL(link.href, window.location.origin);
+        const isHome = target.hash === "";
+        const active = isHome
+          ? !hash && target.pathname === path
+          : target.hash === hash;
+        link.classList.toggle("is-active", active);
+        if (active) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      }
+      return;
+    }
 
     for (const link of links) {
       const target = new URL(link.href, window.location.origin).pathname;
@@ -147,15 +199,43 @@ const active = (href: string) => isNavActive(pathname, href);
     crumbs.hidden = items.length === 0;
   }
 
+  function markClicked(event: Event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest<HTMLAnchorElement>(
+      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
+    );
+    if (!link) return;
+
+    const targetUrl = new URL(link.href, window.location.origin);
+    if (!targetUrl.hash) return;
+
+    for (const candidate of document.querySelectorAll<HTMLAnchorElement>(
+      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
+    )) {
+      const candidateHash = new URL(candidate.href, window.location.origin).hash;
+      const active = candidateHash === targetUrl.hash;
+      candidate.classList.toggle("is-active", active);
+      if (active) candidate.setAttribute("aria-current", "page");
+      else candidate.removeAttribute("aria-current");
+    }
+  }
+
   function sync() {
     closeMenu();
     syncNav();
     syncCrumbs();
+    // ClientRouter applies the new hash after the page-load event; run once
+    // more on the next frame so the active section is never one step behind.
+    requestAnimationFrame(syncNav);
   }
 
   sync();
   document.addEventListener("astro:page-load", sync);
   document.addEventListener("astro:before-swap", closeMenu);
+  document.addEventListener("click", markClicked, true);
+  window.addEventListener("hashchange", syncNav);
+  window.addEventListener("popstate", syncNav);
 </script>
 
 <style>
@@ -176,7 +256,7 @@ const active = (href: string) => isNavActive(pathname, href);
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 0.75rem 1.5rem;
+    gap: 0.7rem;
     padding-block-start: var(--header-space);
   }
 
@@ -213,9 +293,9 @@ const active = (href: string) => isNavActive(pathname, href);
 
   .brand {
     display: grid;
+    flex: 1 1 auto;
     gap: 0.05rem;
     min-inline-size: 0;
-    margin-inline-end: auto;
     text-decoration: none;
   }
 
@@ -243,11 +323,13 @@ const active = (href: string) => isNavActive(pathname, href);
 
   .site-nav {
     display: none;
+    flex: none;
   }
 
   .site-nav .nav-link {
     padding-block: 0.25rem;
     font-size: 0.75rem;
+    white-space: nowrap;
     color: var(--color-ink-muted);
     text-decoration: none;
     border-bottom: 1px solid transparent;
@@ -263,8 +345,16 @@ const active = (href: string) => isNavActive(pathname, href);
     border-bottom-color: var(--color-ink);
   }
 
+  .header-tools {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
   .header-actions {
     display: none;
+    flex: none;
     align-items: center;
     gap: 0.4rem;
   }
@@ -275,6 +365,7 @@ const active = (href: string) => isNavActive(pathname, href);
     border: 1px solid var(--color-border);
     border-radius: 5px;
     font-size: 0.6875rem;
+    white-space: nowrap;
     text-decoration: none;
     transition:
       border-color 140ms ease,
@@ -298,7 +389,8 @@ const active = (href: string) => isNavActive(pathname, href);
   }
 
   .action-contact:hover {
-    background: #333;
+    background: var(--color-ink-hover);
+    border-color: var(--color-ink-hover);
   }
 
   .mobile-menu {
@@ -349,7 +441,7 @@ const active = (href: string) => isNavActive(pathname, href);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     background: var(--color-card);
-    box-shadow: 0 12px 32px rgb(26 26 26 / 0.1);
+    box-shadow: var(--shadow);
   }
 
   .mobile-menu ul {
@@ -376,7 +468,7 @@ const active = (href: string) => isNavActive(pathname, href);
     .site-nav {
       display: flex;
       align-items: center;
-      gap: 1.05rem;
+      gap: 0.65rem;
     }
 
     .header-actions {
@@ -384,6 +476,12 @@ const active = (href: string) => isNavActive(pathname, href);
     }
 
     .mobile-menu {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .action-cv {
       display: none;
     }
   }
@@ -402,6 +500,10 @@ const active = (href: string) => isNavActive(pathname, href);
   @media (max-width: 639px) {
     .brand-role {
       display: none;
+    }
+
+    .header-inner {
+      gap: 0.6rem;
     }
   }
 </style>

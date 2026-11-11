@@ -1,0 +1,109 @@
+---
+import ArticleLayout from "../../../layouts/ArticleLayout.astro";
+import { postOf } from "../../../data/blog";
+import { alternateEditorialPaths } from "../../../i18n/routing";
+
+const post = postOf("ddd-dominios-complejos");
+---
+
+<ArticleLayout
+  {...post}
+  lang="en"
+  alternates={alternateEditorialPaths("/blog/ddd-dominios-complejos/")}
+>
+  <p>
+    There are domains where one table per entity is enough. And there are domains
+    where the rules do not fit into columns: they depend on context, change from
+    one installation to another and affect several parts of the system at once.
+    In those cases, DDD decides where each rule lives, and how many layers the
+    business needs: the ones the complexity of the system and its integrations
+    demand, and not one more.
+  </p>
+
+  <h2>The domain is not the database</h2>
+  <p>
+    The first symptom of a complex domain is that the data model starts deciding
+    behaviour. Validations spread across the database, the controller and the
+    interface, and nobody knows which one is the source of truth anymore.
+  </p>
+  <p>
+    DDD proposes the opposite: model the behaviour and the language of the
+    business, and treat persistence as a detail. Not because the database does
+    not matter, but because the rules must be testable without it.
+  </p>
+
+  <h2>Shared language</h2>
+  <p>
+    A winery does not talk about “records” or “rows”: it talks about bottles,
+    references, vintages, batches and positions. When the code uses that same
+    vocabulary, conversations with the business and with hardware vendors become
+    shorter.
+  </p>
+  <p>
+    In Bodega Digital that vocabulary was part of the design: a bottle is an
+    identifiable unit —vintage, variety, plot—, not a stock row; an RFID reader
+    has capabilities, not just an identifier. The model reflects how the work is
+    done.
+  </p>
+
+  <h2>Boundaries: where the cost of change lives</h2>
+  <p>
+    The useful question for finding a bounded context is not “which entities go
+    together?”, but “what changes together and what can change separately?”.
+    Inventory rules change per winery; an RFID reader's protocol changes per
+    manufacturer and model. They are two different speeds and deserve different
+    boundaries.
+  </p>
+  <p>
+    That is why each integration —RFID readers, computer vision, demand
+    forecasting— stayed behind its own adapter, while the domain kept the rules
+    that do not depend on hardware. Changing a vendor does not force changes in
+    the domain; changing a business rule does not force changes in the adapters.
+  </p>
+
+  <h2>Aggregates and identifiable units</h2>
+  <p>
+    An aggregate is a consistency boundary. In a wine inventory, the bottle is a
+    good candidate: it has its own identity —vintage, variety, plot—, a position
+    and a life cycle. Modelled that way, its transitions can be tested and errors
+    stop being side effects.
+  </p>
+  <p>
+    That boundary also prevents the giant aggregate that knows everything. The
+    bottle does not need to know the whole inventory or the reader's protocol; it
+    needs to know what it is, where it is and what state it is in.
+  </p>
+
+  <h2>Domain events</h2>
+  <p>
+    When a bottle changes state, that change is a fact of the business. Publishing
+    it as an event lets other modules react without the bottle knowing who they
+    are. It is the same idea of boundaries, applied to time: the domain declares
+    what happened and each consumer decides what to do.
+  </p>
+  <p>
+    The discipline lies in not turning the event into a hidden call. If the sender
+    needs a response to continue, it probably was not an event.
+  </p>
+
+  <h2>The cost of DDD</h2>
+  <p>
+    DDD demands more conversation and more initial modelling than opening a table
+    and moving on. In a simple domain, that cost is not recovered: a forms
+    application with clear rules does not need aggregates or contexts.
+  </p>
+  <p>
+    It is worth it when there are several sources of variation —installations,
+    vendors, rules that change— and when the cost of a badly placed change is
+    high. There, modelling is what prevents every new rule from becoming one more
+    conditional.
+  </p>
+
+  <h2>Closing</h2>
+  <p>
+    DDD does not make a domain complex; it recognises that it already was and
+    decides where to put each thing. The diagram may end up elegant and clear, but
+    that is not the signal: the signal is that adding another implementation of a
+    port or a new abstraction touches fewer files than it used to.
+  </p>
+</ArticleLayout>

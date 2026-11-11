@@ -7,6 +7,12 @@
  * site-wide Person and WebSite plus the page-specific nodes.
  */
 import { SITE, type Breadcrumb } from "../data/site";
+import {
+	LOCALE_META,
+	alternateProfilePaths,
+	type Locale,
+} from "../i18n/routing";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
 
 interface Props {
 	title: string;
@@ -21,13 +27,15 @@ interface Props {
 	modifiedTime?: string;
 	articleSection?: string;
 	tags?: string[];
+	lang?: Locale;
+	alternates?: Record<string, string>;
 }
 
 const {
 	title,
 	description,
 	image = "/og-image.png",
-	imageAlt = "Gabriel Alcántara — Software Architect & Software Engineer",
+	imageAlt = "Gabriel Alcántara — Solutions Architect & Software Engineer",
 	type = "website",
 	noindex = false,
 	breadcrumbs,
@@ -36,7 +44,11 @@ const {
 	modifiedTime,
 	articleSection,
 	tags,
+	lang = getLangFromUrl(Astro.url),
+	alternates,
 } = Astro.props;
+const t = useTranslations(lang);
+const meta = LOCALE_META[lang];
 
 // Static pages are emitted as directories; keep the canonical on that form.
 const pathname = Astro.url.pathname;
@@ -46,6 +58,8 @@ const canonicalPath =
 		: `${pathname}/`;
 const canonical = new URL(canonicalPath, SITE.url);
 const socialImage = new URL(image, SITE.url);
+const resolvedAlternates =
+	alternates ?? (pathname === "/" ? alternateProfilePaths() : undefined);
 
 const personId = new URL("/#person", SITE.url).href;
 const websiteId = new URL("/#website", SITE.url).href;
@@ -59,7 +73,7 @@ const person = {
 	description: SITE.description,
 	email: `mailto:${SITE.email}`,
 	knowsAbout: SITE.knowsAbout.map((item) => item.en),
-	knowsLanguage: ["es", "en"],
+	knowsLanguage: ["es", "en", "ca"],
 	sameAs: SITE.socials.map((social) => social.href),
 	alumniOf: {
 		"@type": "CollegeOrUniversity",
@@ -83,7 +97,7 @@ if (breadcrumbs && breadcrumbs.length > 0) {
 	graph.push({
 		"@type": "BreadcrumbList",
 		itemListElement: [
-			{ name: "Inicio", url: new URL("/", SITE.url).href },
+			{ name: t("nav.home"), url: new URL(lang === "es" ? "/" : `/${lang}/`, SITE.url).href },
 			...breadcrumbs.map((item) => ({
 				name: item.label,
 				...(item.href ? { url: new URL(item.href, SITE.url).href } : {}),
@@ -109,6 +123,16 @@ const structuredData = {
 <meta name="author" content={SITE.name} />
 <meta name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
 <link rel="canonical" href={canonical.href} />
+{
+	resolvedAlternates &&
+		Object.entries(resolvedAlternates).map(([hrefLang, path]) => (
+			<link
+				rel="alternate"
+				hreflang={hrefLang}
+				href={new URL(path, SITE.url).href}
+			/>
+		))
+}
 <meta
 	name="robots"
 	content={noindex ? "noindex, nofollow" : "max-image-preview:large"}
@@ -117,7 +141,18 @@ const structuredData = {
 <!-- Open Graph -->
 <meta property="og:type" content={type} />
 <meta property="og:site_name" content={SITE.name} />
-<meta property="og:locale" content={SITE.locale} />
+<meta property="og:locale" content={meta.ogLocale} />
+{
+	resolvedAlternates &&
+		Object.keys(resolvedAlternates)
+			.filter((key) => key !== "x-default" && key !== lang)
+			.map((key) => (
+				<meta
+					property="og:locale:alternate"
+					content={LOCALE_META[key as Locale].ogLocale}
+				/>
+			))
+}
 <meta property="og:url" content={canonical.href} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />

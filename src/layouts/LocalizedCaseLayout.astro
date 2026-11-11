@@ -1,0 +1,167 @@
+---
+import Layout from "./Layout.astro";
+import PostCard from "../components/PostCard.astro";
+import { caseStudyOf } from "../data/projects";
+import { postOf } from "../data/blog";
+import { SITE } from "../data/site";
+import { durationLabelIn, spanLabelIn } from "../lib/period";
+import { PROFILE } from "../i18n/profile";
+import { EDITORIAL } from "../i18n/editorial";
+import {
+  alternateEditorialPaths,
+  type TranslatedLocale,
+} from "../i18n/routing";
+
+interface Props {
+  lang: TranslatedLocale;
+  projectId: string;
+  /** Slugs of related articles, in display order. */
+  related: string[];
+  publishedTime: string;
+}
+
+const { lang, projectId, related, publishedTime } = Astro.props;
+const project = caseStudyOf(projectId);
+const copy = PROFILE[lang].projects[project.id];
+const caseCopy = EDITORIAL[lang].cases[project.id];
+const labels = EDITORIAL[lang].case;
+const projectHref = project.caseStudyHref as string;
+const projectsHref = `/${lang}/projects/`;
+const pageUrl = new URL(`/${lang}${projectHref}`, SITE.url).href;
+const relatedPosts = related.map(postOf);
+const inLanguage = lang === "en" ? "en-GB" : "ca-ES";
+
+const jsonLd = [
+  {
+    "@type": "Article",
+    "@id": `${pageUrl}#article`,
+    url: pageUrl,
+    headline: caseCopy.headline,
+    description: caseCopy.description,
+    datePublished: publishedTime,
+    dateModified: publishedTime,
+    inLanguage,
+    author: { "@id": new URL("/#person", SITE.url).href },
+    about: { "@id": new URL("/#person", SITE.url).href },
+    keywords: caseCopy.tags.join(", "),
+  },
+];
+---
+
+<Layout
+  title={caseCopy.metaTitle}
+  description={caseCopy.description}
+  image={`/og/${project.id}.png`}
+  imageAlt={caseCopy.imageAlt}
+  type="article"
+  lang={lang}
+  alternates={alternateEditorialPaths(projectHref)}
+  publishedTime={publishedTime}
+  articleSection={caseCopy.section}
+  tags={caseCopy.tags}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { label: EDITORIAL[lang].projects.eyebrow, href: projectsHref },
+    { label: project.name },
+  ]}
+>
+  <article class="case">
+    <header class="case-head">
+      <p class="eyebrow">{caseCopy.eyebrow}</p>
+      <h1 class="display">{caseCopy.headline}.</h1>
+      <p class="lede">{caseCopy.lede}</p>
+      <div class="meta-row">
+        <span>{spanLabelIn(project.startMonth, project.endMonth, lang)}</span>
+        <span>{durationLabelIn(project.endMonth - project.startMonth, lang)}</span>
+        <span>{project.position}</span>
+      </div>
+    </header>
+
+    <dl class="facts case-facts">
+      <dt>{labels.role}</dt>
+      <dd>{copy.role}</dd>
+      <dt>{labels.context}</dt>
+      <dd>{project.company} · {project.position}</dd>
+      <dt>{labels.domain}</dt>
+      <dd>{caseCopy.domain}</dd>
+      <dt>{labels.technologies}</dt>
+      <dd>
+        <span class="tag-row">
+          {project.stack?.map((item) => <span class="pill">{item}</span>)}
+        </span>
+      </dd>
+    </dl>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <section class="case-next" aria-labelledby="case-next-title">
+      <h2 class="section-title" id="case-next-title">{labels.relatedArticles}</h2>
+      <div class="next-list">
+        {relatedPosts.map((post) => <PostCard post={post} compact lang={lang} />)}
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="case-cierre">
+      <h2 class="section-title" id="case-cierre">{caseCopy.closingTitle}</h2>
+      <p>{caseCopy.closingBody}</p>
+      <div class="actions">
+        <a class="btn" href={`/${lang}/#contacto`}>{labels.contactCta}</a>
+        <a class="btn btn--ghost" href={projectsHref}>{labels.projectsCta}</a>
+        <a class="btn btn--ghost" href="/cv/" hreflang="es">{labels.cvCta}</a>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .case {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .case-head {
+    display: grid;
+    gap: 0.9rem;
+    max-inline-size: 54rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .case-facts {
+    max-inline-size: 46rem;
+  }
+
+  .case .prose {
+    max-inline-size: 48rem;
+  }
+
+  .case-next {
+    display: grid;
+    max-inline-size: 46rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .next-list {
+    display: grid;
+  }
+
+  .closing {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    padding: 1.75rem 1.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-paper-warm);
+  }
+
+  .closing p {
+    max-inline-size: 38rem;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-ink-muted);
+  }
+</style>
