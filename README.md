@@ -83,7 +83,9 @@ tagline edit or a template change — and so does `pnpm build`: it runs
 
 `pnpm install` points `core.hooksPath` at `.githooks`, whose `pre-commit` runs
 the same check before every commit. If that local config is lost, run
-`pnpm hooks:install` to restore it.
+`pnpm hooks:install` to restore it. `.githooks/commit-msg` exige un emoji
+inicial y el formato `<emoji> <type>(<scope>): <descripción>`, y rechaza los
+trailers de IA (`Co-Authored-By:` y `Generated with`).
 
 ## 👀 Want to learn more?
 
