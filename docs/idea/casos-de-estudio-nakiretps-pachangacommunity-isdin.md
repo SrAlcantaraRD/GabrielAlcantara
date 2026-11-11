@@ -8,7 +8,7 @@ Estos tres proyectos son buenos candidatos para demostrar tres capacidades disti
 - **PachangaCommunity:** producto digital completo, móvil, pagos, suscripciones y crecimiento con recursos limitados.
 - **ISDIN / LoveISDIN:** transformación de una plataforma internacional con configuración por países y migración desde legacy.
 
-La redacción debe ser técnica, pero no convertirse en una lista de tecnologías. Cada caso debe explicar el problema, las decisiones, las restricciones, tu responsabilidad y lo que aprendiste.
+Cada caso debe explicar el problema, las decisiones, las restricciones, tu responsabilidad y lo que aprendiste.
 
 No conviene inventar métricas. Como los resultados todavía no están medidos, se pueden utilizar resultados cualitativos y dejar una sección preparada para incorporar cifras más adelante.
 
@@ -40,7 +40,7 @@ Cómo diseñé la arquitectura de una plataforma capaz de coordinar dispositivos
 
 ## Resumen inicial
 
-NakireTPS aborda la coordinación de distintos dispositivos industriales, como PLC, robots y sistemas LED, para transportar pallets desde un punto de origen hasta un destino. El reto no era únicamente mover una unidad física, sino sincronizar dispositivos heterogéneos, personas, autenticación, operaciones de frontend y backend y comunicación en tiempo real.
+NakireTPS aborda la coordinación de distintos dispositivos industriales, como PLC, robots y sistemas LED, para transportar pallets desde un punto de origen hasta un destino. En el mismo sistema entran operarios, autenticación, operaciones de frontend y backend y comunicación en tiempo real.
 
 ## Historia recomendada
 
