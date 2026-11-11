@@ -7,7 +7,7 @@ Transformar `gabrielalcantara.com` en una web profesional centrada en:
 - CV público.
 - Portfolio técnico.
 - Blog de autoridad.
-- Posicionamiento como Software Architect & Software Engineer.
+- Posicionamiento como Solutions Architect & Software Engineer.
 - Generación de oportunidades profesionales y de consultoría.
 - Buena indexación en buscadores y comprensión por agentes de IA.
 
@@ -114,7 +114,7 @@ Añadir:
 
 Titular recomendado:
 
-> Software Architect & Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos y soluciones industriales conectadas.
+> Solutions Architect & Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos y soluciones industriales conectadas.
 
 Subtítulo recomendado:
 
@@ -377,7 +377,7 @@ Priorizar artículos basados en experiencia real:
 4. WebSockets para operaciones en tiempo real.
 5. CI/CD cuando el software controla hardware.
 6. Decisiones de arquitectura que evitan complejidad innecesaria.
-7. Cómo trabajar como Software Architect en equipos multidisciplinares.
+7. Cómo trabajar como Solutions Architect en equipos multidisciplinares.
 
 ### 4. Plantilla de artículo
 
@@ -432,7 +432,7 @@ Configurar por página:
 
 Títulos iniciales:
 
-- Inicio: `Gabriel Alcántara | Software Architect & Software Engineer`
+- Inicio: `Gabriel Alcántara | Solutions Architect & Software Engineer`
 - Perfil: `Sobre Gabriel Alcántara | Arquitectura de software`
 - Proyectos: `Proyectos de arquitectura de software y sistemas distribuidos`
 - Blog: `Blog de arquitectura de software, backend y sistemas distribuidos`
@@ -810,7 +810,7 @@ Explicar rápidamente quién es Gabriel, qué problemas resuelve y hacia dónde 
 
 **Eyebrow:**
 
-> Software Architect · Software Engineer · Distributed Systems
+> Solutions Architect · Software Engineer · Distributed Systems
 
 **H1:**
 
@@ -818,7 +818,7 @@ Explicar rápidamente quién es Gabriel, qué problemas resuelve y hacia dónde 
 
 **Párrafo:**
 
-> Soy Gabriel Alcántara, Software Architect & Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.
+> Soy Gabriel Alcántara, Solutions Architect & Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.
 
 **CTA principal:**
 
@@ -926,7 +926,7 @@ Presentar la trayectoria, la forma de trabajar y el tipo de problemas que intere
 
 **Introducción:**
 
-> Soy Software Architect & Software Engineer con más de 15 años de experiencia diseñando, construyendo y evolucionando sistemas de software. Mi trabajo combina arquitectura, desarrollo backend, sistemas distribuidos, automatización y liderazgo técnico.
+> Soy Solutions Architect & Software Engineer con más de 15 años de experiencia diseñando, construyendo y evolucionando sistemas de software. Mi trabajo combina arquitectura, desarrollo backend, sistemas distribuidos, automatización y liderazgo técnico.
 
 **Forma de trabajar:**
 
@@ -965,7 +965,7 @@ Mostrar progresión profesional y responsabilidad, no solamente una lista cronol
 
 ### Plantilla de copy
 
-**[Cargo] · [Empresa]**  
+**[Cargo] · [Empresa]**
 `[Periodo]`
 
 > Participé en la evolución de [producto, plataforma o sistema], trabajando en [contexto principal]. Mi responsabilidad se centró en [responsabilidad principal] y en ayudar al equipo a [resultado buscado].
@@ -1008,11 +1008,11 @@ Ofrecer una versión completa, rápida de leer y fácil de descargar.
 
 **Resumen ejecutivo:**
 
-> Software Architect & Software Engineer con experiencia en sistemas distribuidos, arquitectura orientada a eventos, backend, automatización industrial y liderazgo técnico. Combino visión de arquitectura con capacidad de implementación y acompañamiento a equipos.
+> Solutions Architect & Software Engineer con experiencia en sistemas distribuidos, arquitectura orientada a eventos, backend, automatización industrial y liderazgo técnico. Combino visión de arquitectura con capacidad de implementación y acompañamiento a equipos.
 
 **Especialidades:**
 
-- Software architecture.
+- Solutions Architecture.
 - Distributed systems.
 - Event-driven architecture.
 - Domain-driven design.

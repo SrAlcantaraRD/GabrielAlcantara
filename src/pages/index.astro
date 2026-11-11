@@ -6,11 +6,30 @@ import PostCard from "../components/PostCard.astro";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
 import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
 import { FEATURED_POST, OTHER_POSTS, postHref } from "../data/blog";
-import { SITE, SPECIALTIES } from "../data/site";
+import { SERVICES, SITE, SPECIALTIES } from "../data/site";
 import { spanLabel } from "../lib/period";
 
 const selected = SELECTED_CASES.slice(0, 3);
 const posts = OTHER_POSTS.slice(0, 3);
+
+/**
+ * The career line reads from 2011 to today, without repeating the same title
+ * three times. Siebel is left out: it was five months of a framework, not a
+ * step in the progression.
+ */
+const SKIPPED_ROLES = new Set(["Siebel Developer"]);
+
+function rolesOf(positions: { title: string; startMonth: number }[]) {
+	const roles: string[] = [];
+	const seen = new Set<string>();
+	for (const position of [...positions].sort((a, b) => a.startMonth - b.startMonth)) {
+		if (SKIPPED_ROLES.has(position.title)) continue;
+		if (seen.has(position.title)) continue;
+		seen.add(position.title);
+		roles.push(position.title);
+	}
+	return roles.join(" → ");
+}
 
 const companies = COMPANIES.map((company) => {
 	const own = POSITION_VIEWS.filter(
@@ -33,7 +52,7 @@ const jsonLd = [
 		"@type": "ProfilePage",
 		"@id": `${pageUrl}#webpage`,
 		url: pageUrl,
-		name: "Gabriel Alcántara | Software Architect & Software Engineer",
+		name: "Gabriel Alcántara | Solutions Architect & Software Engineer",
 		inLanguage: "es-ES",
 		about: { "@id": personId },
 		mainEntity: { "@id": personId },
@@ -42,23 +61,21 @@ const jsonLd = [
 ---
 
 <Layout
-  title="Gabriel Alcántara | Software Architect & Software Engineer"
-  description="Arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas."
+  title="Gabriel Alcántara | Solutions Architect & Software Engineer"
+  description={SITE.description}
   type="profile"
   jsonLd={jsonLd}
 >
-  <section class="hero" aria-labelledby="hero-title">
-    <p class="hero-eyebrow">Software Architect · Software Engineer · Distributed Systems</p>
+  <section class="hero" id="sobre" aria-labelledby="hero-title">
+    <p class="hero-eyebrow">Software Engineer - Solutions Architect</p>
     <HeroWheel lines={SITE.headlineLines} words={SITE.headlineWords} />
-    <p class="lede">
-      Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en
-      sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones
-      industriales conectadas.
-    </p>
+    <p class="lede">{SITE.description}</p>
+    <p class="lede">{SITE.statement}</p>
     <div class="actions">
       <a class="btn" href="/projects/">Ver proyectos</a>
       <a class="btn btn--ghost" href="/cv/">Descargar CV</a>
       <a class="btn btn--link" href="/contact/">Contactar conmigo</a>
+      <a class="btn btn--link" href="/about/">Ver el perfil completo</a>
     </div>
     <div class="meta-row">
       <span class="is-available">{SITE.availability}</span>
@@ -85,14 +102,14 @@ const jsonLd = [
     </div>
   </section>
 
-  <section class="section featured" aria-labelledby="destacado-title">
+  <section class="section featured" id="proyectos" aria-labelledby="destacado-title">
     <div class="section-head">
       <h2 class="section-title" id="destacado-title">Proyecto destacado</h2>
       <span class="section-meta">{FEATURED_CASE.company}</span>
     </div>
     <div class="featured-grid">
       <div class="featured-body">
-        <p class="eyebrow">Del dominio de negocio a la operación industrial</p>
+        <p class="eyebrow">Sistemas Distribuidos en almacenes industriales robotizados</p>
         <h3 class="featured-name">
           <a href={FEATURED_CASE.caseStudyHref}>{FEATURED_CASE.name}</a>
         </h3>
@@ -126,14 +143,14 @@ const jsonLd = [
   <section class="section" aria-labelledby="proyectos-title">
     <div class="section-head">
       <h2 class="section-title" id="proyectos-title">Proyectos seleccionados</h2>
-      <span class="section-meta">{SELECTED_CASES.length} casos documentados</span>
+      <span class="section-meta">{selected.length} casos en portada</span>
     </div>
     <div class="grid grid--3">
       {selected.map((project) => <ProjectCard project={project} brief />)}
     </div>
   </section>
 
-  <section class="section" aria-labelledby="experiencia-title">
+  <section class="section" id="experiencia" aria-labelledby="experiencia-title">
     <div class="section-head">
       <h2 class="section-title" id="experiencia-title">
         Experiencia: producto, consultoría y arquitectura desde 2011
@@ -141,9 +158,9 @@ const jsonLd = [
       <span class="section-meta">{POSITION_VIEWS.length} puestos · {COMPANIES.length} etapas</span>
     </div>
     <p class="section-lede">
-      He trabajado en productos digitales, plataformas empresariales y sistemas
-      industriales, participando tanto en las decisiones de arquitectura como en su
-      implementación y evolución.
+      He trabajado en producto digital, plataformas empresariales y sistemas
+      industriales, liderando las decisiones técnicas y definiendo la implementación,
+      las buenas prácticas y el agent-harness.
     </p>
     <ol class="career">
       {
@@ -155,9 +172,7 @@ const jsonLd = [
                 {spanLabel(company.from, company.to)}
               </span>
             </div>
-            <p class="career-roles">
-              {company.positions.map((position) => position.title).join(" → ")}
-            </p>
+            <p class="career-roles">{rolesOf(company.positions)}</p>
             <p class="career-focus">{company.latest.focus}</p>
           </li>
         ))
@@ -169,7 +184,7 @@ const jsonLd = [
     </div>
   </section>
 
-  <section class="section" aria-labelledby="blog-title">
+  <section class="section" id="blog" aria-labelledby="blog-title">
     <div class="section-head">
       <h2 class="section-title" id="blog-title">Artículos escritos desde proyectos</h2>
       <span class="section-meta">
@@ -191,7 +206,27 @@ const jsonLd = [
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="cierre-title">
+  <section class="section" id="servicios" aria-labelledby="servicios-title">
+    <div class="section-head">
+      <h2 class="section-title" id="servicios-title">Cómo puedo ayudar</h2>
+      <span class="section-meta">Colaboración técnica</span>
+    </div>
+    <div class="grid grid--4">
+      {
+        SERVICES.map((service) => (
+          <div class="card">
+            <h3>{service.title}</h3>
+            <p>{service.body}</p>
+          </div>
+        ))
+      }
+    </div>
+    <div class="actions">
+      <a class="btn btn--ghost" href="/services/">Ver todos los servicios</a>
+    </div>
+  </section>
+
+  <section class="closing" id="contacto" aria-labelledby="cierre-title">
     <h2 class="closing-title" id="cierre-title">
       ¿Hablamos de arquitectura, sistemas distribuidos o evolución técnica?
     </h2>

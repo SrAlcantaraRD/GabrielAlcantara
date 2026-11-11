@@ -36,13 +36,15 @@ export const SITE = {
 	url: "https://gabrielalcantara.com",
 	locale: "es_ES",
 	lang: "es",
-	title: "Software Architect & Software Engineer",
-	roles: ["Software Architect", "Software Engineer"],
+	title: "Solutions Architect & Software Engineer",
+	roles: ["Solutions Architect", "Software Engineer"],
 	headlineLines: HEADLINE_LINES,
 	headlineWords: HEADLINE_WORDS,
 	headline: HEADLINE_LINES.join(" "),
 	description:
-		"Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.",
+		"Me llamo Gabriel Alcántara. Llevo quince años diseñando y construyendo soluciones de software: desde entender el problema hasta definir la arquitectura y llevarla a producción, convirtiendo requisitos, a veces ambiguos, en soluciones robustas. He liderado equipos técnicos y gestionado proyectos.",
+	statement:
+		"Disfruto construyendo soluciones que reduzcan la complejidad de las personas que los usan, sin crear otra en el proceso.",
 	email: "gabriel@alcantaramoreno.com",
 	location: "Barcelona · remoto",
 	availability: "Disponible",
@@ -57,7 +59,7 @@ export const SITE = {
 	 * is the prose `llms.txt` writes. One array, so the two cannot drift.
 	 */
 	knowsAbout: [
-		{ en: "Software Architecture", es: "arquitectura de software" },
+		{ en: "Solutions Architecture", es: "arquitectura de software" },
 		{ en: "Distributed Systems", es: "sistemas distribuidos" },
 		{
 			en: "Event-Driven Architecture",
