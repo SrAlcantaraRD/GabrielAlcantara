@@ -43,11 +43,16 @@ All commands are run from the root of the project, from a terminal:
 
 ## Social card and icons
 
-`public/og-image.png` (1200×630) and the app icons are generated, not hand-drawn.
-After changing the name, role or positioning, regenerate them with:
+`public/og-image.png` (1200×630) and the app icons are generated, not hand-drawn,
+from the HTML artboards in [`docs/og-image/`](docs/og-image/README.md). That
+README documents the full loop — preview the artboard in the browser, edit it,
+export, verify — and the one rule the exporter enforces: every text element is at
+least 34 px on the canvas, because a timeline draws the card at about 504 px and
+anything smaller turns into a grey smear.
 
 ```sh
-pnpm social:cards
+pnpm social:cards                   # every card and the icons
+pnpm social:cards --only nakire     # one card, while iterating
 ```
 
 The command writes one card per shareable page, all 1200×630:
@@ -60,18 +65,16 @@ The command writes one card per shareable page, all 1200×630:
 | `public/og/bodega-digital.png` | The Bodega Digital case study |
 | `public/og/<post-slug>.png` | Each blog article |
 
-Card copy comes from `src/data/blog.ts` and `src/data/projects.ts`, so it stays
-in sync with the pages. The script renders with headless Chrome (set
-`CHROME_PATH` if it is not in the usual location) and embeds the fonts the site
-already depends on — Newsreader, Plus Jakarta Sans and JetBrains Mono — so no
-extra package is required. It also asserts the dimensions of every PNG it
-writes, which must match the `og:image:width`, `og:image:height` and
-`manifest.json` declarations.
+Card copy comes from `src/data/blog.ts`, `src/data/projects.ts` and
+`src/data/site.ts`, so it stays in sync with the pages. The exporter renders
+through the system Chrome (set `PW_CHROME` if it is not in the usual location)
+and rejects any PNG that is not exactly 1200×630, over `--max-kb`, or that breaks
+the legibility floor.
 
-Each run records the title, page and SHA-256 of every page card in
-`scripts/social-cards.json`. `pnpm test` compares that manifest with the current
-titles and fails when a card is stale, so run `pnpm social:cards` after editing
-a title or adding a post.
+Each run records the page, title, a hash of the rendered copy and a SHA-256 of the
+PNG in `scripts/social-cards.json`. `pnpm test` fails when a card is stale —
+including a tagline edited without re-exporting — so run `pnpm social:cards`
+after changing any copy.
 
 ## 👀 Want to learn more?
 
