@@ -1,0 +1,183 @@
+---
+/**
+ * The home H1: a fixed stem (`15 años`) and a vertical reel of one word at a
+ * time. The words above and below are dimmed and scaled down; dragging the reel
+ * —mouse or finger— brings the next one to the centre, with magnetism so it
+ * never stops between two words. A slow clock turns it the other way: the word
+ * above slides down into the centre every three seconds.
+ *
+ * The reel is a visual layer. The heading keeps the full three-beat text for
+ * assistive technology and metadata, so nothing is lost when the script does
+ * not run.
+ */
+import { reelSlot, wrapOffset } from "../lib/hero-wheel";
+
+interface Props {
+	/** Accessible text of the heading, unchanged per locale. */
+	lines: readonly string[];
+	words: readonly string[];
+	/** Fixed lead-in: "15 años", "15 years", "15 anys". */
+	stem?: string;
+	/** The hero section labels itself with this id. */
+	titleId?: string;
+}
+
+const {
+	lines,
+	words,
+	stem = "15 años",
+	titleId = "hero-title",
+} = Astro.props;
+
+/**
+ * Offsets are rendered at build time (0, 1, 2, -3, -2, -1), so the first paint
+ * is already a wheel instead of a flat list waiting for hydration.
+ */
+const slots = words.map((word, index) => {
+	const slot = reelSlot(wrapOffset(index, words.length));
+	return {
+		word,
+		offset: slot.offset,
+		scale: slot.scale.toFixed(4),
+		opacity: slot.opacity.toFixed(3),
+	};
+});
+---
+
+<h1 class="display hero-title" id={titleId}>
+  <span class="visually-hidden">{lines.join(" ")}</span>
+  <span class="hero-reel-title" aria-hidden="true">
+    <span class="hero-stem">{stem}</span>
+    <span
+      class="hero-reel"
+      data-hero-reel
+      data-active-index="0"
+      data-sound="off"
+    >
+      {
+        slots.map((slot) => (
+          <span
+            class="hero-reel-item"
+            data-center={slot.offset === 0 ? "" : undefined}
+            style={`--offset: ${slot.offset}; --reel-scale: ${slot.scale}; --reel-opacity: ${slot.opacity}`}
+          >
+            {slot.word}
+          </span>
+        ))
+      }
+    </span>
+  </span>
+</h1>
+
+<script>
+  import "../lib/client/hero-wheel";
+</script>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .hero-title {
+    font-family: var(--font-serif);
+    /*
+     * One line at every viewport, like desktop. The longest possible heading
+     * ("15 years taking on challenges") measures about 11.4em, so dividing the
+     * space left by the gutter by that keeps the stem and the reel on the same
+     * guide from 320px up, without a separate mobile composition.
+     */
+    font-size: clamp(1.15rem, calc((100vw - 3rem) / 11.6), 3.7rem);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--color-ink);
+  }
+
+  .hero-reel-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.22em;
+    row-gap: 0.12em;
+  }
+
+  .hero-stem {
+    /* Same line box as a reel word, so the two baselines line up. */
+    line-height: 1.14;
+    white-space: nowrap;
+  }
+
+  .hero-reel {
+    /* Overridden with the measured row height once the script runs. */
+    --reel-row: 1.14em;
+    position: relative;
+    display: grid;
+    flex: none;
+    grid-template-rows: 1fr;
+    grid-template-columns: max-content;
+    place-items: center start;
+    block-size: calc(var(--reel-row) * 3);
+    overflow: clip;
+    cursor: grab;
+    /* The reel owns vertical drags inside its band, like a date picker. */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 14%,
+      #000 86%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 14%,
+      #000 86%,
+      transparent 100%
+    );
+  }
+
+  .hero-reel.is-dragging {
+    cursor: grabbing;
+  }
+
+  .hero-reel-item {
+    grid-area: 1 / 1;
+    justify-self: start;
+    line-height: 1.14;
+    white-space: nowrap;
+    translate: 0 calc(var(--offset, 0) * var(--reel-row));
+    scale: var(--reel-scale, 1);
+    transform-origin: left center;
+    opacity: var(--reel-opacity, 1);
+    will-change: translate, scale, opacity;
+  }
+
+  /*
+   * Only the lateral words can be clicked; the centred one is a no-op. The
+   * hover is deliberately small —a point of opacity and 4% of scale— and only
+   * exists where there is a real pointer, so touch does not keep it stuck.
+   */
+  @media (hover: hover) {
+    .hero-reel-item:not([data-center]) {
+      cursor: pointer;
+    }
+
+    .hero-reel-item:not([data-center]):hover {
+      opacity: 0.62;
+      scale: calc(var(--reel-scale, 1) * 1.04);
+    }
+  }
+
+</style>

@@ -6,6 +6,30 @@
  * invented in this file.
  */
 
+/**
+ * The home H1: three beats with the same stem. `headlineLines` is what the
+ * heading actually says (assistive technology, metadata); the home paints it
+ * once, hidden, and plays the wheel underneath.
+ */
+const HEADLINE_LINES = [
+	"15 años construyendo.",
+	"15 años resolviendo.",
+	"15 años aprendiendo.",
+] as const;
+
+/**
+ * The words the wheel can stop on, in order. Adding one is enough: the reel
+ * wraps around the list and only ever shows the words next to the centre.
+ */
+const HEADLINE_WORDS = [
+	"construyendo",
+	"resolviendo",
+	"aprendiendo",
+	"solucionando",
+	"creciendo",
+	"superando retos",
+] as const;
+
 export const SITE = {
 	name: "Gabriel Alcántara",
 	shortName: "G. Alcántara",
@@ -14,8 +38,9 @@ export const SITE = {
 	lang: "es",
 	title: "Software Architect & Software Engineer",
 	roles: ["Software Architect", "Software Engineer"],
-	headline:
-		"Quince años de evolución, de junior a ingeniero: requisitos, base de datos, backend, frontend, móvil y arquitectura.",
+	headlineLines: HEADLINE_LINES,
+	headlineWords: HEADLINE_WORDS,
+	headline: HEADLINE_LINES.join(" "),
 	description:
 		"Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.",
 	email: "gabriel@alcantaramoreno.com",

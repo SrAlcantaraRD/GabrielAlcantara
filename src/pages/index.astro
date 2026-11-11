@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import HeroWheel from "../components/HeroWheel.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import PostCard from "../components/PostCard.astro";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
@@ -48,10 +49,7 @@ const jsonLd = [
 >
   <section class="hero" aria-labelledby="hero-title">
     <p class="hero-eyebrow">Software Architect · Software Engineer · Distributed Systems</p>
-    <h1 class="display" id="hero-title">
-      Quince años de evolución, de junior a ingeniero: requisitos, base de datos,
-      backend, frontend, móvil y arquitectura.
-    </h1>
+    <HeroWheel lines={SITE.headlineLines} words={SITE.headlineWords} />
     <p class="lede">
       Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en
       sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones
@@ -222,11 +220,6 @@ const jsonLd = [
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-terracotta);
-  }
-
-  .hero .display {
-    font-size: clamp(2.2rem, 6vw, 3.7rem);
-    max-inline-size: 50rem;
   }
 
   .section {

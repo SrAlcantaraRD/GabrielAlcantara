@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import HeroWheel from "./HeroWheel.astro";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
 import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
 import { SORTED_POSTS, postHrefIn } from "../data/blog";
@@ -70,7 +71,12 @@ const formatDate = (iso: string) =>
 >
   <header class="profile-hero" aria-labelledby="profile-title">
     <p class="eyebrow">{copy.eyebrow}</p>
-    <h1 class="display profile-title" id="profile-title">{copy.heroTitle}</h1>
+    <HeroWheel
+      titleId="profile-title"
+      stem={copy.heroStem}
+      lines={[copy.heroTitle]}
+      words={copy.heroWords}
+    />
     <p class="lede">{copy.heroLede}</p>
     <div class="actions">
       <a class="btn" href="#proyectos">{copy.ctaProjects}</a>
@@ -312,11 +318,6 @@ const formatDate = (iso: string) =>
 		gap: 1.1rem;
 		max-inline-size: 58rem;
 		padding-block: 1rem 0.5rem;
-	}
-
-	.profile-title {
-		max-inline-size: 50rem;
-		font-size: clamp(2.2rem, 6vw, 3.7rem);
 	}
 
 	.profile-hero .eyebrow {
