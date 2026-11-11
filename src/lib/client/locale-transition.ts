@@ -11,7 +11,6 @@ const COVER_MS = 420;
 const COVER_STAGGER_MS = 18;
 const REVEAL_MS = 420;
 const REVEAL_STAGGER_MS = 18;
-const NAV_SETTLE_MS = 360;
 const BUFFER_MS = 40;
 const OVERLAY_SELECTOR = "[data-locale-transition]";
 const BAR_SELECTOR = ".locale-bar";
@@ -104,12 +103,17 @@ async function runTransition(url: URL, link: HTMLAnchorElement) {
 		// Suppress native snapshots only from the moment we navigate. While the
 		// bars are falling, the live previous page must remain visible in the gaps.
 		document.documentElement.classList.add("locale-transition");
+		const swapped = new Promise<void>((resolve) => {
+			document.addEventListener("astro:after-swap", () => resolve(), {
+				once: true,
+			});
+		});
 		await navigate(url.href, { sourceElement: link });
+		await swapped;
 
-		// The ClientRouter can replace <html>; restore the class on the new
-		// document so native View Transition snapshots stay hidden during the
-		// reveal as well. Keep the persisted bars covered while that transition
-		// finishes, then let them fall away from the new page.
+		// Restore the class in case the ClientRouter replaced <html>. The
+		// after-swap event is the first moment the incoming overlay exists, so
+		// the sealed bars can start falling without a fixed settling delay.
 		document.documentElement.classList.add("locale-transition");
 		const next = overlay();
 		if (!next) return;
@@ -119,8 +123,6 @@ async function runTransition(url: URL, link: HTMLAnchorElement) {
 			createBars(next);
 		next.classList.add("is-active", "is-covered");
 		next.classList.remove("is-covering");
-		await wait(NAV_SETTLE_MS);
-
 		next.classList.remove("is-covered");
 		next.classList.add("is-revealing");
 		await wait(duration(nextCount, REVEAL_MS, REVEAL_STAGGER_MS));
