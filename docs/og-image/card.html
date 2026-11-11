@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>gabrielalcantara.com · social card</title>
+<style>
+/* Fonts come from the site's own dependencies by relative path, so the file
+   previews over file:// with no build step and no inlined data URIs. */
+@font-face {
+	font-family: "CardSerif";
+	src: url("../../node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: block;
+}
+@font-face {
+	font-family: "CardSerif";
+	src: url("../../node_modules/@fontsource/newsreader/files/newsreader-latin-400-italic.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-display: block;
+}
+@font-face {
+	font-family: "CardSans";
+	src: url("../../node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: block;
+}
+@font-face {
+	font-family: "CardMono";
+	src: url("../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+	font-weight: 100 800;
+	font-style: normal;
+	font-display: block;
+}
+
+:root {
+	/* Three tiers only, sized for the feed thumbnail rather than for the canvas:
+	   a timeline draws the card near 504px, a factor of 0.42, so --t3 arrives at
+	   ~14px and --t1 at ~40-47px. export.mjs fails the build below 34px. */
+	--t1-default: 112px;
+	--t1-detail: 96px;
+	--t1-min: 56px;
+	--t2: 44px;
+	--t3: 34px;
+
+	--paper: #faf8f5;
+	--ink: #1a1a1a;
+	--ink-muted: #4f4b47;
+	--ink-faint: #6f6960;
+	--line: #e6e0d6;
+	--accent: #9e4e36;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { background: var(--paper); }
+
+/* The artboard. Every child of this element is part of the exported image, so
+   nothing here may be preview chrome. */
+.card {
+	width: 1200px;
+	height: 630px;
+	padding: 64px 80px 56px;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	overflow: hidden;
+	position: relative;
+	color: var(--ink);
+	font-family: "CardSans", ui-sans-serif, system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	background:
+		radial-gradient(660px 360px at 106% -10%, rgba(62, 92, 73, .10), transparent 62%),
+		radial-gradient(560px 320px at -6% 110%, rgba(41, 76, 96, .08), transparent 60%),
+		var(--paper);
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.brand .mark {
+	width: 52px;
+	height: 52px;
+	flex: none;
+}
+
+.brand .mark svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.domain {
+	font-family: "CardMono", ui-monospace, monospace;
+	font-size: var(--t3);
+	letter-spacing: .01em;
+	color: var(--ink-faint);
+}
+
+/* The measured row: card.html shrinks the lead until this block fits, and
+   export.mjs independently proves that it did. */
+.mid {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.rule {
+	display: block;
+	width: 88px;
+	height: 5px;
+	border-radius: 99px;
+	background: var(--accent);
+	margin-bottom: 34px;
+	flex: none;
+}
+
+.eyebrow {
+	font-family: "CardMono", ui-monospace, monospace;
+	font-size: var(--t3);
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin-bottom: 16px;
+	flex: none;
+}
+
+.lead {
+	font-family: "CardSerif", Georgia, "Times New Roman", serif;
+	font-weight: 400;
+	font-size: var(--t1-default);
+	line-height: 1.02;
+	letter-spacing: -.022em;
+	color: var(--ink);
+	text-wrap: balance;
+}
+
+.sub {
+	margin-top: 22px;
+	font-size: var(--t2);
+	line-height: 1.3;
+	letter-spacing: -.005em;
+	color: var(--ink-muted);
+}
+
+.sub.is-serif {
+	font-family: "CardSerif", Georgia, "Times New Roman", serif;
+	font-style: italic;
+	line-height: 1.28;
+}
+
+.foot {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 32px;
+	border-top: 1px solid var(--line);
+	padding-top: 26px;
+	font-size: var(--t3);
+	color: var(--ink-faint);
+}
+
+.foot .right {
+	flex: none;
+	font-family: "CardMono", ui-monospace, monospace;
+	color: var(--accent);
+}
+
+/* Detail cards drop the decorative rule: the accent eyebrow already carries it,
+   and the freed height is what lets a two-line title stay at 96px. */
+.card[data-kind="case"] .rule,
+.card[data-kind="post"] .rule { display: none; }
+
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="card" id="card" data-kind="default">
+	<header class="brand">
+		<span class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128"><path fill="#1a1a1a" d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z"/></svg></span>
+		<span class="domain" id="domain">gabrielalcantara.com</span>
+	</header>
+
+	<div class="mid" id="mid">
+		<span class="rule" aria-hidden="true"></span>
+		<p class="eyebrow" id="eyebrow" hidden></p>
+		<h1 class="lead" id="lead">Gabriel Alcántara</h1>
+		<p class="sub" id="sub">software architect · software engineer</p>
+	</div>
+
+	<footer class="foot">
+		<span id="footLeft">sistemas distribuidos · EDA · DDD</span>
+		<span class="right" id="footRight">desde 2011</span>
+	</footer>
+</div>
+
+<script>
+(function () {
+	var card = document.getElementById('card');
+	var mid = document.getElementById('mid');
+	var lead = document.getElementById('lead');
+	var sub = document.getElementById('sub');
+	var eyebrow = document.getElementById('eyebrow');
+	var footLeft = document.getElementById('footLeft');
+	var footRight = document.getElementById('footRight');
+	var domain = document.getElementById('domain');
+
+	var MIN_T1 = 56;
+
+	// Lines are read from the rendered box, so balance and hyphenation are the
+	// browser's answer rather than an estimate.
+	function linesOf(element) {
+		var style = window.getComputedStyle(element);
+		var lineHeight = parseFloat(style.lineHeight);
+		return Math.round(element.getBoundingClientRect().height / lineHeight);
+	}
+
+	// Centred flex content overflows both ways, which scrollHeight cannot see,
+	// so the block is measured from its first child top to its last child bottom.
+	function overflows() {
+		var box = mid.getBoundingClientRect();
+		var visible = [].filter.call(mid.children, function (child) {
+			return !child.hidden && child.getClientRects().length > 0;
+		});
+		if (!visible.length) return false;
+
+		var boxes = visible.map(function (child) { return child.getBoundingClientRect(); });
+		var top = Math.min.apply(null, boxes.map(function (b) { return b.top; }));
+		var bottom = Math.max.apply(null, boxes.map(function (b) { return b.bottom; }));
+		return top < box.top - 0.5 || bottom > box.bottom + 0.5;
+	}
+
+	function fitLead() {
+		var start = card.dataset.kind === 'default' ? 112 : 96;
+		var maxLines = card.dataset.kind === 'default' ? 1 : 2;
+		var size = start;
+
+		lead.style.fontSize = size + 'px';
+		while (size > MIN_T1 && (linesOf(lead) > maxLines || overflows())) {
+			size -= 2;
+			lead.style.fontSize = size + 'px';
+		}
+		return size;
+	}
+
+	function setText(element, value) {
+		element.textContent = value == null ? '' : String(value);
+		element.hidden = !element.textContent.trim();
+	}
+
+	function render(copy) {
+		var kind = copy.kind === 'case' || copy.kind === 'post' ? copy.kind : 'default';
+		card.dataset.kind = kind;
+		document.documentElement.lang = 'es';
+
+		if (copy.domain) setText(domain, copy.domain);
+		setText(eyebrow, copy.eyebrow);
+		setText(lead, copy.title);
+		setText(sub, copy.sub);
+		setText(footLeft, copy.footLeft);
+		setText(footRight, copy.footRight);
+
+		sub.classList.toggle('is-serif', kind !== 'default');
+		card.setAttribute('role', 'img');
+
+		// Fitting before the webfonts resolve measures the fallback face and
+		// picks a size that is too small or too large, so the promise is part of
+		// the contract: export.mjs awaits it.
+		var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+		return fonts.then(function () { return measure(kind); });
+	}
+
+	function measure(kind) {
+		var size = fitLead();
+		card.setAttribute('aria-label', [
+			domain.textContent.trim(),
+			eyebrow.textContent.trim(),
+			lead.textContent.trim(),
+			sub.textContent.trim(),
+		].filter(Boolean).join('. ').concat('.'));
+
+		return { kind: kind, leadSize: size, leadLines: linesOf(lead) };
+	}
+
+	// export.mjs calls this after setContent (there is no location.search there).
+	window.__setCard = render;
+
+	var query = new URLSearchParams(location.search);
+	var scale = Number(query.get('scale'));
+	if (scale > 0) document.body.style.zoom = String(scale / 1200);
+
+	render({
+		kind: query.get('kind') || 'default',
+		domain: query.get('domain'),
+		title: query.get('title'),
+		sub: query.get('sub'),
+		eyebrow: query.get('eyebrow'),
+		footLeft: query.get('footLeft'),
+		footRight: query.get('footRight'),
+	}).then(function (report) {
+		window.__cardReady = window.__cardReport = report;
+	});
+})();
+</script>
+</body>
+</html>
