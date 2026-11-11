@@ -36,6 +36,7 @@ All commands are run from the root of the project, from a terminal:
 | `pnpm test`            | Runs the timeline engine tests (`node --test`)   |
 | `pnpm ui:check`        | Drives the built site with Playwright and writes screenshots to `ui-artifacts/` |
 | `pnpm social:cards`    | Regenerates `og-image.png` and the app icons in `public/` |
+| `pnpm social:check`    | Fails when the social card manifest or its PNGs are stale |
 | `pnpm build`           | Build your production site to `./dist/`          |
 | `pnpm preview`         | Preview your build locally, before deploying     |
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
@@ -46,9 +47,11 @@ All commands are run from the root of the project, from a terminal:
 `public/og-image.png` (1200×630) and the app icons are generated, not hand-drawn,
 from the HTML artboards in [`docs/og-image/`](docs/og-image/README.md). That
 README documents the full loop — preview the artboard in the browser, edit it,
-export, verify — and the one rule the exporter enforces: every text element is at
-least 34 px on the canvas, because a timeline draws the card at about 504 px and
-anything smaller turns into a grey smear.
+export, verify. The card is a rigid five-slot template: domain, eyebrow, title,
+sub and foot, each at a fixed position and size, one line each, with the copy
+written to fit. The exporter refuses a card where a slot is empty, wraps, overflows
+or drops below 34 px — the floor because a timeline draws the card at about 504 px
+and anything smaller turns into a grey smear.
 
 ```sh
 pnpm social:cards                   # every card and the icons
@@ -73,8 +76,9 @@ the legibility floor.
 
 Each run records the page, title and a hash of the artboard plus the copy in
 `scripts/social-cards.json`. `pnpm test` fails when a card is stale — after a
-tagline edit or a template change — so run `pnpm social:cards` after touching
-either.
+tagline edit or a template change — and so does `pnpm build`: it runs
+`pnpm social:check` before Astro starts, so a stale card cannot ship. Run
+`pnpm social:cards` after touching the copy or the artboard.
 
 ## 👀 Want to learn more?
 

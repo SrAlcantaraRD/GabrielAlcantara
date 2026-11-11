@@ -9,8 +9,10 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - **S1.** «lo unico leíble es el nombre "Gabriel Alcántara"». Ningún elemento de texto de una tarjeta baja de **34 px** en el lienzo de 1200×630, y el exportador termina en error, nombrando el elemento y su tamaño, cuando alguno lo hace. Justificación: a 504 px de ancho (el tamaño real de un feed) el factor es 0.42, así que 34 px llegan como ~14 px; los 16–18 px monoespaciados de hoy llegan como ~7 px.
 - **S2.** «Vamos a montar un sistema como el de `/Users/gabrielalcantara/Documents/personal/projects/sport-analytics/website/docs/og-image`». El lienzo vive en `docs/og-image/card.html` como HTML autónomo, con las fuentes por ruta relativa a `node_modules`, y se previsualiza abriéndolo en el navegador sin servidor ni build.
 - **S3.** La previsualización acepta `?kind=`, `?title=`, `?sub=`, `?eyebrow=`, `?footLeft=`, `?footRight=` y `?scale=`. `?scale=504` dibuja el lienzo al tamaño de un feed, para juzgar la legibilidad sin reducirlo a mano.
-- **S4.** «Tres niveles: nombre, rol y una línea de cierre» — la escala es tres niveles, sin excepciones: `112 px` (nombre o título), `44 px` (rol o entradilla), `34 px` (dominio, antetítulo, pie). Desaparece la fila monoespaciada en mayúsculas con tracking.
-- **S5.** El exportador ajusta el título midiendo el DOM: baja de 96 px hasta un mínimo de 56 px, nunca por debajo de 34 px, hasta que el título quepa en dos líneas y el bloque central quepa en su altura. El ajuste y la auditoría son actores separados: `card.html` hace que quepa, `export.mjs` comprueba que quepa.
+- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras: dominio `34`, antetítulo `34`, título `76`, entradilla `44`, pie `34`. Cada ranura va en una posición vertical fija (64 / 168 / 224 / 330 / 512) y ocupa **una sola línea**; ninguna tarjeta reflowa. Las ocho rellenan las cinco.
+- **S5.** No hay ajuste automático. El copy se recorta para encajar y `export.mjs` rechaza la tarjeta cuyo texto no quepa en su ranura, se salga del lienzo, pase de una línea o deje una ranura vacía. Donde antes se encogía el título, ahora falla el export.
+- **S10.** «habría que ajustar los copys para que entren» — el título corto de cada artículo vive en `PostMeta.cardTitle` y su entradilla en `PostMeta.cardSub`; `title` y `description` de la página no cambian. Las entradillas de caso se recortan en `tagline`, que ya era copy de tarjeta.
+- **S11.** El antetítulo y la entradilla de la tarjeta por defecto se derivan de `SITE.location` y `SITE.roles`: ninguna cadena nueva que pueda desincronizarse.
 - **S6.** Las tarjetas se escriben como PNG de exactamente 1200×630 (`og:image:type` en `Seo.astro` declara `image/png`) y por debajo de `--max-kb`; el exportador rechaza cualquier otra medida o peso.
 - **S7.** `pnpm social:cards` sigue siendo el único punto de entrada, y sigue generando además `apple-touch-icon.png`, `icon-192.png` e `icon-512.png`.
 - **S8.** `scripts/social-cards.json` cubre también `/og-image.png`, y detecta la deriva de **texto y de plantilla**: cambiar una entradilla, un título o `card.html` sin volver a exportar hace fallar `pnpm test`. El test comprueba además que cada tarjeta registrada sigue siendo un PNG de 1200×630.
@@ -68,6 +70,29 @@ Composición «Tres niveles: nombre, rol y una línea de cierre» — nombre 112
 El manifiesto guardaba el SHA-256 del PNG y el test lo comparaba. Con `--disable-lcd-text`, `--disable-font-subpixel-positioning`, `--run-all-compositor-stages-before-draw` y una carga por tarjeta, 1 de cada 6 corridas seguía moviendo **2 bytes de 2 268 000, Δ=1, en coordenadas fijas idénticas entre tarjetas distintas**: no era el texto, era la rasterización del motor. Un PNG que se ensucia 1 de cada 6 corridas hace que `pnpm social:cards` deje el árbol modificado sin que nadie haya cambiado nada.
 
 Hashear la salida del motor no es un contrato sostenible. El manifiesto pasa a guardar `renderHash` = hash de `card.html` + el copy exacto de la tarjeta, que es lo que de verdad decide cómo se ve y sí es reproducible; el test comprueba forma del archivo (1200×630) en lugar de bytes. Seis corridas seguidas dan el mismo manifiesto. La puerta de legibilidad, que mide el resultado renderizado, sigue intacta y es la que protege lo que el dueño pidió.
+
+### L8 · cambio de requisito: plantilla rígida
+
+> me gustaría que las posiciones fueran fijas: hay 5 líneas de contenido, que no varien.  Siempre igual, uniformidad. Tamaño de la letra fijo. habría que ajustar los copys para que entren.
+
+Decisiones del dueño: las cinco ranuras en las ocho tarjetas (dominio, antetítulo, título, entradilla, pie); título fijo a **76 px**; los títulos recortados viven **solo en la tarjeta**, la página conserva los suyos.
+
+Medición que sostiene el recorte, con la tipografía real y 1040 px de ancho útil: a 96 px los cuatro títulos de artículo se pasan entre 379 y 1160 px; incluso a 64 px el más largo se pasa 427. El más largo necesitaría 45 px para caber en una línea, que es tamaño de entradilla. El recorte no era una preferencia, era la condición del sistema.
+
+Copy resultante (`cardTitle` / `cardSub`; entradillas de caso en `tagline`):
+
+| Página | Título de tarjeta | Entradilla |
+| --- | --- | --- |
+| DDD | DDD en dominios complejos | Límites, lenguaje común y decisiones al modelar. |
+| WebSockets | WebSockets en tiempo real | El canal, el rol y la reconexión como diseño. |
+| EDA | Arquitectura por eventos | Repartir responsabilidades, no añadir mensajería. |
+| Industrial | Plataforma industrial conectada | El hardware marca el ritmo; la traza no es opcional. |
+| Nakire TPS | Nakire TPS | Software distribuido para la operación industrial. |
+| Bodega Digital | Bodega Digital | Inventario de vino con RFID y machine learning. |
+| Pachanga | Pachanga Community | App y web de fútbol amateur, de principio a fin. |
+| Por defecto | Gabriel Alcántara | Software Architect · Software Engineer |
+
+La primera pasada de la puerta contó 6 ranuras en vez de 5: contaba elementos con texto y el pie tiene dos. Se corrigió marcando cada ranura con `data-slot`, así la comprobación es «las cinco, todas con texto» en lugar de un recuento de nodos.
 
 ### L6 · verificación
 

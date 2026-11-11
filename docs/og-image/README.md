@@ -8,16 +8,30 @@ the browser, and export when the copy or the layout changes.
 
 ## The one rule
 
-Every piece of text is at least **34 px** on the canvas, and there are only three
-type sizes: 112 px (name or title), 44 px (role or tagline), 34 px (everything
-else). The canvas is not the thing people see — a timeline draws the card near
-504 px wide, a factor of 0.42, so 34 px arrives on screen at about 14 px. Anything
-smaller than that is a grey smear.
+The card is a rigid template: **five slots, one line each, nothing reflows.**
 
-`export.mjs` enforces this. It measures the rendered card and refuses to write a
-PNG when a text element is under 34 px, leaves the canvas, overflows its box, or
-does not fit between the header and the footer rule. It also refuses an image
-that is not exactly 1200×630 or heavier than `--max-kb`.
+| # | Slot | Size | Top | Holds |
+| --- | --- | --- | --- | --- |
+| 1 | domain | 34 px | 64 | the mark and `gabrielalcantara.com` |
+| 2 | eyebrow | 34 px | 168 | terracotta label: category, `Caso de estudio · Company`, place |
+| 3 | title | 76 px | 224 | the name or the headline |
+| 4 | sub | 44 px | 330 | role, tagline or standfirst |
+| 5 | foot | 34 px | 512 | stack or tags on the left, years or date on the right |
+
+All five are filled on every card. There is no auto-fit and no second line: the
+copy is edited until it fits, which is why the articles carry their own
+`cardTitle` and `cardSub` in `src/data/blog.ts` while the page keeps its longer
+`title` and `description`.
+
+`export.mjs` enforces it. It measures the rendered card and refuses to write a
+PNG when a slot is empty, wraps to a second line, overflows its width, falls
+outside the canvas or drops below 34 px. It also refuses an image that is not
+exactly 1200×630 or heavier than `--max-kb`.
+
+34 px is the floor because the canvas is not what people see: a timeline draws
+the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about
+14 px. At 76 px a title fits roughly 31 characters, and that is the budget the
+card copy is written to.
 
 ## The loop
 
@@ -46,8 +60,8 @@ and no build: the fonts are loaded from `node_modules` by relative path.
 | Query | Effect |
 | --- | --- |
 | `kind` | `default`, `case` or `post` — picks the composition |
-| `title` | the 112/96 px lead, shrunk until it fits its line budget |
-| `sub` | role (sans) for `default`, italic tagline for `case` |
+| `title` | slot 3 |
+| `sub` | slot 4: sans for `default`, italic for `case` and `post` |
 | `eyebrow` | terracotta label above the lead |
 | `footLeft`, `footRight` | the closing row |
 | `scale` | canvas width in px; `504` shows the feed size |
@@ -68,8 +82,10 @@ and no build: the fonts are loaded from `node_modules` by relative path.
 
 Each entry records a render hash of the artboard plus the exact copy that card
 renders. Editing a tagline, a title or `card.html` itself and forgetting to
-export fails `pnpm test`, and the error says to run `pnpm social:cards`. The test
-additionally checks that every recorded card is still a 1200×630 PNG.
+export fails `pnpm test` and `pnpm build`, and the error says to run
+`pnpm social:cards`. The build runs `pnpm social:check` before Astro, so a stale
+manifest stops it. Both checks also verify that every recorded card is still a
+1200×630 PNG.
 
 The manifest does not record the PNG bytes. Chrome's rasteriser can shift a
 couple of antialiased pixels between two identical runs, so a byte hash would
@@ -79,5 +95,5 @@ report drift nobody can see and would make every export dirty the tree.
 
 Add the entry to `socialCardSpecs()` in `scripts/social-cards.mjs`, run
 `pnpm social:cards`, then point the page at the new file. The gate will reject a
-tagline that does not fit two lines of 44 px — shorten the sentence rather than
-lowering the floor.
+line that does not fit its slot and tell you by how many pixels — shorten the
+sentence rather than lowering the size.
