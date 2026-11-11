@@ -49,6 +49,14 @@ const VIEWPORTS = [
 	{ name: "mobile", width: 390, height: 844 },
 ];
 
+const MOBILE_MENU_VIEWPORTS = [
+	{ name: "320x568", width: 320, height: 568 },
+	{ name: "360x640", width: 360, height: 640 },
+	{ name: "390x480", width: 390, height: 480 },
+	{ name: "390x844", width: 390, height: 844 },
+	{ name: "430x932", width: 430, height: 932 },
+];
+
 if (!existsSync(ROOT)) {
 	console.error("dist/ is missing: run `pnpm build` first.");
 	process.exit(1);
@@ -374,7 +382,54 @@ async function checkPersistentChrome(page, viewport) {
 
 	// The navigation is a one-page index: it scrolls to the section instead of
 	// opening the detail page, and the sticky header must not cover the target.
-	if (!desktop) await page.locator(".mobile-menu summary").click();
+	if (!desktop) {
+		await page.locator(".mobile-menu summary").click();
+		const menuContent = await page.evaluate(() => {
+			const panel = document.querySelector(".mobile-menu .menu-panel");
+			const role = panel?.querySelector(".menu-role");
+			const ask = panel?.querySelector(".ask-ai-label");
+			return {
+				role: role?.textContent?.trim() ?? "",
+				roleVisible: role ? getComputedStyle(role).display !== "none" : false,
+				ask: ask?.textContent?.trim() ?? "",
+				askVisible: ask ? getComputedStyle(ask).display !== "none" : false,
+			};
+		});
+		check(
+			`${label} · menú conserva el rol`,
+			menuContent.role === "Solutions Architect · Software Engineer" &&
+				menuContent.roleVisible,
+			JSON.stringify(menuContent),
+		);
+		check(
+			`${label} · menú conserva Pregúntale a`,
+			menuContent.ask === "Pregúntale a" && menuContent.askVisible,
+			JSON.stringify(menuContent),
+		);
+
+		await page.setViewportSize({ width: 390, height: 480 });
+		await page.waitForTimeout(50);
+		const shortMenu = await page.evaluate(() => {
+			const panel = document.querySelector(".mobile-menu .menu-panel");
+			if (!panel) return null;
+			const box = panel.getBoundingClientRect();
+			return {
+				bottom: +box.bottom.toFixed(1),
+				viewport: innerHeight,
+				overflowY: getComputedStyle(panel).overflowY,
+				scrollHeight: panel.scrollHeight,
+				clientHeight: panel.clientHeight,
+			};
+		});
+		check(
+			`${label} · menú no se sale del viewport corto`,
+			shortMenu !== null &&
+				shortMenu.bottom <= shortMenu.viewport + 1 &&
+				shortMenu.overflowY === "auto",
+			JSON.stringify(shortMenu),
+		);
+		await page.setViewportSize({ width: 390, height: 844 });
+	}
 	await page
 		.locator(
 			`${desktop ? ".site-nav" : ".mobile-menu"} a[data-nav-key="projects"]`,
@@ -484,6 +539,308 @@ async function checkPersistentChrome(page, viewport) {
 		JSON.stringify(await crumbLabels()),
 	);
 	check(`${label} · sin errores de consola`, errors.length === 0, errors.join(" | "));
+}
+
+async function checkMobileMenu(browser, base) {
+	const audit = [];
+
+	for (const viewport of MOBILE_MENU_VIEWPORTS) {
+		const context = await browser.newContext({
+			viewport: { width: viewport.width, height: viewport.height },
+			isMobile: true,
+			hasTouch: true,
+		});
+		const page = await context.newPage();
+		const errors = [];
+		page.on("pageerror", (error) => errors.push(error.message));
+		page.on("console", (message) => {
+			if (message.type() === "error") errors.push(message.text());
+		});
+
+		await page.goto(base, { waitUntil: "networkidle" });
+		const summary = page.locator(".mobile-menu summary");
+		await summary.click();
+		await page.waitForTimeout(80);
+		const label = `mobile menu · ${viewport.name}`;
+
+		const initial = await page.evaluate(() => {
+			const panel = document.querySelector(".mobile-menu .menu-panel");
+			const role = panel?.querySelector(".menu-role");
+			const askLabel = panel?.querySelector(".ask-ai-label");
+			const links = [...(panel?.querySelectorAll(".menu-ask a") ?? [])];
+			const box = panel?.getBoundingClientRect();
+			const roleBox = role?.getBoundingClientRect();
+			const summaryBox = document
+				.querySelector(".mobile-menu summary")
+				?.getBoundingClientRect();
+			const ancestors = [];
+			let node = panel?.parentElement;
+			while (node) {
+				const style = getComputedStyle(node);
+				const overflow = `${style.overflowX}/${style.overflowY}`;
+				if (/(hidden|clip)/.test(overflow)) {
+					ancestors.push({
+						tag: node.tagName,
+						className: node.className,
+						overflow,
+					});
+				}
+				node = node.parentElement;
+			}
+
+			return {
+				viewport: { width: innerWidth, height: innerHeight },
+				panel: box
+					? {
+							top: +box.top.toFixed(1),
+							right: +box.right.toFixed(1),
+							bottom: +box.bottom.toFixed(1),
+							left: +box.left.toFixed(1),
+							width: +box.width.toFixed(1),
+							height: +box.height.toFixed(1),
+						}
+					: null,
+				role: role?.textContent?.trim() ?? null,
+				roleVisible: Boolean(
+					roleBox &&
+						box &&
+						roleBox.top >= box.top - 1 &&
+						roleBox.bottom <= box.bottom + 1 &&
+						roleBox.top >= 0 &&
+						roleBox.bottom <= innerHeight,
+				),
+				askLabel: askLabel?.textContent?.trim() ?? null,
+				links: links.map((link) => link.textContent?.trim()),
+				overflowY: panel ? getComputedStyle(panel).overflowY : null,
+				scrollHeight: panel?.scrollHeight ?? null,
+				clientHeight: panel?.clientHeight ?? null,
+				ancestors,
+				summary: summaryBox
+					? {
+							top: +summaryBox.top.toFixed(1),
+							bottom: +summaryBox.bottom.toFixed(1),
+							left: +summaryBox.left.toFixed(1),
+							right: +summaryBox.right.toFixed(1),
+						}
+					: null,
+			};
+		});
+
+		const panelInside = Boolean(
+			initial.panel &&
+				initial.panel.top >= 0 &&
+				initial.panel.left >= 0 &&
+				initial.panel.right <= initial.viewport.width + 0.5 &&
+				initial.panel.bottom <= initial.viewport.height + 0.5,
+		);
+		check(
+			`${label} · panel dentro del viewport`,
+			panelInside,
+			JSON.stringify(initial.panel),
+		);
+		check(
+			`${label} · rol visible`,
+			initial.role === "Solutions Architect · Software Engineer" &&
+				initial.roleVisible,
+			JSON.stringify({ role: initial.role, visible: initial.roleVisible }),
+		);
+		check(
+			`${label} · Pregúntale a y asistentes presentes`,
+			initial.askLabel === "Pregúntale a" &&
+				JSON.stringify(initial.links) ===
+					JSON.stringify(["ChatGPT", "Claude", "Gemini"]),
+			JSON.stringify({ askLabel: initial.askLabel, links: initial.links }),
+		);
+		check(
+			`${label} · sin ancestros con overflow oculto`,
+			initial.ancestors.length === 0,
+			JSON.stringify(initial.ancestors),
+		);
+		check(
+			`${label} · toggle alcanzable`,
+			initial.summary !== null &&
+				initial.summary.top >= 0 &&
+				initial.summary.bottom <= initial.viewport.height &&
+				initial.summary.left >= 0 &&
+				initial.summary.right <= initial.viewport.width,
+			JSON.stringify(initial.summary),
+		);
+		check(
+			`${label} · panel con scroll interno`,
+			initial.overflowY === "auto" &&
+				typeof initial.scrollHeight === "number" &&
+				typeof initial.clientHeight === "number",
+			JSON.stringify({
+				overflowY: initial.overflowY,
+				scrollHeight: initial.scrollHeight,
+				clientHeight: initial.clientHeight,
+			}),
+		);
+
+		await page.screenshot({
+			path: join(OUT, `mobile-menu-${viewport.name}-open.png`),
+		});
+		const scrolled = await page.evaluate(async () => {
+			const panel = document.querySelector(".mobile-menu .menu-panel");
+			if (!panel) return null;
+			const max = Math.max(0, panel.scrollHeight - panel.clientHeight);
+			panel.scrollTop = max;
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			const panelBox = panel.getBoundingClientRect();
+			const links = [...panel.querySelectorAll(".menu-ask a")];
+			return {
+				max,
+				scrollTop: panel.scrollTop,
+				links: links.map((link) => {
+					const box = link.getBoundingClientRect();
+					return {
+						text: link.textContent?.trim(),
+						top: +box.top.toFixed(1),
+						bottom: +box.bottom.toFixed(1),
+						insidePanel:
+							box.top >= panelBox.top - 1 &&
+							box.bottom <= panelBox.bottom + 1,
+						insideViewport: box.top >= 0 && box.bottom <= innerHeight,
+					};
+				}),
+			};
+		});
+		check(
+			`${label} · scroll alcanza el último enlace`,
+			scrolled !== null &&
+				Math.abs(scrolled.scrollTop - scrolled.max) < 1 &&
+				scrolled.links.every(
+					(link) => link.insidePanel && link.insideViewport,
+				),
+			JSON.stringify(scrolled),
+		);
+		await page.screenshot({
+			path: join(OUT, `mobile-menu-${viewport.name}-scrolled.png`),
+		});
+
+		await summary.click();
+		await page.waitForTimeout(50);
+		const closed = await page.evaluate(() => {
+			const menu = document.querySelector(".mobile-menu");
+			const panel = document.querySelector(".mobile-menu .menu-panel");
+			return {
+				open: menu?.hasAttribute("open") ?? null,
+				panelVisible: panel
+					? panel.checkVisibility({
+							checkOpacity: true,
+							checkVisibilityCSS: true,
+						})
+					: false,
+				bodyOverflowY: getComputedStyle(document.body).overflowY,
+				pageScrollable:
+					document.documentElement.scrollHeight > window.innerHeight,
+			};
+		});
+		check(
+			`${label} · cierra desde el viewport corto`,
+			closed.open === false &&
+				closed.panelVisible === false &&
+				closed.bodyOverflowY !== "hidden",
+			JSON.stringify(closed),
+		);
+		await page.evaluate(() => window.scrollTo(0, 240));
+		const scrollAfterClose = await page.evaluate(() => window.scrollY);
+		check(
+			`${label} · cierre restaura la página`,
+			closed.pageScrollable ? scrollAfterClose > 0 : scrollAfterClose === 0,
+			JSON.stringify({ pageScrollable: closed.pageScrollable, scrollAfterClose }),
+		);
+		await page.screenshot({
+			path: join(OUT, `mobile-menu-${viewport.name}-closed.png`),
+		});
+		check(
+			`${label} · sin errores de consola`,
+			errors.length === 0,
+			errors.join(" | "),
+		);
+		audit.push({
+			viewport: viewport.name,
+			initial,
+			scrolled,
+			closed: { ...closed, scrollAfterClose },
+		});
+		await context.close();
+	}
+
+	const desktopContext = await browser.newContext({
+		viewport: { width: 1440, height: 900 },
+	});
+	const desktopPage = await desktopContext.newPage();
+	await desktopPage.goto(base, { waitUntil: "networkidle" });
+	const desktop = await desktopPage.evaluate(() => {
+		const role = document.querySelector(".brand-role");
+		const menu = document.querySelector(".mobile-menu");
+		const menuRole = document.querySelector(".menu-role");
+		const visibleRoles = [...document.querySelectorAll(".brand-role, .menu-role")].filter(
+			(element) => {
+				const box = element.getBoundingClientRect();
+				return (
+					getComputedStyle(element).display !== "none" &&
+					box.width > 0 &&
+					box.height > 0
+				);
+			},
+		);
+		return {
+			role: role?.textContent?.trim() ?? null,
+			roleVisible: Boolean(
+				role &&
+					getComputedStyle(role).display !== "none" &&
+					role.getBoundingClientRect().width > 0,
+			),
+			mobileMenuDisplay: menu ? getComputedStyle(menu).display : null,
+			menuRoleVisible: Boolean(
+				menuRole &&
+					menuRole.getBoundingClientRect().width > 0 &&
+					menuRole.getBoundingClientRect().height > 0,
+			),
+			siteNavDisplay: getComputedStyle(
+				document.querySelector(".site-nav"),
+			).display,
+			headerActionsDisplay: getComputedStyle(
+				document.querySelector(".header-actions"),
+			).display,
+			headerAskDisplay: getComputedStyle(
+				document.querySelector(".header-ask"),
+			).display,
+			menuAskDisplay: getComputedStyle(
+				document.querySelector(".menu-ask"),
+			).display,
+			visibleRoleCount: visibleRoles.length,
+		};
+	});
+	check(
+		"mobile menu · desktop conserva el rol",
+		desktop.role === "Solutions Architect · Software Engineer" &&
+			desktop.roleVisible &&
+			desktop.visibleRoleCount === 1,
+		JSON.stringify(desktop),
+	);
+	check(
+		"mobile menu · desktop sin menú móvil duplicado",
+		desktop.mobileMenuDisplay === "none" &&
+			desktop.menuRoleVisible === false &&
+			desktop.siteNavDisplay === "flex" &&
+			desktop.headerActionsDisplay === "flex" &&
+			desktop.headerAskDisplay === "block" &&
+			desktop.menuAskDisplay === "none",
+		JSON.stringify(desktop),
+	);
+	await desktopPage.screenshot({
+		path: join(OUT, "desktop-header-menu-state.png"),
+	});
+	audit.push({ desktop });
+	await desktopContext.close();
+	await writeFile(
+		join(OUT, "mobile-menu-audit.json"),
+		`${JSON.stringify(audit, null, 2)}\n`,
+	);
+	console.log(`mobile menu → ${join(OUT, "mobile-menu-audit.json")}`);
 }
 
 async function checkLocaleTransition(browser, base) {
@@ -1039,6 +1396,7 @@ for (const viewport of VIEWPORTS) {
 await checkLocaleTransition(browser, base);
 await checkLocaleFrames(browser, base);
 await checkLocaleContinuity(browser, base);
+await checkMobileMenu(browser, base);
 
 await browser.close();
 server.close();
