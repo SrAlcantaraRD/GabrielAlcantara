@@ -271,6 +271,8 @@ pre {
 .guides { position: absolute; inset: 0; pointer-events: none; }
 .guides .g { position: absolute; border-left: 1px dashed rgb(122 167 255 / 0.45); }
 .guides .g--h { border-left: 0; border-top: 1px dashed rgb(122 167 255 / 0.3); height: 0; }
+/* The 5% inset some feeds crop to. Workshop only, like the rest of the guides. */
+.guides .safe { position: absolute; inset: 5%; border: 1px dashed rgb(255 90 140 / 0.7); }
 
 [hidden] { display: none !important; }
 </style>
@@ -290,6 +292,7 @@ pre {
 			<button type="button" data-zoom="0.42">504 (feed)</button>
 		</div>
 		<label class="row" style="margin-top: 5px"><span>Guías</span><input type="checkbox" data-set="guides"></label>
+		<label class="row"><span>Zona segura 5 %</span><input type="checkbox" data-set="safe"></label>
 	</section>
 
 	<section>
@@ -479,6 +482,7 @@ pre {
 		preset: 0,
 		zoom: 0.7,
 		guides: true,
+		safe: true,
 		copy: COPIES[0].copy,
 		grid: { space: 78, tight: 18, x: 80, width: 1040, footGap: 40, height: 630 },
 		colors: {
@@ -795,6 +799,8 @@ pre {
 	}
 
 	function render() {
+		// States saved before the safe-zone toggle existed default it on.
+		if (state.safe === undefined) state.safe = true;
 		const grid = state.grid;
 		const colors = state.colors;
 
@@ -896,8 +902,18 @@ pre {
 	}
 
 	function renderGuides(geom) {
-		elements.guides.hidden = !state.guides;
+		elements.guides.hidden = !state.guides && !state.safe;
 		elements.guides.textContent = "";
+
+		// The 5% inset some feeds crop to, drawn in card units so it stays put at
+		// any zoom: `inset: 5%` resolves to 60px across and 31.5px down.
+		if (state.safe) {
+			const safe = document.createElement("div");
+			safe.className = "safe";
+			safe.style.borderWidth = `${Math.max(1, 1 / state.zoom)}px`;
+			elements.guides.appendChild(safe);
+		}
+
 		if (!state.guides) return;
 		const device = Math.max(1, 1 / state.zoom);
 		for (const x of [state.grid.x, state.grid.x + state.grid.width / 2, state.grid.x + state.grid.width]) {
