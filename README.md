@@ -71,10 +71,10 @@ through the system Chrome (set `PW_CHROME` if it is not in the usual location)
 and rejects any PNG that is not exactly 1200×630, over `--max-kb`, or that breaks
 the legibility floor.
 
-Each run records the page, title, a hash of the rendered copy and a SHA-256 of the
-PNG in `scripts/social-cards.json`. `pnpm test` fails when a card is stale —
-including a tagline edited without re-exporting — so run `pnpm social:cards`
-after changing any copy.
+Each run records the page, title and a hash of the artboard plus the copy in
+`scripts/social-cards.json`. `pnpm test` fails when a card is stale — after a
+tagline edit or a template change — so run `pnpm social:cards` after touching
+either.
 
 ## 👀 Want to learn more?
 

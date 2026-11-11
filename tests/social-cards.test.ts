@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
 	compareCards,
+	hashRender,
 	readManifest,
 	socialCardSpecs,
 	verifyCards,
@@ -12,8 +13,7 @@ type StoredCard = {
 	file: string;
 	page: string;
 	title: string;
-	copyHash: string;
-	sha256: string;
+	renderHash: string;
 };
 
 describe("social cards", () => {
@@ -55,12 +55,22 @@ describe("social cards", () => {
 		assert.match(problems[0] ?? "", /título antiguo/);
 	});
 
+	it("notice a template change as readily as a copy change", async () => {
+		const expected = await socialCardSpecs();
+		const [card] = expected;
+		assert.ok(card);
+		assert.notEqual(
+			hashRender(card.copy),
+			hashRender(card.copy, "<!doctype html><p>otra plantilla</p>"),
+		);
+	});
+
 	it("report a card whose copy changed without re-exporting", async () => {
 		const expected = await socialCardSpecs();
 		const target = expected.find((card) => card.copy.sub);
 		assert.ok(target?.copy.sub, "ninguna tarjeta tiene entradilla");
 
-		// Editing the tagline leaves title and page untouched, so only the copy
+		// Editing the tagline leaves title and page untouched, so only the render
 		// hash can notice that the exported PNG still says the old sentence.
 		const edited = expected.map((card) =>
 			card.file === target.file
@@ -70,7 +80,7 @@ describe("social cards", () => {
 
 		const problems = compareCards(edited, readManifest());
 		assert.equal(problems.length, 1);
-		assert.match(problems[0] ?? "", /otro texto/);
+		assert.match(problems[0] ?? "", /otra plantilla o con otro texto/);
 	});
 
 	it("report a page title that has no card", async () => {

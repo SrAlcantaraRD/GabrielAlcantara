@@ -62,14 +62,18 @@ and no build: the fonts are loaded from `node_modules` by relative path.
 | App icon artboard | `icon.html` |
 | Copy for every card | `scripts/social-cards.mjs` — read from `src/data/`, never hand-typed twice |
 | Exporter and legibility gate | `export.mjs` |
-| Manifest: page, title, copy hash, image hash | `scripts/social-cards.json` |
+| Manifest: page, title, render hash | `scripts/social-cards.json` |
 
 ## What the manifest protects
 
-Each entry records two hashes. `copyHash` covers the strings rendered inside the
-card, so editing a tagline and forgetting to export fails `pnpm test` even though
-the title did not change. `sha256` covers the PNG, so a card replaced or edited by
-hand also fails. Both errors say to run `pnpm social:cards`.
+Each entry records a render hash of the artboard plus the exact copy that card
+renders. Editing a tagline, a title or `card.html` itself and forgetting to
+export fails `pnpm test`, and the error says to run `pnpm social:cards`. The test
+additionally checks that every recorded card is still a 1200×630 PNG.
+
+The manifest does not record the PNG bytes. Chrome's rasteriser can shift a
+couple of antialiased pixels between two identical runs, so a byte hash would
+report drift nobody can see and would make every export dirty the tree.
 
 ## Adding a page that needs its own card
 

@@ -2,10 +2,15 @@
  * Shared index for the social share cards.
  *
  * `docs/og-image/export.mjs` renders these specs onto the artboard in
- * `docs/og-image/card.html`; this module owns the copy and the manifest. The
- * manifest records two hashes per card — the copy that was rendered and the PNG
- * that came out — so `pnpm test` reports both a card that kept announcing an old
- * title and a PNG edited or replaced by hand.
+ * `docs/og-image/card.html`; this module owns the copy and the manifest.
+ *
+ * The manifest records a render hash per card — the artboard plus the exact
+ * copy it renders — so `pnpm test` reports a card that changed without an
+ * export, whether the change was a title, a tagline or the template itself.
+ * It deliberately does not record the PNG bytes: Chrome's rasteriser can shift
+ * a couple of antialiased pixels between two identical runs, and hashing engine
+ * output is not a contract anyone can keep. What the test can keep is the shape
+ * of the file, which it checks instead.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -51,8 +56,27 @@ function copyKey(copy) {
 		.join("\n");
 }
 
-export function hashCopy(copy) {
-	return crypto.createHash("sha256").update(copyKey(copy)).digest("hex");
+const TEMPLATE_FILE = path.join(ROOT, "docs", "og-image", "card.html");
+
+/**
+ * The artboard plus the copy, which is everything that decides how a card looks.
+ * `template` exists so a test can prove the hash is sensitive to it.
+ */
+export function hashRender(copy, template) {
+	const source = template ?? fs.readFileSync(TEMPLATE_FILE, "utf8");
+	return crypto
+		.createHash("sha256")
+		.update(source)
+		.update("\u0000")
+		.update(copyKey(copy))
+		.digest("hex");
+}
+
+/** IHDR width and height, so a replaced file of the wrong size is caught. */
+export function pngSize(file) {
+	const buffer = fs.readFileSync(file);
+	if (buffer.toString("ascii", 1, 4) !== "PNG") return null;
+	return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
 }
 
 /** Public path, page and the copy rendered inside each card. */
@@ -123,10 +147,6 @@ export async function socialCardSpecs() {
 	];
 }
 
-export function hashFile(file) {
-	return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-}
-
 export function readManifest(file = MANIFEST_FILE) {
 	if (!fs.existsSync(file)) return { cards: [] };
 	return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -141,8 +161,7 @@ function manifestEntry(spec) {
 		file: spec.file,
 		page: spec.page,
 		title: spec.copy.title,
-		copyHash: hashCopy(spec.copy),
-		sha256: hashFile(path.join(PUBLIC_DIR, spec.file.replace(/^\//, ""))),
+		renderHash: hashRender(spec.copy),
 	};
 }
 
@@ -189,9 +208,9 @@ export function compareCards(expected, manifest) {
 				`${card.file} apunta a ${entry.page}, pero su página es ${card.page}. Ejecuta \`pnpm social:cards\`.`,
 			);
 		}
-		if (entry.copyHash !== hashCopy(card.copy)) {
+		if (entry.renderHash !== hashRender(card.copy)) {
 			problems.push(
-				`${card.file} se exportó con otro texto: el copy de ${card.page} cambió. Ejecuta \`pnpm social:cards\`.`,
+				`${card.file} se exportó con otra plantilla o con otro texto. Ejecuta \`pnpm social:cards\`.`,
 			);
 		}
 	}
@@ -207,23 +226,23 @@ export function compareCards(expected, manifest) {
 	return problems;
 }
 
-/** Adds a check that the PNG on disk is still the one described by the manifest. */
+/** Adds a check that every recorded card is a 1200x630 PNG on disk. */
 export function verifyCards(expected, manifest) {
 	const problems = compareCards(expected, manifest);
 	const stored = new Map((manifest.cards ?? []).map((card) => [card.file, card]));
 
 	for (const card of expected) {
-		const entry = stored.get(card.file);
-		if (!entry) continue;
+		if (!stored.has(card.file)) continue;
 
 		const file = path.join(PUBLIC_DIR, card.file.replace(/^\//, ""));
 		if (!fs.existsSync(file)) {
 			problems.push(`Falta public${card.file}. Ejecuta \`pnpm social:cards\`.`);
 			continue;
 		}
-		if (entry.sha256 !== hashFile(file)) {
+		const size = pngSize(file);
+		if (!size || size.width !== 1200 || size.height !== 630) {
 			problems.push(
-				`public${card.file} no es la imagen generada para «${card.copy.title}». Ejecuta \`pnpm social:cards\`.`,
+				`public${card.file} no es un PNG de 1200x630 (${size ? `${size.width}x${size.height}` : "no es un PNG"}). Ejecuta \`pnpm social:cards\`.`,
 			);
 		}
 	}

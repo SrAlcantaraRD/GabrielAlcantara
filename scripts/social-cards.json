@@ -4,57 +4,49 @@
 			"file": "/og-image.png",
 			"page": "/",
 			"title": "Gabriel Alcántara",
-			"copyHash": "adabdd5cd381c29a61da1cc6b2861fb9fb2d89c95d7de0e1d64ec053501eebb2",
-			"sha256": "90c86d6ce00f3ddbd69ad22508f8d112666d6d10182faebe0f0278917fcf522f"
+			"renderHash": "c0af70e9b09dc4fec992521747a59e7686bd5d42a7a3bfde1ff0b49c521ec3f6"
 		},
 		{
 			"file": "/og/nakire-tps.png",
 			"page": "/projects/nakire-tps/",
 			"title": "Nakire TPS",
-			"copyHash": "20b1a791cb8583bd385762287fbc049b5a28b4830fff4ff8098f1b74aedcc8cc",
-			"sha256": "ebac0896318a0ef9637f3b15410f73daf19a565db79f767b5ba3bfc0234574b7"
+			"renderHash": "e02c88e6196c1e6593ac93ee34e63fd1100f12781845c694bd5b511b1ca65af5"
 		},
 		{
 			"file": "/og/bodega-digital.png",
 			"page": "/projects/bodega-digital/",
 			"title": "Bodega Digital",
-			"copyHash": "43fd79b6e5e5c07fdb824e7e1f7a8bb602edc6f1f5e30bf48d54a6e6c27c9df4",
-			"sha256": "68de909c217ad0b21918e8d9675506b420753c0b9a225e08c7c474c1e948f1ec"
+			"renderHash": "f39e9bea56128a8562d72c6208ffa81b9fe9f9d075f6b54b6bc75390683a6a49"
 		},
 		{
 			"file": "/og/pachanga-community.png",
 			"page": "/projects/pachanga-community/",
 			"title": "Pachanga Community",
-			"copyHash": "09e6d0ac22bf54827f148bbb33156c63c7cbfeeb303f462fe5084975e68b977a",
-			"sha256": "fb7f44e751899a4c574c040847d38e5deec7b96eaaaa57a8a7729186410e903a"
+			"renderHash": "29def444d40b669d63e4d5017de5fb9a3051fcfb86b6d2207ce08482a16ff4b0"
 		},
 		{
 			"file": "/og/ddd-dominios-complejos.png",
 			"page": "/blog/ddd-dominios-complejos/",
 			"title": "DDD cuando el dominio es complejo",
-			"copyHash": "5052b253e980d97bbfe140f481c771b4c4753a649b43538aab312b8d71b5c634",
-			"sha256": "5f46ccd714c8b0ec3d4cdefd1f5212003676b7323512a02831e6cf607daf9523"
+			"renderHash": "9f7e1c9e27afc4f107cda93ba86392e4a3866275187b0c26a59e3a8d45046531"
 		},
 		{
 			"file": "/og/websockets-operaciones-tiempo-real.png",
 			"page": "/blog/websockets-operaciones-tiempo-real/",
 			"title": "WebSockets para operaciones en tiempo real",
-			"copyHash": "13faf698421fcb88869410b6a8798b7c07ed89086cfeca81502863b0e1d7e45f",
-			"sha256": "a87f5a6c3c4e525d2f40fe9245867e16377f2caaec8d28733afc50bb09fc5730"
+			"renderHash": "cdbfc9125836b139c5173791d87d64e88c85232446c15217b075bf6c9a08bbd8"
 		},
 		{
 			"file": "/og/arquitectura-orientada-a-eventos.png",
 			"page": "/blog/arquitectura-orientada-a-eventos/",
 			"title": "Arquitectura orientada a eventos en sistemas reales",
-			"copyHash": "d71ede367ce80924e1043060d02817a55b1241c05d321821a73a45fcc28943e3",
-			"sha256": "83b84b4dff62895becf966ceb25bc09bff3e9d5667006b6b7150a90343aae519"
+			"renderHash": "7960808706cfa6ffa2043bff7f6c88349bf6e6542fe2df1bffbcf071a62968db"
 		},
 		{
 			"file": "/og/lecciones-plataforma-industrial.png",
 			"page": "/blog/lecciones-plataforma-industrial/",
 			"title": "Lecciones de diseñar una plataforma industrial conectada",
-			"copyHash": "c1e583bab4ab055dac7f68f3525b7fb32d7de7f8222b92f948523e82ebe4face",
-			"sha256": "484b973b45bc44f15580e2a79a89d0045889c1ba62d376a1fe7f91d91cbdd326"
+			"renderHash": "5272169d5391624646d02be39db998fdd2daf439a0103bf6569f0869171c9b2f"
 		}
 	]
 }

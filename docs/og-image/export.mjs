@@ -178,8 +178,8 @@ mkdirSync(join(PUBLIC, "og"), { recursive: true });
 
 const browser = await chromium.launch({
 	executablePath: chrome,
-	// The PNG hash in the manifest is a gate, so the rasteriser has to be
-	// reproducible: grayscale antialiasing and a fully drawn frame per capture.
+	// A grey, un-hinted rasteriser keeps exported text looking the same on any
+	// host display, and a fully drawn frame keeps the capture from racing the paint.
 	args: ["--disable-lcd-text", "--run-all-compositor-stages-before-draw"],
 });
 const context = await browser.newContext({

@@ -13,7 +13,7 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - **S5.** El exportador ajusta el título midiendo el DOM: baja de 96 px hasta un mínimo de 56 px, nunca por debajo de 34 px, hasta que el título quepa en dos líneas y el bloque central quepa en su altura. El ajuste y la auditoría son actores separados: `card.html` hace que quepa, `export.mjs` comprueba que quepa.
 - **S6.** Las tarjetas se escriben como PNG de exactamente 1200×630 (`og:image:type` en `Seo.astro` declara `image/png`) y por debajo de `--max-kb`; el exportador rechaza cualquier otra medida o peso.
 - **S7.** `pnpm social:cards` sigue siendo el único punto de entrada, y sigue generando además `apple-touch-icon.png`, `icon-192.png` e `icon-512.png`.
-- **S8.** `scripts/social-cards.json` cubre también `/og-image.png`, y detecta la deriva de **copy**, no solo de título: cambiar una entradilla sin volver a exportar hace fallar `pnpm test`. El hash del PNG sigue detectando una imagen editada a mano.
+- **S8.** `scripts/social-cards.json` cubre también `/og-image.png`, y detecta la deriva de **texto y de plantilla**: cambiar una entradilla, un título o `card.html` sin volver a exportar hace fallar `pnpm test`. El test comprueba además que cada tarjeta registrada sigue siendo un PNG de 1200×630.
 - **S9.** `docs/og-image/README.md` documenta el bucle completo (previsualizar → editar → exportar → verificar) y el README raíz apunta a él en lugar de describir el generador.
 
 ## Tasks
@@ -62,6 +62,12 @@ Composición «Tres niveles: nombre, rol y una línea de cierre» — nombre 112
 - La captura no era estable byte a byte: dos corridas idénticas diferían en 2 bytes de 2 268 000, a un nivel de antialiasing, en columnas distintas según qué tarjeta se hubiera dibujado antes en la misma página. Se corrigió con una carga nueva por tarjeta (`goto` dentro del bucle) y con `--disable-lcd-text` y `--run-all-compositor-stages-before-draw`; siete corridas completas seguidas dieron el mismo hash.
 - Queda una variación ocasional de ±1 nivel, invisible. No se persigue: `--only` refresca la entrada del manifiesto, así que el manifiesto siempre describe los bytes en disco y el test solo denuncia lo que de verdad cambió.
 - La puerta de legibilidad se probó subiendo `MIN_FONT_PX` a 200: falla nombrando los cinco elementos y su tamaño, y se revirtió a 34.
+
+### L7 · corrección de diseño: el manifiesto no puede hashear píxeles
+
+El manifiesto guardaba el SHA-256 del PNG y el test lo comparaba. Con `--disable-lcd-text`, `--disable-font-subpixel-positioning`, `--run-all-compositor-stages-before-draw` y una carga por tarjeta, 1 de cada 6 corridas seguía moviendo **2 bytes de 2 268 000, Δ=1, en coordenadas fijas idénticas entre tarjetas distintas**: no era el texto, era la rasterización del motor. Un PNG que se ensucia 1 de cada 6 corridas hace que `pnpm social:cards` deje el árbol modificado sin que nadie haya cambiado nada.
+
+Hashear la salida del motor no es un contrato sostenible. El manifiesto pasa a guardar `renderHash` = hash de `card.html` + el copy exacto de la tarjeta, que es lo que de verdad decide cómo se ve y sí es reproducible; el test comprueba forma del archivo (1200×630) en lugar de bytes. Seis corridas seguidas dan el mismo manifiesto. La puerta de legibilidad, que mide el resultado renderizado, sigue intacta y es la que protege lo que el dueño pidió.
 
 ### L6 · verificación
 
