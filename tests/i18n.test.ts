@@ -65,9 +65,18 @@ describe("locale routing", () => {
 	it("builds localised navigation for every locale", () => {
 		assert.deepEqual(
 			navItems("en").map((item) => item.label),
-			["Home", "About", "Experience", "Projects", "Writing", "Services", "Contact"],
+			["Home", "About", "Projects", "Experience", "Writing", "Services", "Contact"],
 		);
-		assert.equal(navItems("en")[3].href, "/en/#proyectos");
+		assert.equal(navItems("en")[2].href, "/en/#proyectos");
+		assert.equal(navItems("en")[3].href, "/en/#experiencia");
 		assert.equal(navItems("ca")[0].href, "/ca/");
+	});
+
+	it("scrolls the Spanish navigation to the home sections", () => {
+		assert.equal(navItems("es")[0].href, "/");
+		assert.equal(navItems("es")[1].href, "/#sobre");
+		assert.equal(navItems("es")[2].href, "/#proyectos");
+		assert.equal(navItems("es")[3].href, "/#experiencia");
+		assert.equal(navItems("es")[5].href, "/#servicios");
 	});
 });

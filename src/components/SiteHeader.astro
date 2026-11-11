@@ -1,7 +1,12 @@
 ---
 import type { Breadcrumb } from "../data/site";
 import { SITE } from "../data/site";
-import { localeRoot, type Locale } from "../i18n/routing";
+import {
+	SECTION_PATHS,
+	localeRoot,
+	sectionFromPath,
+	type Locale,
+} from "../i18n/routing";
 import { navItems } from "../i18n/ui";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import Breadcrumbs from "./Breadcrumbs.astro";
@@ -23,13 +28,10 @@ const pathname = Astro.url.pathname;
 const home = localeRoot(locale);
 const localized = locale !== "es";
 
-const active = (item: (typeof items)[number]) => {
-	if (!localized) {
-		if (item.href === "/") return pathname === "/";
-		return pathname === item.href || pathname.startsWith(item.href);
-	}
-	return item.key === "home" && pathname === home;
-};
+/** The nav link owns a section; the current URL decides which one is active. */
+const currentSection = sectionFromPath(pathname);
+const active = (item: (typeof items)[number]) =>
+	item.section === currentSection;
 
 const cvHref = localized ? "#cv" : "/cv/";
 const contactHref = localized ? "#contacto" : "/contact/";
@@ -39,6 +41,8 @@ const contactHref = localized ? "#contacto" : "/contact/";
   class="site-header"
   transition:persist={`site-header-${locale}`}
   data-locale={locale}
+  data-home={home}
+  data-sections={JSON.stringify(SECTION_PATHS)}
 >
   <div class="container header-inner">
     <a class="brand" href={home}>
@@ -119,8 +123,30 @@ const contactHref = localized ? "#contacto" : "/contact/";
 
 <script>
   const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
+  const header = document.querySelector<HTMLElement>(".site-header");
   const crumbs = document.querySelector<HTMLElement>(".header-crumbs .breadcrumbs");
   const linkedCrumbs = crumbs?.querySelector("li")?.cloneNode(true) as HTMLLIElement | undefined;
+
+  const homePath = header?.dataset.home ?? "/";
+  let sectionPaths: Record<string, string> = {};
+  try {
+    sectionPaths = JSON.parse(header?.dataset.sections ?? "{}");
+  } catch {
+    sectionPaths = {};
+  }
+
+  const navLinks = () =>
+    document.querySelectorAll<HTMLAnchorElement>(
+      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
+    );
+
+  /** Which section owns a page path, ignoring the locale prefix. */
+  function sectionOf(path: string) {
+    const withoutLocale = path.replace(/^\/(en|ca)(?=\/|$)/, "") || "/";
+    return Object.entries(sectionPaths).find(([, href]) =>
+      withoutLocale.startsWith(href),
+    )?.[0];
+  }
 
   function closeMenu() {
     menu?.removeAttribute("open");
@@ -129,28 +155,16 @@ const contactHref = localized ? "#contacto" : "/contact/";
   function syncNav() {
     const path = window.location.pathname;
     const hash = window.location.hash;
-    const locale = path.startsWith("/en/") ? "en" : path.startsWith("/ca/") ? "ca" : "es";
-    const links = document.querySelectorAll<HTMLAnchorElement>(
-      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
-    );
+    const onHome = path === homePath;
+    const current = onHome ? undefined : sectionOf(path);
 
-    if (locale !== "es") {
-      for (const link of links) {
-        const target = new URL(link.href, window.location.origin);
-        const isHome = target.hash === "";
-        const active = isHome
-          ? !hash && target.pathname === path
-          : target.hash === hash;
-        link.classList.toggle("is-active", active);
-        if (active) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
-      }
-      return;
-    }
-
-    for (const link of links) {
-      const target = new URL(link.href, window.location.origin).pathname;
-      const active = target === "/" ? path === "/" : path === target || path.startsWith(target);
+    for (const link of navLinks()) {
+      const target = new URL(link.href, window.location.origin);
+      // On the home the nav scrolls, so the hash marks the active section;
+      // on a detail page the section that owns the path stays highlighted.
+      const active = onHome
+        ? target.hash !== "" && target.hash === hash
+        : link.dataset.navKey === current;
       link.classList.toggle("is-active", active);
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
@@ -207,12 +221,18 @@ const contactHref = localized ? "#contacto" : "/contact/";
     );
     if (!link) return;
 
+    // A same-page anchor has no page swap, so the panel must close here.
+    if (link.closest(".mobile-menu")) closeMenu();
+
     const targetUrl = new URL(link.href, window.location.origin);
     if (!targetUrl.hash) return;
 
-    for (const candidate of document.querySelectorAll<HTMLAnchorElement>(
-      ".site-nav .nav-link, .mobile-menu a[data-nav-key]",
-    )) {
+    // Same-page anchor: highlight immediately instead of waiting for the
+    // hashchange event, which lands after the scroll starts.
+    const staysOnPage = targetUrl.pathname === window.location.pathname;
+    if (!staysOnPage) return;
+
+    for (const candidate of navLinks()) {
       const candidateHash = new URL(candidate.href, window.location.origin).hash;
       const active = candidateHash === targetUrl.hash;
       candidate.classList.toggle("is-active", active);

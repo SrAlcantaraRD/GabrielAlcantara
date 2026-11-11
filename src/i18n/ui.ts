@@ -149,8 +149,8 @@ export interface NavItem {
 const NAV_ORDER: NavKey[] = [
 	"home",
 	"about",
-	"experience",
 	"projects",
+	"experience",
 	"blog",
 	"services",
 	"contact",
