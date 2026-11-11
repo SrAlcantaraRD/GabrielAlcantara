@@ -33,6 +33,12 @@ const HEIGHT = 630;
  */
 const MIN_FONT_PX = 34;
 
+/**
+ * The template has five slots, each holds exactly one line, and every card
+ * fills all five: that is what makes the eight cards look like one family.
+ */
+const SLOT_NAMES = ["domain", "eyebrow", "title", "sub", "foot"];
+
 const ICONS = [
 	{ file: "apple-touch-icon.png", size: 180 },
 	{ file: "icon-192.png", size: 192 },
@@ -75,10 +81,10 @@ function pngSize(buffer) {
 }
 
 /**
- * Runs inside the rendered page. Deliberately independent of the fitting logic
- * in card.html: this measures what actually shipped, not what tried to fit.
+ * Runs inside the rendered page. The template is rigid, so this does not try to
+ * help it fit: it reports every way the copy breaks the five fixed slots.
  */
-function audit(minFontPx) {
+function audit({ minFontPx, slotNames }) {
 	const card = document.getElementById("card");
 	const frame = card.getBoundingClientRect();
 	const problems = [];
@@ -92,14 +98,27 @@ function audit(minFontPx) {
 		.filter(carriesText)
 		.filter((element) => element.getClientRects().length > 0);
 
+	const filled = new Set();
+
 	for (const element of elements) {
+		const host = element.closest("[data-slot]");
+		if (host) filled.add(host.dataset.slot);
+
 		const label = `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}`;
 		const excerpt = element.textContent.trim().slice(0, 42);
-		const size = Number.parseFloat(getComputedStyle(element).fontSize);
+		const style = getComputedStyle(element);
+		const size = Number.parseFloat(style.fontSize);
+		const lineHeight = Number.parseFloat(style.lineHeight);
 		const box = element.getBoundingClientRect();
+		const lines = lineHeight ? Math.round(box.height / lineHeight) : 1;
 
 		if (size < minFontPx) {
 			problems.push(`${label} a ${size}px («${excerpt}»), mínimo ${minFontPx}px`);
+		}
+		if (lines > 1) {
+			problems.push(
+				`${label} ocupa ${lines} líneas («${excerpt}»), la ranura admite una`,
+			);
 		}
 		if (
 			box.left < frame.left - 0.5 ||
@@ -112,35 +131,25 @@ function audit(minFontPx) {
 			);
 		}
 		if (element.scrollWidth > element.clientWidth + 1) {
+			const over = element.scrollWidth - element.clientWidth;
 			problems.push(
-				`${label} desborda su caja («${excerpt}»): ${element.scrollWidth} > ${element.clientWidth}`,
+				`${label} no cabe en su ranura («${excerpt}»): sobran ${over}px de ${element.clientWidth}`,
 			);
 		}
 	}
 
-	const lead = document.getElementById("lead");
-	const leadStyle = getComputedStyle(lead);
-	const lineHeight = Number.parseFloat(leadStyle.lineHeight);
-
-	// The measured block sits between the brand row and the footer rule, so
-	// overflowing it collides with them without ever leaving the canvas.
-	const mid = document.getElementById("mid");
-	const midBox = mid.getBoundingClientRect();
-	for (const child of mid.children) {
-		if (child.getClientRects().length === 0) continue;
-		const box = child.getBoundingClientRect();
-		if (box.top < midBox.top - 0.5 || box.bottom > midBox.bottom + 0.5) {
-			problems.push(
-				`${child.tagName.toLowerCase()}${child.id ? `#${child.id}` : ""} no cabe entre la cabecera y el pie: ${Math.round(box.top)}→${Math.round(box.bottom)} contra ${Math.round(midBox.top)}→${Math.round(midBox.bottom)}`,
-			);
-		}
+	for (const name of slotNames) {
+		if (!filled.has(name)) problems.push(`la ranura "${name}" quedó sin texto`);
 	}
 
 	return {
 		problems,
-		count: elements.length,
-		leadSize: Number.parseFloat(leadStyle.fontSize),
-		leadLines: Math.round(lead.getBoundingClientRect().height / lineHeight),
+		slots: filled.size,
+		smallest: elements.reduce(
+			(min, element) =>
+				Math.min(min, Number.parseFloat(getComputedStyle(element).fontSize)),
+			Number.POSITIVE_INFINITY,
+		),
 	};
 }
 
@@ -196,15 +205,15 @@ try {
 		await page.goto(CARD_PAGE, { waitUntil: "load" });
 		await page.waitForFunction(() => window.__cardReady !== undefined);
 
-		const fitted = await page.evaluate(
-			(copy) => window.__setCard(copy),
-			spec.copy,
-		);
+		await page.evaluate((copy) => window.__setCard(copy), spec.copy);
 
-		const report = await page.evaluate(audit, MIN_FONT_PX);
+		const report = await page.evaluate(audit, {
+			minFontPx: MIN_FONT_PX,
+			slotNames: SLOT_NAMES,
+		});
 		if (report.problems.length) {
 			throw new Error(
-				`${spec.file} no pasa la puerta de legibilidad:\n  - ${report.problems.join("\n  - ")}`,
+				`${spec.file} no encaja en la plantilla:\n  - ${report.problems.join("\n  - ")}`,
 			);
 		}
 
@@ -215,7 +224,7 @@ try {
 
 		console.log(
 			`wrote public/${file} ${WIDTH}x${HEIGHT} ${kb.toFixed(0)} KB · ` +
-				`título ${report.leadSize}px ×${report.leadLines} (ajustado a ${fitted.leadSize}px)`,
+				`${report.slots} ranuras, mínimo ${report.smallest}px`,
 		);
 	}
 

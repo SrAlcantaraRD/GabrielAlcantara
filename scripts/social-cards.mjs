@@ -95,9 +95,9 @@ export async function socialCardSpecs() {
 		copy: {
 			kind: "default",
 			domain,
-			eyebrow: null,
+			eyebrow: site.SITE.location,
 			title: site.SITE.name,
-			sub: site.SITE.roles.join(" · ").toLowerCase(),
+			sub: site.SITE.roles.join(" · "),
 			footLeft: SPECIALTIES,
 			footRight: `desde ${site.SITE.careerStart}`,
 		},
@@ -138,8 +138,8 @@ export async function socialCardSpecs() {
 				kind: "post",
 				domain,
 				eyebrow: blog.categoryOf(post.category).label,
-				title: post.title,
-				sub: null,
+				title: post.cardTitle ?? post.title,
+				sub: post.cardSub ?? null,
 				footLeft: post.tags.slice(0, 2).join(" · "),
 				footRight: `${cardDate.format(new Date(`${post.date}T00:00:00Z`))} · ${post.readingMinutes} min`,
 			},
@@ -200,7 +200,7 @@ export function compareCards(expected, manifest) {
 		}
 		if (entry.title !== card.copy.title) {
 			problems.push(
-				`${card.file} anuncia «${entry.title}», pero ${card.page} se titula «${card.copy.title}». Ejecuta \`pnpm social:cards\`.`,
+				`${card.file} anuncia «${entry.title}», pero la tarjeta de ${card.page} ahora dice «${card.copy.title}». Ejecuta \`pnpm social:cards\`.`,
 			);
 		}
 		if (entry.page !== card.page) {

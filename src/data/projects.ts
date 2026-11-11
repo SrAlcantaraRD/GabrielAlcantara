@@ -21,7 +21,10 @@ export interface CaseStudy {
 	outcome: string;
 	/** Extra evidence shown on the case-study page or the featured block. */
 	highlights?: string[];
-	/** One-line subtitle used by the social share cards. */
+	/**
+	 * One-line subtitle for the fixed social card template: italic at 44px, on a
+	 * single line. Longer than this and the card export refuses to write.
+	 */
 	tagline?: string;
 	/** Full write-up, when one exists. */
 	caseStudyHref?: string;
@@ -45,8 +48,7 @@ const CASES: CaseStudy[] = [
 			"Frontend reactivo por WebSocket y RBAC: la interfaz se adapta al rol y al tipo de operador.",
 		],
 		caseStudyHref: "/projects/nakire-tps/",
-		tagline:
-			"Software distribuido para operaciones industriales en tiempo real.",
+		tagline: "Software distribuido para la operación industrial.",
 		featured: true,
 	},
 	{
@@ -65,8 +67,7 @@ const CASES: CaseStudy[] = [
 			"Frontend, backend y base de datos versionados juntos, con un único despliegue.",
 		],
 		caseStudyHref: "/projects/bodega-digital/",
-		tagline:
-			"Inventario de vino en tiempo real con RFID y machine learning.",
+		tagline: "Inventario de vino con RFID y machine learning.",
 	},
 
 	{
@@ -151,7 +152,10 @@ export interface ProjectCase extends Project {
 	decision: string;
 	outcome: string;
 	highlights: string[];
-	/** One-line subtitle used by the social share cards. */
+	/**
+	 * One-line subtitle for the fixed social card template: italic at 44px, on a
+	 * single line. Longer than this and the card export refuses to write.
+	 */
 	tagline?: string;
 	caseStudyHref?: string;
 	featured: boolean;

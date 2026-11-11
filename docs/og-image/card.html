@@ -36,14 +36,27 @@
 }
 
 :root {
-	/* Three tiers only, sized for the feed thumbnail rather than for the canvas:
-	   a timeline draws the card near 504px, a factor of 0.42, so --t3 arrives at
-	   ~14px and --t1 at ~40-47px. export.mjs fails the build below 34px. */
-	--t1-default: 112px;
-	--t1-detail: 96px;
-	--t1-min: 56px;
-	--t2: 44px;
-	--t3: 34px;
+	/* The card is a rigid template: five slots, each at a fixed height with a
+	   fixed size, one line per slot, never reflowed. The copy is edited to fit,
+	   and export.mjs refuses to write a card where it does not.
+
+	   34px is the floor because a timeline draws the card near 504px wide, a
+	   factor of 0.42; 34px arrives on screen at about 14px. */
+	--slot-domain: 34px;
+	--slot-eyebrow: 34px;
+	--slot-title: 76px;
+	--slot-sub: 44px;
+	--slot-foot: 34px;
+
+	--x: 80px;
+	--width: 1040px;
+
+	/* Top of each line box. These five numbers are the template. */
+	--y-domain: 64px;
+	--y-eyebrow: 168px;
+	--y-title: 224px;
+	--y-sub: 330px;
+	--y-foot: 512px;
 
 	--paper: #faf8f5;
 	--ink: #1a1a1a;
@@ -57,16 +70,13 @@
 
 html, body { background: var(--paper); }
 
-/* The artboard. Every child of this element is part of the exported image, so
-   nothing here may be preview chrome. */
+/* The artboard. Every child is part of the exported image, so nothing here may
+   be preview chrome. */
 .card {
+	position: relative;
 	width: 1200px;
 	height: 630px;
-	padding: 64px 80px 56px;
-	display: grid;
-	grid-template-rows: auto 1fr auto;
 	overflow: hidden;
-	position: relative;
 	color: var(--ink);
 	font-family: "CardSans", ui-sans-serif, system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
@@ -76,10 +86,20 @@ html, body { background: var(--paper); }
 		var(--paper);
 }
 
+/* Every slot is one line: nowrap keeps the copy from silently reflowing into a
+   second line, and the gate turns the resulting overflow into a failure. */
+.slot {
+	position: absolute;
+	left: var(--x);
+	white-space: nowrap;
+}
+
 .brand {
+	top: var(--y-domain);
 	display: flex;
 	align-items: center;
 	gap: 20px;
+	height: 52px;
 }
 
 .brand .mark {
@@ -96,73 +116,60 @@ html, body { background: var(--paper); }
 
 .domain {
 	font-family: "CardMono", ui-monospace, monospace;
-	font-size: var(--t3);
+	font-size: var(--slot-domain);
 	letter-spacing: .01em;
 	color: var(--ink-faint);
 }
 
-/* The measured row: card.html shrinks the lead until this block fits, and
-   export.mjs independently proves that it did. */
-.mid {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	min-height: 0;
-	overflow: hidden;
-}
-
-.rule {
-	display: block;
-	width: 88px;
-	height: 5px;
-	border-radius: 99px;
-	background: var(--accent);
-	margin-bottom: 34px;
-	flex: none;
-}
-
 .eyebrow {
+	top: var(--y-eyebrow);
+	width: var(--width);
 	font-family: "CardMono", ui-monospace, monospace;
-	font-size: var(--t3);
+	font-size: var(--slot-eyebrow);
+	line-height: 40px;
 	letter-spacing: .05em;
 	text-transform: uppercase;
 	color: var(--accent);
-	margin-bottom: 16px;
-	flex: none;
 }
 
 .lead {
+	top: var(--y-title);
+	width: var(--width);
 	font-family: "CardSerif", Georgia, "Times New Roman", serif;
 	font-weight: 400;
-	font-size: var(--t1-default);
-	line-height: 1.02;
+	font-size: var(--slot-title);
+	line-height: 82px;
 	letter-spacing: -.022em;
 	color: var(--ink);
-	text-wrap: balance;
 }
 
 .sub {
-	margin-top: 22px;
-	font-size: var(--t2);
-	line-height: 1.3;
+	top: var(--y-sub);
+	width: var(--width);
+	font-size: var(--slot-sub);
+	line-height: 56px;
 	letter-spacing: -.005em;
 	color: var(--ink-muted);
 }
 
-.sub.is-serif {
+.card[data-kind="case"] .sub,
+.card[data-kind="post"] .sub {
 	font-family: "CardSerif", Georgia, "Times New Roman", serif;
 	font-style: italic;
-	line-height: 1.28;
 }
 
 .foot {
+	top: var(--y-foot);
+	left: var(--x);
+	right: var(--x);
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 32px;
+	gap: 40px;
 	border-top: 1px solid var(--line);
-	padding-top: 26px;
-	font-size: var(--t3);
+	padding-top: 24px;
+	font-size: var(--slot-foot);
+	line-height: 40px;
 	color: var(--ink-faint);
 }
 
@@ -172,30 +179,22 @@ html, body { background: var(--paper); }
 	color: var(--accent);
 }
 
-/* Detail cards drop the decorative rule: the accent eyebrow already carries it,
-   and the freed height is what lets a two-line title stay at 96px. */
-.card[data-kind="case"] .rule,
-.card[data-kind="post"] .rule { display: none; }
-
 [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 
-<div class="card" id="card" data-kind="default">
-	<header class="brand">
+<div class="card" id="card" data-kind="default" role="img">
+	<div class="brand slot" data-slot="domain">
 		<span class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128"><path fill="#1a1a1a" d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z"/></svg></span>
 		<span class="domain" id="domain">gabrielalcantara.com</span>
-	</header>
-
-	<div class="mid" id="mid">
-		<span class="rule" aria-hidden="true"></span>
-		<p class="eyebrow" id="eyebrow" hidden></p>
-		<h1 class="lead" id="lead">Gabriel Alcántara</h1>
-		<p class="sub" id="sub">software architect · software engineer</p>
 	</div>
 
-	<footer class="foot">
+	<p class="eyebrow slot" id="eyebrow" data-slot="eyebrow">Barcelona · remoto</p>
+	<h1 class="lead slot" id="lead" data-slot="title">Gabriel Alcántara</h1>
+	<p class="sub slot" id="sub" data-slot="sub">Software Architect · Software Engineer</p>
+
+	<footer class="foot slot" data-slot="foot">
 		<span id="footLeft">sistemas distribuidos · EDA · DDD</span>
 		<span class="right" id="footRight">desde 2011</span>
 	</footer>
@@ -204,51 +203,12 @@ html, body { background: var(--paper); }
 <script>
 (function () {
 	var card = document.getElementById('card');
-	var mid = document.getElementById('mid');
+	var eyebrow = document.getElementById('eyebrow');
 	var lead = document.getElementById('lead');
 	var sub = document.getElementById('sub');
-	var eyebrow = document.getElementById('eyebrow');
 	var footLeft = document.getElementById('footLeft');
 	var footRight = document.getElementById('footRight');
 	var domain = document.getElementById('domain');
-
-	var MIN_T1 = 56;
-
-	// Lines are read from the rendered box, so balance and hyphenation are the
-	// browser's answer rather than an estimate.
-	function linesOf(element) {
-		var style = window.getComputedStyle(element);
-		var lineHeight = parseFloat(style.lineHeight);
-		return Math.round(element.getBoundingClientRect().height / lineHeight);
-	}
-
-	// Centred flex content overflows both ways, which scrollHeight cannot see,
-	// so the block is measured from its first child top to its last child bottom.
-	function overflows() {
-		var box = mid.getBoundingClientRect();
-		var visible = [].filter.call(mid.children, function (child) {
-			return !child.hidden && child.getClientRects().length > 0;
-		});
-		if (!visible.length) return false;
-
-		var boxes = visible.map(function (child) { return child.getBoundingClientRect(); });
-		var top = Math.min.apply(null, boxes.map(function (b) { return b.top; }));
-		var bottom = Math.max.apply(null, boxes.map(function (b) { return b.bottom; }));
-		return top < box.top - 0.5 || bottom > box.bottom + 0.5;
-	}
-
-	function fitLead() {
-		var start = card.dataset.kind === 'default' ? 112 : 96;
-		var maxLines = card.dataset.kind === 'default' ? 1 : 2;
-		var size = start;
-
-		lead.style.fontSize = size + 'px';
-		while (size > MIN_T1 && (linesOf(lead) > maxLines || overflows())) {
-			size -= 2;
-			lead.style.fontSize = size + 'px';
-		}
-		return size;
-	}
 
 	function setText(element, value) {
 		element.textContent = value == null ? '' : String(value);
@@ -256,8 +216,7 @@ html, body { background: var(--paper); }
 	}
 
 	function render(copy) {
-		var kind = copy.kind === 'case' || copy.kind === 'post' ? copy.kind : 'default';
-		card.dataset.kind = kind;
+		card.dataset.kind = copy.kind === 'case' || copy.kind === 'post' ? copy.kind : 'default';
 		document.documentElement.lang = 'es';
 
 		if (copy.domain) setText(domain, copy.domain);
@@ -267,18 +226,6 @@ html, body { background: var(--paper); }
 		setText(footLeft, copy.footLeft);
 		setText(footRight, copy.footRight);
 
-		sub.classList.toggle('is-serif', kind !== 'default');
-		card.setAttribute('role', 'img');
-
-		// Fitting before the webfonts resolve measures the fallback face and
-		// picks a size that is too small or too large, so the promise is part of
-		// the contract: export.mjs awaits it.
-		var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-		return fonts.then(function () { return measure(kind); });
-	}
-
-	function measure(kind) {
-		var size = fitLead();
 		card.setAttribute('aria-label', [
 			domain.textContent.trim(),
 			eyebrow.textContent.trim(),
@@ -286,10 +233,14 @@ html, body { background: var(--paper); }
 			sub.textContent.trim(),
 		].filter(Boolean).join('. ').concat('.'));
 
-		return { kind: kind, leadSize: size, leadLines: linesOf(lead) };
+		// The slots never resize, but whether the copy overflows depends on the
+		// real face, so the promise waits for the webfonts before the gate reads
+		// the layout.
+		var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+		return fonts.then(function () { return { kind: card.dataset.kind }; });
 	}
 
-	// export.mjs calls this after setContent (there is no location.search there).
+	// export.mjs calls this after the page has loaded (no location.search there).
 	window.__setCard = render;
 
 	var query = new URLSearchParams(location.search);
@@ -305,7 +256,7 @@ html, body { background: var(--paper); }
 		footLeft: query.get('footLeft'),
 		footRight: query.get('footRight'),
 	}).then(function (report) {
-		window.__cardReady = window.__cardReport = report;
+		window.__cardReady = report;
 	});
 })();
 </script>

@@ -61,6 +61,13 @@ export interface PostMeta {
 	related: string[];
 	/** Social card override; defaults to `/og/<slug>.png`. */
 	image?: string;
+	/**
+	 * Card-sized lines for a fixed five-slot template: one headline at 76px and
+	 * one standfirst at 44px, each on a single line. `title` and `description`
+	 * stay as long as the page needs. Defaults to `title` when omitted.
+	 */
+	cardTitle?: string;
+	cardSub?: string;
 	featured?: boolean;
 }
 
@@ -68,6 +75,8 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "ddd-dominios-complejos",
 		title: "DDD cuando el dominio es complejo",
+		cardTitle: "DDD en dominios complejos",
+		cardSub: "Límites, lenguaje común y decisiones al modelar.",
 		description:
 			"Qué cambia cuando el dominio tiene reglas que no caben en una tabla: límites, lenguaje común y las decisiones que tomé al modelar el inventario de una bodega.",
 		date: "2026-11-03",
@@ -80,6 +89,8 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "websockets-operaciones-tiempo-real",
 		title: "WebSockets para operaciones en tiempo real",
+		cardTitle: "WebSockets en tiempo real",
+		cardSub: "El canal, el rol y la reconexión como diseño.",
 		description:
 			"Cuando la interfaz deja de ser un formulario y pasa a reflejar el estado de una operación física, el canal, el rol y la reconexión se vuelven parte del diseño.",
 		date: "2026-10-20",
@@ -92,6 +103,8 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "arquitectura-orientada-a-eventos",
 		title: "Arquitectura orientada a eventos en sistemas reales",
+		cardTitle: "Arquitectura por eventos",
+		cardSub: "Repartir responsabilidades, no añadir mensajería.",
 		description:
 			"Los eventos no son una capa de mensajería añadida al final: son una forma de repartir responsabilidades. Dónde ayudan y dónde solo añaden ceremonia.",
 		date: "2026-10-06",
@@ -104,6 +117,8 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "lecciones-plataforma-industrial",
 		title: "Lecciones de diseñar una plataforma industrial conectada",
+		cardTitle: "Plataforma industrial conectada",
+		cardSub: "El hardware marca el ritmo; la traza no es opcional.",
 		description:
 			"Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional.",
 		date: "2026-09-15",

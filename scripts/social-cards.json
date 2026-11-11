@@ -4,49 +4,49 @@
 			"file": "/og-image.png",
 			"page": "/",
 			"title": "Gabriel Alcántara",
-			"renderHash": "c0af70e9b09dc4fec992521747a59e7686bd5d42a7a3bfde1ff0b49c521ec3f6"
+			"renderHash": "27e83d860c372de8826ffa385decc43245b29784c81327788663ad30898bbcfc"
 		},
 		{
 			"file": "/og/nakire-tps.png",
 			"page": "/projects/nakire-tps/",
 			"title": "Nakire TPS",
-			"renderHash": "e02c88e6196c1e6593ac93ee34e63fd1100f12781845c694bd5b511b1ca65af5"
+			"renderHash": "c43db544353714b2f2a9f1bd23feb9fd0b9fa2c3fac0f39722ee65c471589072"
 		},
 		{
 			"file": "/og/bodega-digital.png",
 			"page": "/projects/bodega-digital/",
 			"title": "Bodega Digital",
-			"renderHash": "f39e9bea56128a8562d72c6208ffa81b9fe9f9d075f6b54b6bc75390683a6a49"
+			"renderHash": "ae4b5094d188a16b259052645ebd71b02e61123c3a57a023f95ce146f10924ce"
 		},
 		{
 			"file": "/og/pachanga-community.png",
 			"page": "/projects/pachanga-community/",
 			"title": "Pachanga Community",
-			"renderHash": "29def444d40b669d63e4d5017de5fb9a3051fcfb86b6d2207ce08482a16ff4b0"
+			"renderHash": "96768a5afd87761d05583911ba9fb722049ee9f037400aa2bd4287fdae1391b5"
 		},
 		{
 			"file": "/og/ddd-dominios-complejos.png",
 			"page": "/blog/ddd-dominios-complejos/",
-			"title": "DDD cuando el dominio es complejo",
-			"renderHash": "9f7e1c9e27afc4f107cda93ba86392e4a3866275187b0c26a59e3a8d45046531"
+			"title": "DDD en dominios complejos",
+			"renderHash": "7518af62b50c105b8c5ca0dbb51d803e8ece0f2f5e478f099de24f1a0d409162"
 		},
 		{
 			"file": "/og/websockets-operaciones-tiempo-real.png",
 			"page": "/blog/websockets-operaciones-tiempo-real/",
-			"title": "WebSockets para operaciones en tiempo real",
-			"renderHash": "cdbfc9125836b139c5173791d87d64e88c85232446c15217b075bf6c9a08bbd8"
+			"title": "WebSockets en tiempo real",
+			"renderHash": "be84e169d585f0e9d2063fcd93f17193c892f70149a9d921e0c712197f24a5a8"
 		},
 		{
 			"file": "/og/arquitectura-orientada-a-eventos.png",
 			"page": "/blog/arquitectura-orientada-a-eventos/",
-			"title": "Arquitectura orientada a eventos en sistemas reales",
-			"renderHash": "7960808706cfa6ffa2043bff7f6c88349bf6e6542fe2df1bffbcf071a62968db"
+			"title": "Arquitectura por eventos",
+			"renderHash": "5a429fefeba89a77f0bad3e1e3d16609f314c9f66d41dc19542ae5b5207b41ee"
 		},
 		{
 			"file": "/og/lecciones-plataforma-industrial.png",
 			"page": "/blog/lecciones-plataforma-industrial/",
-			"title": "Lecciones de diseñar una plataforma industrial conectada",
-			"renderHash": "5272169d5391624646d02be39db998fdd2daf439a0103bf6569f0869171c9b2f"
+			"title": "Plataforma industrial conectada",
+			"renderHash": "7abe220e3bd241165f0ed5065170fcd8435a3180f3a28325902f0e9b4869eae0"
 		}
 	]
 }
