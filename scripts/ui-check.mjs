@@ -106,6 +106,145 @@ async function releaseBars(page) {
 	});
 }
 
+async function startLocaleTimeline(page) {
+	await page.evaluate(() => {
+		const timeline = {
+			running: true,
+			start: performance.now(),
+			samples: [],
+		};
+		window.__localeTimeline = timeline;
+
+		const tick = () => {
+			const root = document.querySelector("[data-locale-transition]");
+			const bars = [...document.querySelectorAll(".locale-bar")];
+			timeline.samples.push({
+				t: performance.now() - timeline.start,
+				path: location.pathname,
+				tops: bars.map((bar) => bar.getBoundingClientRect().top),
+				active: root?.classList.contains("is-active") ?? false,
+				covering: root?.classList.contains("is-covering") ?? false,
+				covered: root?.classList.contains("is-covered") ?? false,
+				revealing: root?.classList.contains("is-revealing") ?? false,
+				htmlClass: document.documentElement.classList.contains(
+					"locale-transition",
+				),
+				scrollY,
+			});
+			if (timeline.running) requestAnimationFrame(tick);
+		};
+		requestAnimationFrame(tick);
+	});
+}
+
+async function finishLocaleTimeline(page) {
+	return page.evaluate(() => {
+		window.__localeTimeline.running = false;
+		return window.__localeTimeline;
+	});
+}
+
+function timelineStats(timeline, expectedPath) {
+	const active = timeline.samples.filter(
+		(sample) => sample.active && sample.tops.length > 0,
+	);
+	const gaps = timeline.samples
+		.slice(1)
+		.map((sample, index) => sample.t - timeline.samples[index].t)
+		.filter((gap) => gap > 0)
+		.sort((a, b) => a - b);
+	const medianGap = gaps[Math.floor(gaps.length / 2)] ?? 16;
+	const maxGap = gaps.at(-1) ?? 0;
+	const lastCovered = active.filter((sample) => sample.covered).at(-1);
+	const firstReveal = active.find((sample) => sample.revealing);
+	const firstIncoming = active.find((sample) => sample.path === expectedPath);
+	const pause =
+		firstReveal && lastCovered ? firstReveal.t - lastCovered.t : null;
+	const pauseFrames = pause === null ? null : Math.ceil(pause / medianGap);
+	const backwards = [];
+	let reanimations = 0;
+
+	for (let index = 1; index < active.length; index += 1) {
+		const previous = active[index - 1];
+		const current = active[index];
+		for (let bar = 0; bar < current.tops.length; bar += 1) {
+			if (
+				typeof previous.tops[bar] === "number" &&
+				typeof current.tops[bar] === "number" &&
+				current.tops[bar] < previous.tops[bar] - 0.5
+			) {
+				backwards.push({
+					t: +current.t.toFixed(1),
+					bar,
+					from: +previous.tops[bar].toFixed(1),
+					to: +current.tops[bar].toFixed(1),
+				});
+			}
+		}
+		if (current.covering && previous.covered) reanimations += 1;
+	}
+
+	return {
+		activeSamples: active.length,
+		backwards,
+		firstIncoming: firstIncoming ? +firstIncoming.t.toFixed(1) : null,
+		firstReveal: firstReveal ? +firstReveal.t.toFixed(1) : null,
+		lastCovered: lastCovered ? +lastCovered.t.toFixed(1) : null,
+		maxGap: +maxGap.toFixed(1),
+		pauseFrames,
+		pauseMs: pause === null ? null : +pause.toFixed(1),
+		reanimations,
+		scrollValues: [...new Set(timeline.samples.map((sample) => sample.scrollY))],
+	};
+}
+
+async function captureSwapFrames(page, label) {
+	const count = await page.locator(".locale-bar").count();
+	const coverMs = 420 + Math.max(0, count - 1) * 18 + 40;
+	await page.waitForTimeout(Math.max(0, coverMs - 260));
+
+	for (let index = 0; index < 8; index += 1) {
+		const state = await page.evaluate(() => {
+			const root = document.querySelector("[data-locale-transition]");
+			const bar = document.querySelector(".locale-bar");
+			return {
+				path: location.pathname,
+				top: bar ? +bar.getBoundingClientRect().top.toFixed(1) : null,
+				covering: root?.classList.contains("is-covering") ?? false,
+				covered: root?.classList.contains("is-covered") ?? false,
+				revealing: root?.classList.contains("is-revealing") ?? false,
+			};
+		});
+		await saveFrame(page, `${label}-swap-${index}`);
+		console.log(
+			`locale transition → ${label}-swap-${index}: ${JSON.stringify(state)}`,
+		);
+		await page.waitForTimeout(35);
+	}
+}
+
+async function runLocaleTimeline(page, target, expectedPath, label, capture) {
+	const fromPath = await page.evaluate(() => location.pathname);
+	await page.locator(".locale-trigger").click();
+	await startLocaleTimeline(page);
+	await page.locator(`.locale-menu a[hreflang="${target}"]`).click();
+	await page.waitForSelector("[data-locale-transition].is-active", {
+		timeout: 2000,
+	});
+	if (capture) await captureSwapFrames(page, label);
+	await page.waitForFunction(
+		(path) =>
+			location.pathname === path &&
+			!document
+				.querySelector("[data-locale-transition]")
+				?.classList.contains("is-active"),
+		expectedPath,
+		{ timeout: 6000 },
+	);
+	const timeline = await finishLocaleTimeline(page);
+	return { ...timeline, expectedPath, fromPath, label };
+}
+
 async function saveFrame(page, name) {
 	const viewport = page.viewportSize();
 	const file = join(OUT, `${name}.png`);
@@ -580,18 +719,26 @@ async function checkLocaleFrames(browser, base) {
 			await releaseBars(page);
 
 			await page.waitForURL("**/ca/", { timeout: 5000 });
-			const covered = await page.evaluate(() => {
+			const swapped = await page.evaluate(() => {
 				const root = document.querySelector("[data-locale-transition]");
 				const bar = document.querySelector(".locale-bar");
 				return {
-					covered: root?.classList.contains("is-covered") ?? false,
+					active: root?.classList.contains("is-active") ?? false,
+					covering: root?.classList.contains("is-covering") ?? false,
 					top: bar?.getBoundingClientRect().top ?? null,
+					htmlClass: document.documentElement.classList.contains(
+						"locale-transition",
+					),
 				};
 			});
 			check(
-				`${label} · capa estable tras navegar`,
-				covered.covered && Math.abs(covered.top ?? Infinity) < 1,
-				JSON.stringify(covered),
+				`${label} · capa no se reinicia tras navegar`,
+				swapped.active &&
+					!swapped.covering &&
+					swapped.top !== null &&
+					swapped.top >= -0.5 &&
+					swapped.htmlClass,
+				JSON.stringify(swapped),
 			);
 			await page.waitForSelector("[data-locale-transition].is-revealing", {
 				timeout: 2000,
@@ -636,6 +783,155 @@ async function checkLocaleFrames(browser, base) {
 			await context.close();
 		}
 	}
+}
+
+async function checkLocaleContinuity(browser, base) {
+	const modes = [
+		{ theme: "light", suffix: "", colorScheme: "light" },
+		{ theme: "dark", suffix: "-dark", colorScheme: "dark" },
+	];
+	const sequence = [
+		{ target: "en", expectedPath: "/en/", name: "ES→EN" },
+		{ target: "ca", expectedPath: "/ca/", name: "EN→CA" },
+		{ target: "es", expectedPath: "/", name: "CA→ES" },
+	];
+	const evidence = [];
+
+	for (const viewport of VIEWPORTS) {
+		for (const mode of modes) {
+			const context = await browser.newContext({
+				viewport: { width: viewport.width, height: viewport.height },
+				reducedMotion: "no-preference",
+				colorScheme: mode.colorScheme,
+			});
+			await context.addInitScript((theme) => {
+				try {
+					localStorage.setItem("theme", theme);
+				} catch {
+					// Ignore non-web origins while the init script is evaluated.
+				}
+			}, mode.theme);
+			const page = await context.newPage();
+			const errors = [];
+			page.on("pageerror", (error) => errors.push(error.message));
+			page.on("console", (message) => {
+				if (message.type() === "error") errors.push(message.text());
+			});
+
+			await page.goto(base, { waitUntil: "load" });
+
+			for (const [index, step] of sequence.entries()) {
+				const label = `locale continuity · ${viewport.name} · ${mode.theme} · ${step.name}`;
+				const timeline = await runLocaleTimeline(
+					page,
+					step.target,
+					step.expectedPath,
+					`locale-${viewport.name}${mode.suffix}`,
+					index === 0,
+				);
+				const stats = timelineStats(timeline, step.expectedPath);
+				const firstReveal = timeline.samples.find(
+					(sample) => sample.revealing,
+				);
+				const revealTop = firstReveal?.tops[0] ?? null;
+
+				check(
+					`${label} · barras solo hacia abajo`,
+					stats.backwards.length === 0,
+					JSON.stringify(stats.backwards.slice(0, 3)),
+				);
+				check(
+					`${label} · revelado desde estado congelado`,
+					revealTop !== null && Math.abs(revealTop) < 1,
+					String(revealTop),
+				);
+				check(
+					`${label} · sin pausa perceptible`,
+					stats.pauseFrames !== null && stats.pauseFrames <= 2,
+					JSON.stringify({
+						pauseMs: stats.pauseMs,
+						pauseFrames: stats.pauseFrames,
+						lastCovered: stats.lastCovered,
+						firstReveal: stats.firstReveal,
+					}),
+				);
+				check(
+					`${label} · sin reinicio de cobertura`,
+					stats.reanimations === 0,
+					String(stats.reanimations),
+				);
+				check(
+					`${label} · documento nuevo antes del revelado`,
+					stats.firstIncoming !== null &&
+						stats.firstReveal !== null &&
+						stats.firstIncoming <= stats.firstReveal + stats.maxGap,
+					JSON.stringify({
+						firstIncoming: stats.firstIncoming,
+						firstReveal: stats.firstReveal,
+					}),
+				);
+				check(
+					`${label} · sin reset de scroll`,
+					stats.scrollValues.every((scrollY) => scrollY === 0),
+					JSON.stringify(stats.scrollValues),
+				);
+
+				evidence.push({
+					viewport: viewport.name,
+					theme: mode.theme,
+					from: timeline.fromPath,
+					to: step.expectedPath,
+					barCount: firstReveal?.tops.length ?? 0,
+					...stats,
+					samples: timeline.samples.map((sample) => ({
+						t: +sample.t.toFixed(1),
+						path: sample.path,
+						tops: sample.tops.map((top) => +top.toFixed(1)),
+						active: sample.active,
+						covering: sample.covering,
+						covered: sample.covered,
+						revealing: sample.revealing,
+						htmlClass: sample.htmlClass,
+						scrollY: sample.scrollY,
+					})),
+				});
+			}
+
+			const final = await page.evaluate(() => ({
+				path: location.pathname,
+				lang: document.documentElement.lang,
+				theme: document.documentElement.dataset.theme,
+				active:
+					document
+						.querySelector("[data-locale-transition]")
+						?.classList.contains("is-active") ?? false,
+				htmlClass: document.documentElement.classList.contains(
+					"locale-transition",
+				),
+			}));
+			check(
+				`locale continuity · ${viewport.name} · ${mode.theme} · ciclo final`,
+				final.path === "/" &&
+					final.lang === "es" &&
+					final.theme === mode.theme &&
+					!final.active &&
+					!final.htmlClass,
+				JSON.stringify(final),
+			);
+			check(
+				`locale continuity · ${viewport.name} · ${mode.theme} · sin errores`,
+				errors.length === 0,
+				errors.join(" | "),
+			);
+			await context.close();
+		}
+	}
+
+	await writeFile(
+		join(OUT, "locale-continuity.json"),
+		`${JSON.stringify(evidence, null, 2)}\n`,
+	);
+	console.log(`locale transition → ${join(OUT, "locale-continuity.json")}`);
 }
 
 const { server, port } = await serve();
@@ -732,6 +1028,7 @@ for (const viewport of VIEWPORTS) {
 
 await checkLocaleTransition(browser, base);
 await checkLocaleFrames(browser, base);
+await checkLocaleContinuity(browser, base);
 
 await browser.close();
 server.close();
