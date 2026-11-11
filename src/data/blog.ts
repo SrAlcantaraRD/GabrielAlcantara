@@ -75,7 +75,7 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "ddd-dominios-complejos",
 		title: "DDD cuando el dominio es complejo",
-		cardTitle: "DDD en dominios complejos",
+		cardTitle: "Dominios complejos",
 		cardSub: "Límites, lenguaje común y decisiones al modelar.",
 		description:
 			"Qué cambia cuando el dominio tiene reglas que no caben en una tabla: límites, lenguaje común y las decisiones que tomé al modelar el inventario de una bodega.",
@@ -89,7 +89,7 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "websockets-operaciones-tiempo-real",
 		title: "WebSockets para operaciones en tiempo real",
-		cardTitle: "WebSockets en tiempo real",
+		cardTitle: "WebSockets en operación",
 		cardSub: "El canal, el rol y la reconexión como diseño.",
 		description:
 			"Cuando la interfaz deja de ser un formulario y pasa a reflejar el estado de una operación física, el canal, el rol y la reconexión se vuelven parte del diseño.",
@@ -117,7 +117,7 @@ export const POSTS: PostMeta[] = [
 	{
 		slug: "lecciones-plataforma-industrial",
 		title: "Lecciones de diseñar una plataforma industrial conectada",
-		cardTitle: "Plataforma industrial conectada",
+		cardTitle: "Plataforma conectada",
 		cardSub: "El hardware marca el ritmo; la traza no es opcional.",
 		description:
 			"Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional.",

@@ -10,23 +10,46 @@ the browser, and export when the copy or the layout changes.
 
 The card is a rigid template: **five slots, one line each, nothing reflows.**
 
-| # | Slot | Size | Top | Holds |
-| --- | --- | --- | --- | --- |
-| 1 | domain | 34 px | 64 | the mark and `gabrielalcantara.com` |
-| 2 | eyebrow | 34 px | 168 | terracotta label: category, `Caso de estudio · Company`, place |
-| 3 | title | 76 px | 224 | the name or the headline |
-| 4 | sub | 44 px | 330 | role, tagline or standfirst |
-| 5 | foot | 34 px | 512 | stack or tags on the left, years or date on the right |
+| # | Slot | Size | Top | Box | Holds |
+| --- | --- | --- | --- | --- | --- |
+| 1 | domain | 34 px | 58 | 52 | the mark and `gabrielalcantara.com` |
+| 2 | eyebrow | 34 px | 171 | 45 | green label: category, `Caso de estudio · Company`, place |
+| 3 | title | 96 px | 278 | 96 | the name or the headline |
+| 4 | sub | 44 px | 419 | 44 | standfirst, always serif italic |
+| 5 | foot | 34 px | 504 | 45 | stack or tags on the left, years or date on the right |
 
 All five are filled on every card. There is no auto-fit and no second line: the
 copy is edited until it fits, which is why the articles carry their own
 `cardTitle` and `cardSub` in `src/data/blog.ts` while the page keeps its longer
 `title` and `description`.
 
+## The rhythm
+
+Those five box heights and five tops leave **58 px in all six spaces**: above the
+first row, between every pair, and below the last. The exporter recomputes the six
+from the typographic box of each slot and refuses the card when they disagree by
+more than half a pixel, so the rhythm cannot rot.
+
+The spacing is measured on the box, not on ink. A `Q` tail, an accent over a
+capital or the descender of a `g` dips into the space below without moving it;
+measuring ink would make the gaps depend on which words a card happens to use.
+That is also why the standfirst is one family on every card: the sans and the
+serif have different ascent boxes, and that difference alone moved the gaps above
+and below the row by six pixels between cards.
+
+Changing a size or a line-height means re-solving the five `--y-*` values. Set
+them by measuring — the six spaces tell you when they are right — and let the
+exporter confirm it.
+
 `export.mjs` enforces it. It measures the rendered card and refuses to write a
 PNG when a slot is empty, wraps to a second line, overflows its width, falls
-outside the canvas or drops below 34 px. It also refuses an image that is not
-exactly 1200×630 or heavier than `--max-kb`.
+outside the canvas, drops below 34 px, or breaks the 58 px rhythm. It also
+refuses an image that is not exactly 1200×630 or heavier than `--max-kb`.
+
+The accent is `#1b7343`: OKLCH L 0.4925 and C 0.1116, against 0.5182 and 0.1128
+for the terracotta it replaced, so the perceived lightness, the saturation and
+the contrast against the paper (5.53 vs 5.51) stayed put while the hue moved into
+the family of the site's sage.
 
 34 px is the floor because the canvas is not what people see: a timeline draws
 the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about

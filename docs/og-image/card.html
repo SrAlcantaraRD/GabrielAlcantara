@@ -44,26 +44,29 @@
 	   factor of 0.42; 34px arrives on screen at about 14px. */
 	--slot-domain: 34px;
 	--slot-eyebrow: 34px;
-	--slot-title: 76px;
+	--slot-title: 96px;
 	--slot-sub: 44px;
 	--slot-foot: 34px;
 
 	--x: 80px;
 	--width: 1040px;
 
-	/* Top of each line box. These five numbers are the template. */
-	--y-domain: 64px;
-	--y-eyebrow: 168px;
-	--y-title: 224px;
-	--y-sub: 330px;
-	--y-foot: 512px;
+	/* Top of each line box. These five numbers are the template: with the five
+	   slot heights they leave 58px in all six spaces — above the first row,
+	   between every pair, and below the last. Changing a size or a line-height
+	   means re-solving them, which export.mjs checks. */
+	--y-domain: 58px;
+	--y-eyebrow: 171px;
+	--y-title: 278px;
+	--y-sub: 419px;
+	--y-foot: 504px;
 
 	--paper: #faf8f5;
 	--ink: #1a1a1a;
 	--ink-muted: #4f4b47;
 	--ink-faint: #6f6960;
 	--line: #e6e0d6;
-	--accent: #9e4e36;
+	--accent: #1b7343;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -143,19 +146,18 @@ html, body { background: var(--paper); }
 	color: var(--ink);
 }
 
+/* One family for the standfirst on every card: the two faces have different
+   ascent boxes, and that difference alone would move the gaps above and below
+   the row by six pixels between cards. */
 .sub {
 	top: var(--y-sub);
 	width: var(--width);
+	font-family: "CardSerif", Georgia, "Times New Roman", serif;
+	font-style: italic;
 	font-size: var(--slot-sub);
 	line-height: 56px;
 	letter-spacing: -.005em;
-	color: var(--ink-muted);
-}
-
-.card[data-kind="case"] .sub,
-.card[data-kind="post"] .sub {
-	font-family: "CardSerif", Georgia, "Times New Roman", serif;
-	font-style: italic;
+	color: var(--accent);
 }
 
 .foot {

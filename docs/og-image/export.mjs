@@ -39,6 +39,9 @@ const MIN_FONT_PX = 34;
  */
 const SLOT_NAMES = ["domain", "eyebrow", "title", "sub", "foot"];
 
+/** The six vertical spaces must agree with each other to this many pixels. */
+const SPACE_TOLERANCE = 0.5;
+
 const ICONS = [
 	{ file: "apple-touch-icon.png", size: 180 },
 	{ file: "icon-192.png", size: 192 },
@@ -84,7 +87,7 @@ function pngSize(buffer) {
  * Runs inside the rendered page. The template is rigid, so this does not try to
  * help it fit: it reports every way the copy breaks the five fixed slots.
  */
-function audit({ minFontPx, slotNames }) {
+function audit({ minFontPx, slotNames, tolerance }) {
 	const card = document.getElementById("card");
 	const frame = card.getBoundingClientRect();
 	const problems = [];
@@ -142,8 +145,56 @@ function audit({ minFontPx, slotNames }) {
 		if (!filled.has(name)) problems.push(`la ranura "${name}" quedó sin texto`);
 	}
 
+	// The rhythm is measured on the typographic box of each slot rather than on
+	// ink: a Q tail or a descender dips into the space below without moving it,
+	// and measuring ink would make the gaps depend on which words a card uses.
+	const slotBox = (name) => {
+		const host = card.querySelector(`[data-slot="${name}"]`);
+		if (!host) return null;
+
+		const rects = [];
+		const mark = host.querySelector(".mark");
+		if (mark) rects.push(mark.getBoundingClientRect());
+
+		const carriesText = (node) =>
+			Array.from(node.childNodes).some(
+				(child) => child.nodeType === Node.TEXT_NODE && child.textContent.trim(),
+			);
+
+		const leaves = Array.from(host.querySelectorAll("*")).filter(carriesText);
+		if (!leaves.length && carriesText(host)) leaves.push(host);
+
+		for (const leaf of leaves) {
+			const range = document.createRange();
+			range.selectNodeContents(leaf);
+			for (const rect of range.getClientRects()) rects.push(rect);
+		}
+
+		if (!rects.length) return null;
+		return {
+			top: Math.min(...rects.map((rect) => rect.top)) - frame.top,
+			bottom: Math.max(...rects.map((rect) => rect.bottom)) - frame.top,
+		};
+	};
+
+	const boxes = slotNames.map(slotBox).filter(Boolean);
+	const spaces = [boxes[0].top];
+
+	for (let i = 1; i < boxes.length; i += 1) {
+		spaces.push(boxes[i].top - boxes[i - 1].bottom);
+	}
+	spaces.push(card.offsetHeight - boxes[boxes.length - 1].bottom);
+
+	const spread = Math.max(...spaces) - Math.min(...spaces);
+	if (spread > tolerance) {
+		problems.push(
+			`los seis espacios no son simétricos: [${spaces.map((s) => s.toFixed(1)).join(", ")}], dispersión ${spread.toFixed(1)}px`,
+		);
+	}
+
 	return {
 		problems,
+		spaces,
 		slots: filled.size,
 		smallest: elements.reduce(
 			(min, element) =>
@@ -210,6 +261,7 @@ try {
 		const report = await page.evaluate(audit, {
 			minFontPx: MIN_FONT_PX,
 			slotNames: SLOT_NAMES,
+			tolerance: SPACE_TOLERANCE,
 		});
 		if (report.problems.length) {
 			throw new Error(
@@ -224,7 +276,7 @@ try {
 
 		console.log(
 			`wrote public/${file} ${WIDTH}x${HEIGHT} ${kb.toFixed(0)} KB · ` +
-				`${report.slots} ranuras, mínimo ${report.smallest}px`,
+				`${report.slots} ranuras, mínimo ${report.smallest}px, espacios ${report.spaces.map((s) => s.toFixed(1)).join("/")}`,
 		);
 	}
 

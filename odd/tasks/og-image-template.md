@@ -9,7 +9,9 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - **S1.** «lo unico leíble es el nombre "Gabriel Alcántara"». Ningún elemento de texto de una tarjeta baja de **34 px** en el lienzo de 1200×630, y el exportador termina en error, nombrando el elemento y su tamaño, cuando alguno lo hace. Justificación: a 504 px de ancho (el tamaño real de un feed) el factor es 0.42, así que 34 px llegan como ~14 px; los 16–18 px monoespaciados de hoy llegan como ~7 px.
 - **S2.** «Vamos a montar un sistema como el de `/Users/gabrielalcantara/Documents/personal/projects/sport-analytics/website/docs/og-image`». El lienzo vive en `docs/og-image/card.html` como HTML autónomo, con las fuentes por ruta relativa a `node_modules`, y se previsualiza abriéndolo en el navegador sin servidor ni build.
 - **S3.** La previsualización acepta `?kind=`, `?title=`, `?sub=`, `?eyebrow=`, `?footLeft=`, `?footRight=` y `?scale=`. `?scale=504` dibuja el lienzo al tamaño de un feed, para juzgar la legibilidad sin reducirlo a mano.
-- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras: dominio `34`, antetítulo `34`, título `76`, entradilla `44`, pie `34`. Cada ranura va en una posición vertical fija (64 / 168 / 224 / 330 / 512) y ocupa **una sola línea**; ninguna tarjeta reflowa. Las ocho rellenan las cinco.
+- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras: dominio `34`, antetítulo `34`, título `96`, entradilla `44`, pie `34`. Cada ranura va en una posición vertical fija (58 / 171 / 278 / 419 / 504) y ocupa **una sola línea**; ninguna tarjeta reflowa. Las ocho rellenan las cinco.
+- **S12.** «el color pasalo a verde, manteniendo tonalidad, brillo, contraste» — el acento es `#1b7343`, con L 0.4925 y C 0.1116 en OKLCH frente a 0.5182 y 0.1128 del terracota anterior, y contraste 5.53 contra 5.51 sobre el papel. La entradilla y el antetítulo van en ese acento.
+- **S13.** «Estudia con regla y establece espacios simetricos» — las cinco alturas de caja y las cinco posiciones dejan **58 px en los seis espacios** (arriba, cuatro huecos y abajo), idénticos en las ocho tarjetas, y `export.mjs` lo verifica con tolerancia de 0.5 px.
 - **S5.** No hay ajuste automático. El copy se recorta para encajar y `export.mjs` rechaza la tarjeta cuyo texto no quepa en su ranura, se salga del lienzo, pase de una línea o deje una ranura vacía. Donde antes se encogía el título, ahora falla el export.
 - **S10.** «habría que ajustar los copys para que entren» — el título corto de cada artículo vive en `PostMeta.cardTitle` y su entradilla en `PostMeta.cardSub`; `title` y `description` de la página no cambian. Las entradillas de caso se recortan en `tagline`, que ya era copy de tarjeta.
 - **S11.** El antetítulo y la entradilla de la tarjeta por defecto se derivan de `SITE.location` y `SITE.roles`: ninguna cadena nueva que pueda desincronizarse.
@@ -93,6 +95,23 @@ Copy resultante (`cardTitle` / `cardSub`; entradillas de caso en `tagline`):
 | Por defecto | Gabriel Alcántara | Software Architect · Software Engineer |
 
 La primera pasada de la puerta contó 6 ranuras en vez de 5: contaba elementos con texto y el pie tiene dos. Se corrigió marcando cada ranura con `data-slot`, así la comprobación es «las cinco, todas con texto» en lugar de un recuento de nodos.
+
+### L9 · jerarquía, color y retícula
+
+> noto inconsistencia visual, de jerarquia. el color pasalo a verde, manteniendo tonalidad, brillo, contraste y demás. En color accent Barcelona, remoto, Software Architect. Incrementa el tamaño de Gabriel Alcántara para que el espacio entre las letras inferiores e inferiore sea el mismo. Estudia con regla y establece espacios simetricos.
+
+Medido antes de tocar: los seis espacios eran **71 / 62 / 19 / 54 / 158 / 60**. Ahí estaba la inconsistencia — un hueco de 19 px entre antetítulo y título y otro de 158 px antes del pie.
+
+Cómo se resolvió:
+
+1. Color por OKLCH, no por ojo: se conservaron L y C del terracota y se movió solo el tono a 154° (la familia del sage del sitio, 156°). El contraste resultante es 5.53 contra 5.51.
+2. Título a 96 px: el presupuesto de la ranura baja a ~23 caracteres, así que se recortaron tres `cardTitle` (`Dominios complejos`, `WebSockets en operación`, `Plataforma conectada`).
+3. La retícula se resolvió por geometría, no por píxeles. Primero intenté medir con bandas de tinta y descubrí dos cosas: un acento sobre mayúscula (`AUTOMATIZACIÓN`) crea una banda separada de 4 px, y los descendentes mueven el borde inferior. Se cambió a **caja tipográfica por ranura**, que es constante para todo texto: dispersión 0.00 entre las ocho tarjetas y 58 px exactos en los seis espacios.
+4. La entradilla pasó a ser una sola familia (serif itálica) en las ocho: sans y serif tienen cajas de ascenso distintas y esa diferencia movía los huecos de arriba y abajo de la fila 6 px entre tarjetas.
+
+La tinta sigue variando (59–83 px) porque la cola de la `Q` y los descendentes de `g`, `y`, `p` ocupan parte del hueco. Eso es del glifo, no del sistema: la línea base no se mueve, que es lo que gobierna el ritmo.
+
+Se comprobó en rojo desviando `--y-sub` 10 px: el exportador responde «los seis espacios no son simétricos: [58.0, 58.0, 58.0, 68.0, 48.0, 58.0], dispersión 20.0px».
 
 ### L6 · verificación
 
