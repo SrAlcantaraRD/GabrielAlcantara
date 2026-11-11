@@ -25,12 +25,6 @@ const DRAG_SLOP = 4;
 const FLICK_TTL_MS = 100;
 /** Minimum gap between clicks, so inertia cannot machine-gun the sound. */
 const TICK_MIN_MS = 40;
-/** Wheel travel that counts as one notch. */
-const WHEEL_STEP_PX = 24;
-/** A pause longer than this starts a fresh wheel gesture. */
-const WHEEL_IDLE_MS = 220;
-/** Cap on wheel steps, so a fast trackpad cannot fly through the list. */
-const WHEEL_STEP_COOLDOWN_MS = 150;
 const TICK_FREQUENCY = 2100;
 /** The internal clock: the word above slides into the centre every 3 s. */
 const AUTOPLAY_MS = 3000;
@@ -317,60 +311,6 @@ function mount(reel: HTMLElement): void {
 	reel.addEventListener("pointerup", release, { signal });
 	reel.addEventListener("pointercancel", release, { signal });
 
-	/**
-	 * The trackpad can turn the reel too, but only with gestures the page itself
-	 * cannot use: horizontal ones (this page never scrolls sideways) and vertical
-	 * ones at the end of the scroll they ask for. Everything else is left to the
-	 * browser, and the listener is passive and never calls `preventDefault`, so
-	 * page scrolling stays native.
-	 */
-	let wheelDelta = 0;
-	let wheelAt = 0;
-	let wheelStepAt = 0;
-
-	const onWheel = (event: WheelEvent) => {
-		if (event.ctrlKey) return; // Pinch zoom, not a scroll.
-
-		// Normalise lines and pages to pixels; trackpads already send pixels.
-		const unit =
-			event.deltaMode === 1
-				? 16
-				: event.deltaMode === 2
-					? window.innerHeight
-					: 1;
-		const dx = event.deltaX * unit;
-		const dy = event.deltaY * unit;
-
-		const root = document.documentElement;
-		const horizontal = Math.abs(dx) > Math.abs(dy);
-		const freeHorizontal =
-			horizontal && root.scrollWidth <= window.innerWidth + 1;
-		const freeVertical =
-			!horizontal &&
-			((dy < 0 && window.scrollY <= 0) ||
-				(dy > 0 &&
-					window.scrollY + window.innerHeight >=
-						root.scrollHeight - 1));
-
-		if (!freeHorizontal && !freeVertical) return;
-
-		const now = event.timeStamp;
-		if (now - wheelAt > WHEEL_IDLE_MS) wheelDelta = 0;
-		wheelAt = now;
-		if (now - wheelStepAt < WHEEL_STEP_COOLDOWN_MS) return;
-
-		wheelDelta += horizontal ? dx : dy;
-		if (Math.abs(wheelDelta) < WHEEL_STEP_PX) return;
-
-		const direction = Math.sign(horizontal ? dx : -dy);
-		wheelDelta = 0;
-		wheelStepAt = now;
-		clickBank(reel);
-		settle(Math.round(position) + direction);
-		scheduleClock();
-	};
-
-	reel.addEventListener("wheel", onWheel, { passive: true, signal });
 	window.addEventListener("resize", measure, { signal });
 
 	signal.addEventListener(
