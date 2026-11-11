@@ -85,6 +85,174 @@ const check = (label, ok, detail = "") => {
 	results.push(`${ok ? "ok  " : "FAIL"} ${label}${detail ? `: ${detail}` : ""}`);
 };
 
+/**
+ * The header and footer are persisted across ClientRouter swaps. Drive real
+ * navigations on one page and check that the nodes survive, while the header
+ * resyncs its active link and breadcrumbs and the mobile menu closes.
+ */
+async function checkPersistentChrome(page, viewport) {
+	const label = `${viewport.name}/persistencia`;
+	const desktop = viewport.name === "desktop";
+	const activeSelector = desktop
+		? ".site-nav a[aria-current='page']"
+		: ".mobile-menu a[aria-current='page']";
+	const errors = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	page.on("console", (message) => {
+		if (message.type() === "error") errors.push(message.text());
+	});
+
+	const at = (path) =>
+		page.waitForFunction((expected) => location.pathname === expected, path);
+	const crumbLabels = () =>
+		page.$$eval(".header-crumbs .breadcrumbs li", (nodes) =>
+			nodes.map((node) => node.textContent?.trim() ?? ""),
+		);
+	const waitCrumbs = (expected) =>
+		page.waitForFunction(
+			(items) =>
+				JSON.stringify(
+					[...document.querySelectorAll(".header-crumbs .breadcrumbs li")].map(
+						(node) => node.textContent?.trim() ?? "",
+					),
+				) === JSON.stringify(items),
+			expected,
+		);
+	const waitArticleCrumbs = () =>
+		page.waitForFunction(() => {
+			const items = [
+				...document.querySelectorAll(".header-crumbs .breadcrumbs li"),
+			].map((node) => node.textContent?.trim() ?? "");
+			return (
+				items.length === 4 &&
+				items[0] === "Inicio" &&
+				items[1] === "Blog" &&
+				items[2] === "DDD" &&
+				items[3].startsWith("DDD")
+			);
+		});
+	const activeLabel = () =>
+		page.evaluate(
+			(selector) =>
+				document.querySelector(selector)?.textContent?.trim() ?? "",
+			activeSelector,
+		);
+	const waitActive = (text) =>
+		page.waitForFunction(
+			([selector, expected]) =>
+				document.querySelector(selector)?.textContent?.trim() === expected,
+			[activeSelector, text],
+		);
+	const sameNode = (selector, key) =>
+		page.evaluate(
+			([css, name]) => document.querySelector(css) === window[name],
+			[selector, key],
+		);
+	const go = async (href) => {
+		if (!desktop) await page.locator(".mobile-menu summary").click();
+		await page
+			.locator(`${desktop ? ".site-nav" : ".mobile-menu"} a[href="${href}"]`)
+			.first()
+			.click();
+		await at(new URL(href, base).pathname);
+	};
+
+	await page.goto(base, { waitUntil: "load" });
+	await page.waitForSelector(".site-header");
+	await page.evaluate(() => {
+		window.__persistedHeader = document.querySelector(".site-header");
+		window.__persistedFooter = document.querySelector(".site-footer");
+	});
+
+	const names = await page.evaluate(() => ({
+		header: getComputedStyle(document.querySelector(".site-header")).viewTransitionName,
+		footer: getComputedStyle(document.querySelector(".site-footer")).viewTransitionName,
+	}));
+	check(
+		`${label} · nombres de view transition`,
+		names.header === "site-header" && names.footer === "site-footer",
+		JSON.stringify(names),
+	);
+	check(
+		`${label} · migas ocultas en inicio`,
+		await page
+			.locator(".header-crumbs .breadcrumbs")
+			.evaluate((element) => element.hidden),
+	);
+
+	await go("/about/");
+	await waitCrumbs(["Inicio", "Sobre mí"]);
+	check(`${label} · header persiste`, await sameNode(".site-header", "__persistedHeader"));
+	check(`${label} · footer persiste`, await sameNode(".site-footer", "__persistedFooter"));
+	await waitActive("Sobre mí");
+	check(`${label} · nav activo`, (await activeLabel()) === "Sobre mí");
+	check(
+		`${label} · migas actualizadas`,
+		JSON.stringify(await crumbLabels()) === JSON.stringify(["Inicio", "Sobre mí"]),
+		JSON.stringify(await crumbLabels()),
+	);
+	if (!desktop) {
+		check(
+			`${label} · menú móvil se cierra`,
+			!(await page
+				.locator(".mobile-menu")
+				.evaluate((element) => element.hasAttribute("open"))),
+		);
+	}
+
+	await go("/blog/");
+	await waitCrumbs(["Inicio", "Blog"]);
+	await waitActive("Blog");
+	check(`${label} · blog activo`, (await activeLabel()) === "Blog");
+	check(
+		`${label} · migas de blog`,
+		JSON.stringify(await crumbLabels()) === JSON.stringify(["Inicio", "Blog"]),
+		JSON.stringify(await crumbLabels()),
+	);
+
+	await page.locator('a[href="/blog/ddd-dominios-complejos/"]').first().click();
+	await at("/blog/ddd-dominios-complejos/");
+	await waitArticleCrumbs();
+	const articleCrumbs = await crumbLabels();
+	check(
+		`${label} · migas de artículo`,
+		articleCrumbs.length === 4 && articleCrumbs[3].startsWith("DDD"),
+		JSON.stringify(articleCrumbs),
+	);
+	await waitActive("Blog");
+	check(`${label} · nav activo en artículo`, (await activeLabel()) === "Blog");
+	check(
+		`${label} · header persiste en artículo`,
+		await sameNode(".site-header", "__persistedHeader"),
+	);
+
+	await page.locator(".brand").click();
+	await at("/");
+	await page.waitForFunction(
+		() => document.querySelector(".header-crumbs .breadcrumbs")?.hidden === true,
+	);
+	await waitActive("Inicio");
+	check(`${label} · inicio activo de nuevo`, (await activeLabel()) === "Inicio");
+	check(
+		`${label} · header persiste al inicio`,
+		await sameNode(".site-header", "__persistedHeader"),
+	);
+
+	await page.goBack();
+	await at("/blog/ddd-dominios-complejos/");
+	await waitArticleCrumbs();
+	check(
+		`${label} · atrás conserva header`,
+		await sameNode(".site-header", "__persistedHeader"),
+	);
+	check(
+		`${label} · atrás restaura migas`,
+		JSON.stringify(await crumbLabels()) === JSON.stringify(articleCrumbs),
+		JSON.stringify(await crumbLabels()),
+	);
+	check(`${label} · sin errores de consola`, errors.length === 0, errors.join(" | "));
+}
+
 const { server, port } = await serve();
 const base = `http://127.0.0.1:${port}/`;
 await mkdir(OUT, { recursive: true });
@@ -165,6 +333,13 @@ for (const viewport of VIEWPORTS) {
 		});
 		console.log(`${label} → ${file}`);
 		await page.close();
+	}
+
+	const chromePage = await context.newPage();
+	try {
+		await checkPersistentChrome(chromePage, viewport);
+	} finally {
+		await chromePage.close();
 	}
 
 	await context.close();
