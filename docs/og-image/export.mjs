@@ -98,6 +98,10 @@ function audit({ minFontPx, slotNames, tolerance }) {
 	const gutter = Number.parseFloat(getComputedStyle(card).getPropertyValue("--x"));
 	const left = frame.left + gutter;
 	const right = frame.right - gutter;
+	// The one ink concession: a round or pointed capital at the head of the lead
+	// hangs past the column line so its curve reads flush with the straight stems
+	// above and below it. Capped, and still far inside the 5% safe zone.
+	const OPTICAL_HANG = 2;
 
 	const carriesText = (element) =>
 		Array.from(element.childNodes).some(
@@ -130,8 +134,9 @@ function audit({ minFontPx, slotNames, tolerance }) {
 				`${label} ocupa ${lines} líneas («${excerpt}»), la ranura admite una`,
 			);
 		}
+		const hang = host?.dataset.slot === "title" ? OPTICAL_HANG : 0;
 		if (
-			box.left < left - 0.5 ||
+			box.left < left - hang - 0.5 ||
 			box.top < frame.top - 0.5 ||
 			box.right > right + 0.5 ||
 			box.bottom > frame.bottom + 0.5

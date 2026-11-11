@@ -55,11 +55,10 @@
 	--h-sub: 34px;
 	--h-foot: 34px;
 
-	/* The eyebrow, the lead and the standfirst are one block: 24px between
-	   them, and 80px from the block to the two label rows. That ratio — three
-	   times more air outside than inside — is what makes the three read as a
-	   group instead of three evenly spaced lines. */
-	--space: 80px;
+	/* Three blocks, three distances: 24px inside the lead group, 68px between
+	   blocks, 104px to the frame. Multiplying by ~2.8 at each step is what makes
+	   the groups read as groups and the frame read as a frame. */
+	--space: 68px;
 	--space-tight: 24px;
 
 	--margin: calc(
@@ -73,9 +72,10 @@
 	--y-sub: calc(var(--y-title) + var(--h-title) + var(--space-tight));
 	--y-foot: calc(var(--y-sub) + var(--h-sub) + var(--space));
 
-	/* Attached to the outer rows, like the site's section rules. */
-	--rule-gap-top: 12px;
-	--rule-gap-foot: 28px;
+	/* Each hairline sits the same 24px from the block it closes, so the body is
+	   framed by equal gaps instead of one tight rule and one loose one. */
+	--rule-gap-top: 24px;
+	--rule-gap-foot: 24px;
 
 	/* The two halves of one row never touch. */
 	--foot-gap: 40px;
@@ -83,7 +83,7 @@
 	/*
 	 * The 5% safe zone some feeds crop to — 60 × 31.5px on this canvas, the same
 	 * guide the card editor draws. Everything lives inside it: the column starts
-	 * 20px in, and the first and last rows sit 92px from the edges. The gutter
+	 * 20px in, and the first and last rows sit 104px from the edges. The gutter
 	 * stays a plain length because the exporter reads it with parseFloat.
 	 */
 	--x: 80px;
@@ -210,10 +210,11 @@ html, body { background: var(--paper); }
 }
 
 /*
- * The editor nudged the lead -3px. The exporter refuses text that invades the
- * 80px gutter, and the lead starts on that line, so it keeps its left edge.
+ * The lead hangs two pixels: measured, its round G lands 1px right of the stems
+ * of the label rows, and a curve needs that much to look flush. The exporter
+ * allows the hang on this slot only; the script clears it for straight initials.
  */
-.lead span { transform: translate(0, 0); }
+.lead span { transform: translate(var(--lead-hang, -2px), 0); }
 
 /* The line that explains the title: sans at label size, tracked, in the accent. */
 .sub {
@@ -304,12 +305,20 @@ html, body { background: var(--paper); }
 		card.dataset.kind = copy.kind === 'case' || copy.kind === 'post' ? copy.kind : 'default';
 		document.documentElement.lang = 'es';
 
-		if (copy.domain) setText(domain, copy.domain);
-		setText(eyebrow, copy.eyebrow);
-		setText(lead, copy.title);
-		setText(sub, copy.sub);
-		setText(footLeft, copy.footLeft);
-		footRight.hidden = !setText(footRight, copy.footRight);
+		// A bare open of this file has no query: keep the copy already in the
+		// markup so the artboard is always previewable, and let the exporter (or a
+		// query parameter) override it.
+		if (copy.domain != null) setText(domain, copy.domain);
+		if (copy.eyebrow != null) setText(eyebrow, copy.eyebrow);
+		if (copy.title != null) setText(lead, copy.title);
+		if (copy.sub != null) setText(sub, copy.sub);
+
+		// Only round and pointed capitals hang; a straight stem (N, P, L, B) sits
+		// on the column line, so every card keeps its own optical edge.
+		var initial = lead.textContent.trim().charAt(0).toUpperCase();
+		lead.style.setProperty('--lead-hang', 'ACGOQSVWY'.indexOf(initial) === -1 ? '0px' : '-2px');
+		if (copy.footLeft != null) setText(footLeft, copy.footLeft);
+		if (copy.footRight != null) footRight.hidden = !setText(footRight, copy.footRight);
 
 		card.setAttribute('aria-label', [
 			domain.textContent.trim(),

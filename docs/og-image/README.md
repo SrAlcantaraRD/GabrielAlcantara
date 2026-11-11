@@ -32,8 +32,10 @@ foot: at 34 px a fourth one runs into the margin.
 
 `export.mjs` enforces it. It measures the rendered card and refuses to write a
 PNG when a slot is empty, wraps to a second line, overflows its width, invades
-the 80 px gutter, drops below 34 px, or breaks the rhythm. It also refuses an
-image that is not exactly 1200×630 or heavier than `--max-kb`.
+the 80 px gutter, drops below 34 px, or breaks the rhythm. The lead is the only
+slot allowed past that line, and only by 2 px: a round or pointed capital has to
+hang for its curve to look flush (see below). It also refuses an image that is
+not exactly 1200×630 or heavier than `--max-kb`.
 
 34 px is the floor because the canvas is not what people see: a timeline draws
 the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about
@@ -48,29 +50,36 @@ the card carries no badge and no second colour.
 The five heights and two gaps derive all five tops in `card.html`:
 
 ```
---space       80px   from the three-line block to the two label rows
+--space       68px   from the three-line block to the two label rows
 --space-tight 24px   inside the block: eyebrow, lead and standfirst
---margin      92px   above the first row and below the last, whatever is left
+--margin     104px   above the first row and below the last, whatever is left
 ```
 
-The six spaces are therefore `92 / 80 / 24 / 24 / 80 / 92`, identical on all
+The six spaces are therefore `104 / 68 / 24 / 24 / 68 / 104`, identical on all
 eight cards. `export.mjs` reads `--space`, `--space-tight` and `--margin` from the
 stylesheet, re-derives the six spaces from the slot boxes, and refuses the card
 when any of them is off by more than half a pixel. Change a gap or a height and
 the four tops follow; there are no hand-tuned numbers to forget.
 
-The two hairlines are attached to the outer rows — 12 px under the masthead and
-28 px over the footer — which is what closes the composition without adding a
-line of text.
+The two hairlines are attached to the outer rows, each 24 px from the block it
+closes, so the body sits between two equal gaps: 24 px to its rule above, 44 px
+from that rule, and the same mirrored below. That is what closes the three
+blocks without adding a line of text.
 
 The safe zone is the 5% inset some feeds crop to — 60 × 31.5 px on this canvas,
 the same guide the card editor draws. The column starts 20 px inside it (`--x:
-80px`) and the first and last rows sit 92 px from the edges, so no slot is ever
+80px`) and the first and last rows sit 104 px from the edges, so no slot is ever
 close to the crop.
 
 The rhythm is measured on the slot boxes, not on ink. A `Q` tail, an accent over
 a capital or the descender of a `g` dips into the space below without moving it;
 measuring ink would make the gaps depend on which words a card happens to use.
+
+The one exception is the lead's 2 px hang. `card.html` measures nothing and
+decides nothing at export time: it sets the hang from the initial — round and
+pointed capitals (`G`, `C`, `S`, `A`, `W`…) hang, straight stems (`N`, `P`, `L`,
+`B`) stay on the line — so the optical edge is right on every card, not just on
+the one where it was noticed.
 
 ## The loop
 
