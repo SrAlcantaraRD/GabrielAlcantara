@@ -1,0 +1,6 @@
+#!/bin/sh
+# Never commit a social card manifest that no longer matches the pages.
+# The same check runs in `pnpm build`; this catches the drift earlier.
+set -e
+cd "$(git rev-parse --show-toplevel)" || exit 1
+exec node scripts/check-social-cards.mjs

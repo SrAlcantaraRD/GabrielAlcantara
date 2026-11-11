@@ -7,11 +7,13 @@
 	},
 	"scripts": {
 		"dev": "astro dev",
+		"prepare": "node scripts/install-git-hooks.mjs",
 		"build": "node scripts/check-social-cards.mjs && astro build",
 		"preview": "astro preview",
 		"test": "node --test 'tests/**/*.test.ts'",
 		"astro": "astro",
 		"ui:check": "node scripts/ui-check.mjs",
+		"hooks:install": "node scripts/install-git-hooks.mjs",
 		"social:cards": "node docs/og-image/export.mjs",
 		"social:check": "node scripts/check-social-cards.mjs"
 	},

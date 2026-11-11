@@ -37,6 +37,7 @@ All commands are run from the root of the project, from a terminal:
 | `pnpm ui:check`        | Drives the built site with Playwright and writes screenshots to `ui-artifacts/` |
 | `pnpm social:cards`    | Regenerates `og-image.png` and the app icons in `public/` |
 | `pnpm social:check`    | Fails when the social card manifest or its PNGs are stale |
+| `pnpm hooks:install`   | Points git at the versioned pre-commit hook |
 | `pnpm build`           | Build your production site to `./dist/`          |
 | `pnpm preview`         | Preview your build locally, before deploying     |
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
@@ -79,6 +80,10 @@ Each run records the page, title and a hash of the artboard plus the copy in
 tagline edit or a template change — and so does `pnpm build`: it runs
 `pnpm social:check` before Astro starts, so a stale card cannot ship. Run
 `pnpm social:cards` after touching the copy or the artboard.
+
+`pnpm install` points `core.hooksPath` at `.githooks`, whose `pre-commit` runs
+the same check before every commit. If that local config is lost, run
+`pnpm hooks:install` to restore it.
 
 ## 👀 Want to learn more?
 
