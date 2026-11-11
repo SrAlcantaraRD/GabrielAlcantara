@@ -85,6 +85,42 @@ const check = (label, ok, detail = "") => {
 	results.push(`${ok ? "ok  " : "FAIL"} ${label}${detail ? `: ${detail}` : ""}`);
 };
 
+async function holdBars(page, time) {
+	return page.evaluate((currentTime) => {
+		const animations = [...document.querySelectorAll(".locale-bar")].flatMap(
+			(bar) => bar.getAnimations(),
+		);
+		for (const animation of animations) {
+			animation.pause();
+			animation.currentTime = currentTime;
+		}
+		return animations.length;
+	}, time);
+}
+
+async function releaseBars(page) {
+	await page.evaluate(() => {
+		for (const bar of document.querySelectorAll(".locale-bar")) {
+			for (const animation of bar.getAnimations()) animation.play();
+		}
+	});
+}
+
+async function saveFrame(page, name) {
+	const viewport = page.viewportSize();
+	const file = join(OUT, `${name}.png`);
+	await page.screenshot({ path: file, fullPage: false });
+	const png = await readFile(file);
+	const width = png.readUInt32BE(16);
+	const height = png.readUInt32BE(20);
+	check(
+		`locale transition · fotograma ${name}`,
+		width === viewport?.width && height === viewport?.height,
+		`${width}x${height}`,
+	);
+	console.log(`locale transition → ${file}`);
+}
+
 /**
  * The header and footer are persisted across ClientRouter swaps. Drive real
  * navigations on one page and check that the nodes survive, while the header
@@ -148,12 +184,14 @@ async function checkPersistentChrome(page, viewport) {
 			([css, name]) => document.querySelector(css) === window[name],
 			[selector, key],
 		);
+	// The navigation scrolls to home sections, so the detail pages are reached
+	// from the "see the full section" link inside each section.
 	const go = async (href) => {
-		if (!desktop) await page.locator(".mobile-menu summary").click();
-		await page
-			.locator(`${desktop ? ".site-nav" : ".mobile-menu"} a[href="${href}"]`)
-			.first()
-			.click();
+		if ((await page.evaluate(() => location.pathname)) !== "/") {
+			await page.locator(".brand").click();
+			await at("/");
+		}
+		await page.locator(`main a[href="${href}"]`).first().click();
 		await at(new URL(href, base).pathname);
 	};
 
@@ -185,6 +223,41 @@ async function checkPersistentChrome(page, viewport) {
 			.locator('.site-nav a[data-nav-key="home"], .mobile-menu a[data-nav-key="home"]')
 			.count()) === 0,
 	);
+
+	// The navigation is a one-page index: it scrolls to the section instead of
+	// opening the detail page, and the sticky header must not cover the target.
+	if (!desktop) await page.locator(".mobile-menu summary").click();
+	await page
+		.locator(
+			`${desktop ? ".site-nav" : ".mobile-menu"} a[data-nav-key="projects"]`,
+		)
+		.first()
+		.click();
+	await page.waitForFunction(() => location.hash === "#proyectos");
+	const anchor = await page.evaluate(() => {
+		const header =
+			document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 0;
+		const section =
+			document.getElementById("proyectos")?.getBoundingClientRect().top ?? -1;
+		const link = document.querySelector(
+			'.site-nav a[data-nav-key="projects"], .mobile-menu a[data-nav-key="projects"]',
+		);
+		return { header, section, active: link?.getAttribute("aria-current") };
+	});
+	check(
+		`${label} · navegación hace scroll a la sección`,
+		anchor.section > anchor.header && anchor.section <= anchor.header + 40,
+		JSON.stringify(anchor),
+	);
+	check(`${label} · sección activa tras el scroll`, anchor.active === "page");
+	if (!desktop) {
+		check(
+			`${label} · menú móvil se cierra al saltar`,
+			!(await page
+				.locator(".mobile-menu")
+				.evaluate((element) => element.hasAttribute("open"))),
+		);
+	}
 
 	await go("/about/");
 	await waitCrumbs(["Inicio", "Sobre mí"]);
@@ -263,6 +336,306 @@ async function checkPersistentChrome(page, viewport) {
 		JSON.stringify(await crumbLabels()),
 	);
 	check(`${label} · sin errores de consola`, errors.length === 0, errors.join(" | "));
+}
+
+async function checkLocaleTransition(browser, base) {
+	const context = await browser.newContext({
+		viewport: { width: 1440, height: 900 },
+		reducedMotion: "no-preference",
+	});
+	const page = await context.newPage();
+	const errors = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	page.on("console", (message) => {
+		if (message.type() === "error") errors.push(message.text());
+	});
+
+	await page.goto(`${base}en/`, { waitUntil: "load" });
+	await page.locator(".locale-trigger").click();
+	await page.locator('.locale-menu a[hreflang="ca"]').click();
+	await page.waitForSelector("[data-locale-transition].is-active", {
+		timeout: 2000,
+	});
+
+	const cover = await page.evaluate(() => {
+		const overlay = document.querySelector("[data-locale-transition]");
+		const bar = document.querySelector(".locale-bar");
+		return {
+			bars: document.querySelectorAll(".locale-bar").length,
+			expected:
+				Math.ceil(
+					window.innerWidth /
+						(Number.parseFloat(
+							getComputedStyle(document.documentElement).fontSize,
+						) * 4),
+				) + 1,
+			active: overlay?.classList.contains("is-active") ?? false,
+			htmlClass: document.documentElement.classList.contains("locale-transition"),
+			barWidth: bar?.getBoundingClientRect().width ?? 0,
+			barBackground: bar ? getComputedStyle(bar).backgroundColor : "transparent",
+			barAnimation: bar ? getComputedStyle(bar).animationName : "",
+			lang: document.documentElement.lang,
+			headerViewTransition: getComputedStyle(
+				document.querySelector(".site-header"),
+			).viewTransitionName,
+		};
+	});
+	check(
+		"locale transition · capa activa sobre la página previa",
+		cover.active && !cover.htmlClass && cover.lang === "en",
+		JSON.stringify({ active: cover.active, htmlClass: cover.htmlClass, lang: cover.lang }),
+	);
+	check(
+		"locale transition · barras cubren el viewport",
+		cover.bars === cover.expected,
+		`${cover.bars}/${cover.expected}`,
+	);
+	check(
+		"locale transition · barras visibles",
+		cover.barWidth >= 64 && cover.barBackground !== "rgba(0, 0, 0, 0)",
+		`${cover.barWidth}px ${cover.barBackground}`,
+	);
+	check(
+		"locale transition · barras caen desde arriba",
+		cover.barAnimation === "locale-bar-drop",
+		cover.barAnimation,
+	);
+	check(
+		"locale transition · snapshot de cabecera activa durante la caída",
+		cover.headerViewTransition === "site-header",
+		cover.headerViewTransition,
+	);
+
+	await page.waitForURL("**/ca/", { timeout: 5000 });
+	await page.waitForSelector("[data-locale-transition].is-revealing", {
+		timeout: 2000,
+	});
+	const reveal = await page.evaluate(() => {
+		const bar = document.querySelector(".locale-bar");
+		return {
+			animation: bar ? getComputedStyle(bar).animationName : "",
+			htmlClass: document.documentElement.classList.contains("locale-transition"),
+			headerViewTransition: getComputedStyle(
+				document.querySelector(".site-header"),
+			).viewTransitionName,
+		};
+	});
+	check(
+		"locale transition · rejas caen sin giro ni snapshot",
+		reveal.animation === "locale-bar-exit" &&
+			reveal.htmlClass &&
+			reveal.headerViewTransition === "none",
+		JSON.stringify(reveal),
+	);
+	await page.waitForFunction(
+		() =>
+			!document
+				.querySelector("[data-locale-transition]")
+				?.classList.contains("is-active"),
+		{ timeout: 5000 },
+	);
+	const final = await page.evaluate(() => ({
+		path: location.pathname,
+		lang: document.documentElement.lang,
+		active:
+			document
+				.querySelector("[data-locale-transition]")
+				?.classList.contains("is-active") ?? false,
+		htmlClass: document.documentElement.classList.contains("locale-transition"),
+	}));
+	check("locale transition · ruta traducida", final.path === "/ca/", final.path);
+	check("locale transition · html lang", final.lang === "ca", final.lang);
+	check(
+		"locale transition · capa retirada",
+		!final.active && !final.htmlClass,
+	);
+	check(
+		"locale transition · sin errores de consola",
+		errors.length === 0,
+		errors.join(" | "),
+	);
+	await context.close();
+
+	const reduced = await browser.newContext({
+		viewport: { width: 390, height: 844 },
+		reducedMotion: "reduce",
+	});
+	const reducedPage = await reduced.newPage();
+	const reducedErrors = [];
+	reducedPage.on("pageerror", (error) => reducedErrors.push(error.message));
+	reducedPage.on("console", (message) => {
+		if (message.type() === "error") reducedErrors.push(message.text());
+	});
+	await reducedPage.goto(`${base}`, { waitUntil: "load" });
+	const reducedSteps = [
+		{ lang: "en", path: "/en/" },
+		{ lang: "ca", path: "/ca/" },
+		{ lang: "es", path: "/" },
+	];
+	for (const step of reducedSteps) {
+		await reducedPage.locator(".locale-trigger").click();
+		await reducedPage.locator(`.locale-menu a[hreflang="${step.lang}"]`).click();
+		await reducedPage.waitForURL(
+			(url) => new URL(url).pathname === step.path,
+			{ timeout: 5000 },
+		);
+		await reducedPage.waitForFunction(
+			() =>
+				!document
+					.querySelector("[data-locale-transition]")
+					?.classList.contains("is-active"),
+			{ timeout: 5000 },
+		);
+		const reducedState = await reducedPage.evaluate(() => ({
+			path: location.pathname,
+			active:
+				document
+					.querySelector("[data-locale-transition]")
+					?.classList.contains("is-active") ?? false,
+			htmlClass: document.documentElement.classList.contains("locale-transition"),
+			bars: document.querySelectorAll(".locale-bar").length,
+			lang: document.documentElement.lang,
+		}));
+		check(
+			`locale transition · reduced motion ${step.lang} · sin overlay atascado`,
+			reducedState.path === step.path &&
+				reducedState.lang === step.lang &&
+				!reducedState.active &&
+				!reducedState.htmlClass &&
+				reducedState.bars === 0,
+			JSON.stringify(reducedState),
+		);
+	}
+	check(
+		"locale transition · reduced motion cadena ES→EN→CA→ES",
+		await reducedPage.evaluate(
+			() => location.pathname === "/" && document.documentElement.lang === "es",
+		),
+	);
+	check(
+		"locale transition · reduced motion sin errores",
+		reducedErrors.length === 0,
+		reducedErrors.join(" | "),
+	);
+	await reduced.close();
+}
+
+async function checkLocaleFrames(browser, base) {
+	const modes = [
+		{ theme: "light", suffix: "", colorScheme: "light" },
+		{ theme: "dark", suffix: "-dark", colorScheme: "dark" },
+	];
+
+	for (const viewport of VIEWPORTS) {
+		for (const mode of modes) {
+			const context = await browser.newContext({
+				viewport: { width: viewport.width, height: viewport.height },
+				reducedMotion: "no-preference",
+				colorScheme: mode.colorScheme,
+			});
+			await context.addInitScript((theme) => {
+				try {
+					localStorage.setItem("theme", theme);
+				} catch {
+					// Ignore non-web origins while the init script is evaluated.
+				}
+			}, mode.theme);
+			const page = await context.newPage();
+			const label = `locale transition · ${viewport.name} · ${mode.theme}`;
+
+			await page.goto(`${base}en/`, { waitUntil: "load" });
+			await page.locator(".locale-trigger").click();
+			await page.locator('.locale-menu a[hreflang="ca"]').click();
+			await page.waitForSelector("[data-locale-transition].is-active", {
+				timeout: 2000,
+			});
+
+			const dropAnimations = await holdBars(page, 150);
+			const drop = await page.evaluate(() => {
+				const bars = [...document.querySelectorAll(".locale-bar")];
+				const bar = bars[0];
+				return {
+					firstTop: bar?.getBoundingClientRect().top ?? 0,
+					lastTop: bars.at(-1)?.getBoundingClientRect().top ?? 0,
+					height: window.innerHeight,
+					lang: document.documentElement.lang,
+					theme: document.documentElement.dataset.theme,
+					barBackground: bar ? getComputedStyle(bar).backgroundColor : "transparent",
+					htmlClass: document.documentElement.classList.contains("locale-transition"),
+				};
+			});
+			check(
+				`${label} · fotograma de caída`,
+				dropAnimations > 0 &&
+					drop.firstTop > -drop.height &&
+					drop.firstTop < 0 &&
+					drop.lastTop < drop.firstTop &&
+					!drop.htmlClass &&
+					drop.lang === "en" &&
+					drop.theme === mode.theme &&
+					drop.barBackground !== "rgba(0, 0, 0, 0)",
+				JSON.stringify(drop),
+			);
+			await saveFrame(page, `locale-${viewport.name}${mode.suffix}-drop`);
+			await releaseBars(page);
+
+			await page.waitForURL("**/ca/", { timeout: 5000 });
+			const covered = await page.evaluate(() => {
+				const root = document.querySelector("[data-locale-transition]");
+				const bar = document.querySelector(".locale-bar");
+				return {
+					covered: root?.classList.contains("is-covered") ?? false,
+					top: bar?.getBoundingClientRect().top ?? null,
+				};
+			});
+			check(
+				`${label} · capa estable tras navegar`,
+				covered.covered && Math.abs(covered.top ?? Infinity) < 1,
+				JSON.stringify(covered),
+			);
+			await page.waitForSelector("[data-locale-transition].is-revealing", {
+				timeout: 2000,
+			});
+
+			const revealAnimations = await holdBars(page, 120);
+			const revealFrame = await page.evaluate(() => {
+				const bars = [...document.querySelectorAll(".locale-bar")];
+				const bar = bars[0];
+				return {
+					firstTop: bar?.getBoundingClientRect().top ?? 0,
+					lastTop: bars.at(-1)?.getBoundingClientRect().top ?? 0,
+					firstLeft: bar?.getBoundingClientRect().left ?? 0,
+					height: window.innerHeight,
+					theme: document.documentElement.dataset.theme,
+					barBackground: bar ? getComputedStyle(bar).backgroundColor : "transparent",
+					htmlClass: document.documentElement.classList.contains("locale-transition"),
+				};
+			});
+			check(
+				`${label} · fotograma de revelado`,
+				revealAnimations > 0 &&
+					revealFrame.firstTop > 0 &&
+					revealFrame.firstTop < revealFrame.height &&
+					revealFrame.lastTop < revealFrame.firstTop &&
+					Math.abs(revealFrame.firstLeft) < 0.5 &&
+					revealFrame.theme === mode.theme &&
+					revealFrame.barBackground !== "rgba(0, 0, 0, 0)" &&
+					revealFrame.htmlClass,
+				JSON.stringify(revealFrame),
+			);
+			await saveFrame(page, `locale-${viewport.name}${mode.suffix}-reveal`);
+			await releaseBars(page);
+
+			await page.waitForFunction(
+				() =>
+					!document
+						.querySelector("[data-locale-transition]")
+						?.classList.contains("is-active"),
+				{ timeout: 5000 },
+			);
+			await context.close();
+		}
+	}
 }
 
 const { server, port } = await serve();
@@ -356,6 +729,9 @@ for (const viewport of VIEWPORTS) {
 
 	await context.close();
 }
+
+await checkLocaleTransition(browser, base);
+await checkLocaleFrames(browser, base);
 
 await browser.close();
 server.close();
