@@ -25,6 +25,35 @@ function wait(ms: number): Promise<void> {
 	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+/**
+ * Run an Astro navigation without a native View Transition. The locale overlay
+ * is the transition; letting the browser swap snapshots underneath it leaves
+ * one painted frame with no page and no bars. The router still updates the DOM,
+ * history and after-swap hooks normally.
+ */
+function withoutViewTransition<T>(action: () => Promise<T>): Promise<T> {
+	const previous = Reflect.get(document, "startViewTransition");
+	if (typeof previous !== "function") return action();
+
+	const bypass = (update: () => Promise<void> | void) => {
+		const updateCallbackDone = Promise.resolve().then(update);
+		return {
+			updateCallbackDone,
+			ready: updateCallbackDone,
+			finished: updateCallbackDone,
+			skipTransition() {},
+			types: new Set<string>(),
+		};
+	};
+
+	Reflect.set(document, "startViewTransition", bypass);
+	return action().finally(() => {
+		if (Reflect.get(document, "startViewTransition") === bypass) {
+			Reflect.set(document, "startViewTransition", previous);
+		}
+	});
+}
+
 function closeLocaleMenu() {
 	for (const menu of document.querySelectorAll<HTMLDetailsElement>(
 		".locale-switcher[open]",
@@ -108,7 +137,9 @@ async function runTransition(url: URL, link: HTMLAnchorElement) {
 				once: true,
 			});
 		});
-		await navigate(url.href, { sourceElement: link });
+		await withoutViewTransition(() =>
+			navigate(url.href, { sourceElement: link }),
+		);
 		await swapped;
 
 		// Restore the class in case the ClientRouter replaced <html>. The
