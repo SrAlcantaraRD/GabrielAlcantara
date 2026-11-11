@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # ui check screenshots
 ui-artifacts/
+
+# local captures
+screenshots/
+
+# exported documents
+*.pdf
