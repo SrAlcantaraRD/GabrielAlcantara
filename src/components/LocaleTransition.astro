@@ -1,0 +1,89 @@
+---
+/**
+ * Full-screen paper bars used while the client router swaps to another locale.
+ * The bars drop into place from above, then continue falling away to reveal
+ * the new page. The element is persisted so the overlay survives the swap.
+ */
+---
+
+<div
+  class="locale-transition"
+  data-locale-transition
+  role="presentation"
+  aria-hidden="true"
+  transition:persist="locale-transition"
+>
+  <div class="locale-transition__bars" data-locale-bars></div>
+</div>
+
+<style>
+  .locale-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    overflow: hidden;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .locale-transition.is-active {
+    display: block;
+    pointer-events: auto;
+  }
+
+  .locale-transition__bars {
+    display: flex;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .locale-transition :global(.locale-bar) {
+    flex: 0 0 var(--locale-bar-width, 4rem);
+    block-size: 100%;
+    background: var(--color-paper);
+    border-inline-end: 1px solid var(--color-border);
+    box-shadow: inset -12px 0 18px color-mix(in srgb, var(--color-ink) 4%, transparent);
+    opacity: 1;
+    transform: translate3d(0, -100%, 0);
+    will-change: transform;
+  }
+
+  .locale-transition.is-covering :global(.locale-bar) {
+    animation: locale-bar-drop 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--locale-bar-index, 0) * 18ms);
+  }
+
+  .locale-transition.is-covered :global(.locale-bar) {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .locale-transition.is-revealing :global(.locale-bar) {
+    animation: locale-bar-exit 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation-delay: calc(var(--locale-bar-index, 0) * 18ms);
+  }
+
+  @keyframes locale-bar-drop {
+    from {
+      transform: translate3d(0, -100%, 0);
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes locale-bar-exit {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 100%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .locale-transition {
+      display: none !important;
+    }
+  }
+</style>

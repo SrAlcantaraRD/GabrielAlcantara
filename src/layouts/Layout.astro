@@ -15,6 +15,7 @@ import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import EasterEgg from "../components/EasterEgg.astro";
+import LocaleTransition from "../components/LocaleTransition.astro";
 
 interface Props {
 	title: string;
@@ -81,6 +82,7 @@ const t = useTranslations(locale);
 		</main>
 		<SiteFooter lang={locale} />
 		<EasterEgg />
+		<LocaleTransition />
 		<div
 			id="page-breadcrumbs"
 			hidden
@@ -90,6 +92,7 @@ const t = useTranslations(locale);
 		<script>
 			import "../lib/title-morph";
 			import "../lib/client/site";
+			import "../lib/client/locale-transition";
 		</script>
 	</body>
 </html>

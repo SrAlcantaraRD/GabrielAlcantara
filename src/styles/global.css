@@ -172,6 +172,24 @@ html.theme-transition .site-footer {
 	}
 }
 
+/* Locale changes use a persistent DOM bar overlay. Keep the native page
+   snapshot out of the way while that overlay is covering the screen. */
+html.locale-transition .site-header,
+html.locale-transition .site-footer,
+html.locale-transition [data-title-morph] {
+	view-transition-name: none !important;
+}
+
+html.locale-transition::view-transition-old(root),
+html.locale-transition::view-transition-new(root) {
+	animation: none !important;
+	opacity: 0 !important;
+}
+
+html.locale-transition::view-transition-group(root) {
+	animation: none !important;
+}
+
 /* Client-side navigation: a short crossfade with a slight lift, so a page
    change reads as a change of context instead of a hard cut. */
 @media (prefers-reduced-motion: no-preference) {
