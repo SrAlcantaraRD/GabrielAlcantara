@@ -255,7 +255,7 @@ const contactHref = localized ? "#contacto" : "/contact/";
   .header-inner {
     display: flex;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: end;
     gap: 0.7rem;
     padding-block-start: var(--header-space);
   }
@@ -477,6 +477,14 @@ const contactHref = localized ? "#contacto" : "/contact/";
 
     .mobile-menu {
       display: none;
+    }
+
+    /* The controls are taller than the role line. Nudge the whole right
+       cluster so its text sits on the role baseline, not just its box. */
+    .site-nav,
+    .header-tools,
+    .header-actions {
+      translate: 0 0.45rem;
     }
   }
 

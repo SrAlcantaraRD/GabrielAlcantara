@@ -35,7 +35,7 @@ const es = {
 	themeToDark: "Cambiar a tema oscuro",
 	themeToLight: "Cambiar a tema claro",
 	skip: "Saltar al contenido",
-	askLabel: "Pregúntale sobre mí a",
+	askLabel: "Pregúntale a",
 	askAria: "Pregúntale a la IA sobre Gabriel Alcántara",
 	askPrompt:
 		"¿Quién es Gabriel Alcántara y qué experiencia tiene como arquitecto de software? Lee https://gabrielalcantara.com/llms.txt y resúmeme su perfil: sistemas distribuidos, arquitectura orientada a eventos, DDD y liderazgo técnico.",
@@ -72,7 +72,7 @@ const en: Record<UiKey, string> = {
 	themeToDark: "Switch to dark theme",
 	themeToLight: "Switch to light theme",
 	skip: "Skip to content",
-	askLabel: "Ask an assistant about me",
+	askLabel: "Ask",
 	askAria: "Ask an AI assistant about Gabriel Alcántara",
 	askPrompt:
 		"Who is Gabriel Alcántara and what experience does he have as a Solutions Architect? Read https://gabrielalcantara.com/llms.txt and summarise his profile: distributed systems, event-driven architecture, DDD and technical leadership.",
@@ -107,7 +107,7 @@ const ca: Record<UiKey, string> = {
 	themeToDark: "Canvia a tema fosc",
 	themeToLight: "Canvia a tema clar",
 	skip: "Salta al contingut",
-	askLabel: "Pregunta-li sobre mi a",
+	askLabel: "Pregunta-li a",
 	askAria: "Pregunta a la IA sobre Gabriel Alcántara",
 	askPrompt:
 		"Qui és Gabriel Alcántara i quina experiència té com a arquitecte de programari? Llegeix https://gabrielalcantara.com/llms.txt i resumeix el seu perfil: sistemes distribuïts, arquitectura orientada a esdeveniments, DDD i lideratge tècnic.",
