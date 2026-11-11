@@ -106,6 +106,16 @@ samp {
 	outline-offset: 2px;
 }
 
+/* The header and footer are persisted across navigations; naming them keeps
+   them out of the root crossfade, so only the page content changes. */
+.site-header {
+	view-transition-name: site-header;
+}
+
+.site-footer {
+	view-transition-name: site-footer;
+}
+
 /* Client-side navigation: a short crossfade with a slight lift, so a page
    change reads as a change of context instead of a hard cut. */
 @media (prefers-reduced-motion: no-preference) {

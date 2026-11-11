@@ -1,12 +1,13 @@
 ---
 interface Props {
   items: { label: string; href?: string }[];
+  hidden?: boolean;
 }
 
-const { items } = Astro.props;
+const { items, hidden = false } = Astro.props;
 ---
 
-<nav class="breadcrumbs" aria-label="Ruta de navegación">
+<nav class="breadcrumbs" aria-label="Ruta de navegación" hidden={hidden}>
   <ol>
     <li><a href="/">Inicio</a></li>
     {

@@ -6,7 +6,7 @@ const year = new Date().getFullYear();
 const companies = [...new Set(POSITION_VIEWS.map((position) => position.company))];
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" transition:persist="site-footer">
   <div class="container footer-grid">
     <div class="footer-brand">
       <span class="footer-name">{SITE.name}</span>

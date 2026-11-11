@@ -59,6 +59,12 @@ const { breadcrumbs, ...seo } = Astro.props;
 		</main>
 		<SiteFooter />
 		<EasterEgg />
+		<div
+			id="page-breadcrumbs"
+			hidden
+			aria-hidden="true"
+			data-items={JSON.stringify(breadcrumbs ?? [])}
+		></div>
 		<script>
 			import "../lib/title-morph";
 		</script>

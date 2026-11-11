@@ -14,7 +14,7 @@ const pathname = Astro.url.pathname;
 const active = (href: string) => isNavActive(pathname, href);
 ---
 
-<header class="site-header">
+<header class="site-header" transition:persist="site-header">
   <div class="container header-inner">
     <a class="brand" href="/">
       <span class="brand-name">{SITE.name}</span>
@@ -74,12 +74,89 @@ const active = (href: string) => isNavActive(pathname, href);
   </div>
 
   <div class="container header-crumbs">
-    {showBreadcrumbs && <Breadcrumbs items={breadcrumbs ?? []} />}
+    <Breadcrumbs items={breadcrumbs ?? []} hidden={!showBreadcrumbs} />
     <div class="header-ask">
       <AskAiLinks />
     </div>
   </div>
 </header>
+
+<script>
+  const menu = document.querySelector<HTMLDetailsElement>(".mobile-menu");
+  const crumbs = document.querySelector<HTMLElement>(".header-crumbs .breadcrumbs");
+  const linkedCrumbs = crumbs?.querySelector("li")?.cloneNode(true) as HTMLLIElement | undefined;
+
+  function closeMenu() {
+    menu?.removeAttribute("open");
+  }
+
+  function syncNav() {
+    const path = window.location.pathname;
+    const links = document.querySelectorAll<HTMLAnchorElement>(
+      ".site-nav .nav-link, .mobile-menu nav a",
+    );
+
+    for (const link of links) {
+      const target = new URL(link.href, window.location.origin).pathname;
+      const active = target === "/" ? path === "/" : path === target || path.startsWith(target);
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+  }
+
+  function syncCrumbs() {
+    if (!crumbs || !linkedCrumbs) return;
+
+    const source = document.getElementById("page-breadcrumbs");
+    let items: { label: string; href?: string }[] = [];
+    try {
+      items = JSON.parse(source?.getAttribute("data-items") ?? "[]");
+    } catch {
+      items = [];
+    }
+
+    const list = crumbs.querySelector("ol");
+    const home = linkedCrumbs.cloneNode(true) as HTMLLIElement;
+    const fragment = document.createDocumentFragment();
+    fragment.append(home);
+
+    for (const item of items) {
+      const entry = linkedCrumbs.cloneNode(true) as HTMLLIElement;
+      const link = entry.querySelector("a");
+      if (!link) continue;
+
+      if (item.href) {
+        link.href = item.href;
+        link.textContent = item.label;
+      } else {
+        const current = document.createElement("span");
+        current.setAttribute("aria-current", "page");
+        for (const attribute of Array.from(link.attributes)) {
+          if (attribute.name.startsWith("data-astro-cid-")) {
+            current.setAttribute(attribute.name, attribute.value);
+          }
+        }
+        current.textContent = item.label;
+        link.replaceWith(current);
+      }
+      fragment.append(entry);
+    }
+
+    list?.replaceChildren(fragment);
+    crumbs.hidden = items.length === 0;
+  }
+
+  function sync() {
+    closeMenu();
+    syncNav();
+    syncCrumbs();
+  }
+
+  sync();
+  document.addEventListener("astro:page-load", sync);
+  document.addEventListener("astro:before-swap", closeMenu);
+</script>
 
 <style>
   .site-header {
