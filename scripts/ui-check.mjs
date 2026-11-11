@@ -153,14 +153,22 @@ function timelineStats(timeline, expectedPath) {
 		.map((sample, index) => sample.t - timeline.samples[index].t)
 		.filter((gap) => gap > 0)
 		.sort((a, b) => a - b);
-	const medianGap = gaps[Math.floor(gaps.length / 2)] ?? 16;
 	const maxGap = gaps.at(-1) ?? 0;
 	const lastCovered = active.filter((sample) => sample.covered).at(-1);
+	const lastSealed = active
+		.filter((sample) => sample.covering || sample.covered)
+		.at(-1);
 	const firstReveal = active.find((sample) => sample.revealing);
 	const firstIncoming = active.find((sample) => sample.path === expectedPath);
 	const pause =
-		firstReveal && lastCovered ? firstReveal.t - lastCovered.t : null;
-	const pauseFrames = pause === null ? null : Math.ceil(pause / medianGap);
+		firstReveal && lastSealed ? firstReveal.t - lastSealed.t : null;
+	const pauseFrames =
+		firstReveal && lastSealed
+			? active.filter(
+					(sample) =>
+						sample.t > lastSealed.t && sample.t < firstReveal.t,
+				).length
+			: null;
 	const backwards = [];
 	let reanimations = 0;
 
@@ -190,6 +198,7 @@ function timelineStats(timeline, expectedPath) {
 		firstIncoming: firstIncoming ? +firstIncoming.t.toFixed(1) : null,
 		firstReveal: firstReveal ? +firstReveal.t.toFixed(1) : null,
 		lastCovered: lastCovered ? +lastCovered.t.toFixed(1) : null,
+		lastSealed: lastSealed ? +lastSealed.t.toFixed(1) : null,
 		maxGap: +maxGap.toFixed(1),
 		pauseFrames,
 		pauseMs: pause === null ? null : +pause.toFixed(1),
@@ -852,6 +861,7 @@ async function checkLocaleContinuity(browser, base) {
 						pauseMs: stats.pauseMs,
 						pauseFrames: stats.pauseFrames,
 						lastCovered: stats.lastCovered,
+						lastSealed: stats.lastSealed,
 						firstReveal: stats.firstReveal,
 					}),
 				);
