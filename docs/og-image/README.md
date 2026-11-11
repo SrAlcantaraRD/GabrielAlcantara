@@ -8,17 +8,21 @@ the browser, and export when the copy or the layout changes.
 
 ## The one rule
 
-The card is a rigid template: **three faces, three sizes, five slots, one line
+The card is a rigid template: **three faces, two sizes, five slots, one line
 each, nothing reflows.** The faces and colours are the site's own: JetBrains Mono
-for the labels, Newsreader 300 for the lead, Plus Jakarta Sans for the standfirst.
+for the labels, Newsreader 300 for the lead, Plus Jakarta Sans for the kicker and
+the standfirst.
 
 | # | Slot | Face | Size | Height | Holds |
 | --- | --- | --- | --- | --- | --- |
-| 1 | domain | mono | 34 px | 34 | `gabrielalcantara.com` on the left, the availability badge on the right |
-| 2 | eyebrow | mono | 34 px | 34 | uppercase, tracked, terracotta: category, `Caso de estudio · Company`, place |
+| 1 | domain | mono | 34 px | 40 | the mark, then `gabrielalcantara.com` |
+| 2 | eyebrow | sans | 34 px | 34 | tracked, in the faint ink: category, `Caso de estudio · Company`, place |
 | 3 | title | serif 300 | 96 px | 96 | the name or the headline |
-| 4 | sub | sans | 34 px | 46 | role or standfirst, in the muted ink |
+| 4 | sub | sans | 34 px | 34 | tracked, in the accent: role or standfirst |
 | 5 | foot | mono | 34 px | 34 | stack or tags on the left, years or date on the right |
+
+The masthead row is 40 px so the mark fits inside it instead of leaking over the
+hairline; the mark is 40 px, with a 16 px gap to the domain.
 
 All five slots are filled on every card. There is no auto-fit and no second
 line — the copy is edited until it fits, which is why the articles carry their own
@@ -36,29 +40,33 @@ the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about
 14 px. At 96 px a title fits roughly 24 characters, and in uppercase at 34 px a
 label fits roughly 40 — that is the budget the card copy is written to.
 
-The accent is the site's terracotta, `#9e4e36`, and it marks the eyebrow only.
-The one other colour is the availability dot, sage `#3e5c49` text with a `#059669`
-bullet, the same token the hero uses.
+The accent is the site's terracotta, `#9e4e36`, and it marks the standfirst only:
+the card carries no badge and no second colour.
 
 ## The rhythm
 
 The five heights and two gaps derive all five tops in `card.html`:
 
 ```
---space       78px   between the rows
---space-tight 18px   above and below the title, the tight gap of the block
---margin      97px   above the first row and below the last, whatever is left
+--space       80px   from the three-line block to the two label rows
+--space-tight 24px   inside the block: eyebrow, lead and standfirst
+--margin      92px   above the first row and below the last, whatever is left
 ```
 
-The six spaces are therefore `97 / 78 / 18 / 18 / 78 / 97`, identical on all
+The six spaces are therefore `92 / 80 / 24 / 24 / 80 / 92`, identical on all
 eight cards. `export.mjs` reads `--space`, `--space-tight` and `--margin` from the
 stylesheet, re-derives the six spaces from the slot boxes, and refuses the card
 when any of them is off by more than half a pixel. Change a gap or a height and
 the four tops follow; there are no hand-tuned numbers to forget.
 
-The two hairlines are attached to the outer rows — under the masthead and over
-the footer, 24 px from each — which is what closes the composition without
-adding a line of text.
+The two hairlines are attached to the outer rows — 12 px under the masthead and
+28 px over the footer — which is what closes the composition without adding a
+line of text.
+
+The safe zone is the 5% inset some feeds crop to — 60 × 31.5 px on this canvas,
+the same guide the card editor draws. The column starts 20 px inside it (`--x:
+80px`) and the first and last rows sit 92 px from the edges, so no slot is ever
+close to the crop.
 
 The rhythm is measured on the slot boxes, not on ink. A `Q` tail, an accent over
 a capital or the descender of a `g` dips into the space below without moving it;
@@ -91,9 +99,9 @@ and no build: the fonts are loaded from `node_modules` by relative path.
 | Query | Effect |
 | --- | --- |
 | `kind` | `default`, `case` or `post` — picks the composition |
-| `domain`, `status` | the masthead halves |
+| `domain` | the masthead address, after the mark |
 | `title`, `sub` | the lead and its standfirst |
-| `eyebrow` | terracotta label above the lead |
+| `eyebrow` | tracked label above the lead |
 | `footLeft`, `footRight` | the closing row |
 | `scale` | canvas width in px; `504` shows the feed size |
 
@@ -116,6 +124,9 @@ design instead of describing it: open it directly, no server and no build.
   grosor y color propios.
 - **Guías** (interruptor en Tarjeta): los dos bordes y el centro de la columna,
   más el top de cada fila. Son del taller, no del PNG.
+- **Zona segura** (interruptor propio): el recuadro del 5 % que algunos feeds
+  recortan —60 × 31,5 px—, con la misma medida que aplica `card.html`. También
+  es del taller: no viaja al PNG.
 - **Retícula**: los dos huecos, el margen lateral, el ancho de columna y la
   separación de las dos mitades del pie.
 - **Colores**: los ocho tokens del sitio, que las ranuras referencian por nombre.
