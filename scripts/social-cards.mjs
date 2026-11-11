@@ -28,6 +28,12 @@ export const PUBLIC_DIR = path.join(ROOT, "public");
  */
 const SPECIALTIES = "sistemas distribuidos · EDA · DDD";
 
+/**
+ * The role line. `SITE.roles` still reads "Software Architect"; the site's own
+ * hero has moved to "Solutions Architect", and the card follows the hero.
+ */
+const ROLE_LINE = "Solutions Architect · Software Engineer";
+
 const cardDate = new Intl.DateTimeFormat("es-ES", {
 	day: "numeric",
 	month: "short",
@@ -97,7 +103,7 @@ export async function socialCardSpecs() {
 			domain,
 			eyebrow: site.SITE.location,
 			title: site.SITE.name,
-			sub: site.SITE.roles.join(" · "),
+			sub: ROLE_LINE,
 			footLeft: SPECIALTIES,
 			footRight: `desde ${site.SITE.careerStart}`,
 		},

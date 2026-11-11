@@ -9,9 +9,12 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - **S1.** «lo unico leíble es el nombre "Gabriel Alcántara"». Ningún elemento de texto de una tarjeta baja de **34 px** en el lienzo de 1200×630, y el exportador termina en error, nombrando el elemento y su tamaño, cuando alguno lo hace. Justificación: a 504 px de ancho (el tamaño real de un feed) el factor es 0.42, así que 34 px llegan como ~14 px; los 16–18 px monoespaciados de hoy llegan como ~7 px.
 - **S2.** «Vamos a montar un sistema como el de `/Users/gabrielalcantara/Documents/personal/projects/sport-analytics/website/docs/og-image`». El lienzo vive en `docs/og-image/card.html` como HTML autónomo, con las fuentes por ruta relativa a `node_modules`, y se previsualiza abriéndolo en el navegador sin servidor ni build.
 - **S3.** La previsualización acepta `?kind=`, `?title=`, `?sub=`, `?eyebrow=`, `?footLeft=`, `?footRight=` y `?scale=`. `?scale=504` dibuja el lienzo al tamaño de un feed, para juzgar la legibilidad sin reducirlo a mano.
-- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras: dominio `34`, antetítulo `34`, título `96`, entradilla `44`, pie `34`. Cada ranura va en una posición vertical fija (58 / 171 / 278 / 419 / 504) y ocupa **una sola línea**; ninguna tarjeta reflowa. Las ocho rellenan las cinco.
+- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras, **un solo tipo de letra y dos tamaños**: `34` (dominio, antetítulo, entradilla, pie) y `96` (título). Cada ranura ocupa **una sola línea** en una caja de altura fija (52 / 40 / 110 / 40 / 65); las posiciones se derivan por `calc()` de esas alturas y de los dos huecos, no se escriben a mano. Las ocho rellenan las cinco.
+- **S14.** «1 solo tipo de letra, nada de cursivas. En mayusuculas y en verde» — Newsreader en toda la tarjeta, sin cursivas ni segunda familia; antetítulo y entradilla en mayúsculas con tracking y en el verde de acento.
+- **S15.** «El footer letras del mismo color y fuente, no verde» — el pie usa la misma familia y el mismo gris que el dominio; el acento queda solo en las dos etiquetas.
+- **S16.** «reduce el espacio a la mitad, que hay arriba/abajo de Gabriel Alcantara» — los dos huecos contiguos al título son `--space-tight` (29), la mitad de `--space` (58); los márgenes absorben el resto (74.5) y siguen iguales entre sí.
 - **S12.** «el color pasalo a verde, manteniendo tonalidad, brillo, contraste» — el acento es `#1b7343`, con L 0.4925 y C 0.1116 en OKLCH frente a 0.5182 y 0.1128 del terracota anterior, y contraste 5.53 contra 5.51 sobre el papel. La entradilla y el antetítulo van en ese acento.
-- **S13.** «Estudia con regla y establece espacios simetricos» — las cinco alturas de caja y las cinco posiciones dejan **58 px en los seis espacios** (arriba, cuatro huecos y abajo), idénticos en las ocho tarjetas, y `export.mjs` lo verifica con tolerancia de 0.5 px.
+- **S13.** «Estudia con regla y establece espacios simetricos» — los seis espacios salen de dos declaraciones (`--space`, `--space-tight`) más el margen calculado, y son idénticos en las ocho tarjetas. `export.mjs` los re-deriva de las cajas y los compara con lo declarado, con tolerancia de 0.5 px.
 - **S5.** No hay ajuste automático. El copy se recorta para encajar y `export.mjs` rechaza la tarjeta cuyo texto no quepa en su ranura, se salga del lienzo, pase de una línea o deje una ranura vacía. Donde antes se encogía el título, ahora falla el export.
 - **S10.** «habría que ajustar los copys para que entren» — el título corto de cada artículo vive en `PostMeta.cardTitle` y su entradilla en `PostMeta.cardSub`; `title` y `description` de la página no cambian. Las entradillas de caso se recortan en `tagline`, que ya era copy de tarjeta.
 - **S11.** El antetítulo y la entradilla de la tarjeta por defecto se derivan de `SITE.location` y `SITE.roles`: ninguna cadena nueva que pueda desincronizarse.
@@ -92,13 +95,13 @@ Copy resultante (`cardTitle` / `cardSub`; entradillas de caso en `tagline`):
 | Nakire TPS | Nakire TPS | Software distribuido para la operación industrial. |
 | Bodega Digital | Bodega Digital | Inventario de vino con RFID y machine learning. |
 | Pachanga | Pachanga Community | App y web de fútbol amateur, de principio a fin. |
-| Por defecto | Gabriel Alcántara | Software Architect · Software Engineer |
+| Por defecto | Gabriel Alcántara | Solutions Architect · Software Engineer |
 
 La primera pasada de la puerta contó 6 ranuras en vez de 5: contaba elementos con texto y el pie tiene dos. Se corrigió marcando cada ranura con `data-slot`, así la comprobación es «las cinco, todas con texto» en lugar de un recuento de nodos.
 
 ### L9 · jerarquía, color y retícula
 
-> noto inconsistencia visual, de jerarquia. el color pasalo a verde, manteniendo tonalidad, brillo, contraste y demás. En color accent Barcelona, remoto, Software Architect. Incrementa el tamaño de Gabriel Alcántara para que el espacio entre las letras inferiores e inferiore sea el mismo. Estudia con regla y establece espacios simetricos.
+> noto inconsistencia visual, de jerarquia. el color pasalo a verde, manteniendo tonalidad, brillo, contraste y demás. En color accent Barcelona, remoto, Solutions Architect. Incrementa el tamaño de Gabriel Alcántara para que el espacio entre las letras inferiores e inferiore sea el mismo. Estudia con regla y establece espacios simetricos.
 
 Medido antes de tocar: los seis espacios eran **71 / 62 / 19 / 54 / 158 / 60**. Ahí estaba la inconsistencia — un hueco de 19 px entre antetítulo y título y otro de 158 px antes del pie.
 
@@ -112,6 +115,21 @@ Cómo se resolvió:
 La tinta sigue variando (59–83 px) porque la cola de la `Q` y los descendentes de `g`, `y`, `p` ocupan parte del hueco. Eso es del glifo, no del sistema: la línea base no se mueve, que es lo que gobierna el ritmo.
 
 Se comprobó en rojo desviando `--y-sub` 10 px: el exportador responde «los seis espacios no son simétricos: [58.0, 58.0, 58.0, 68.0, 48.0, 58.0], dispersión 20.0px».
+
+### L10 · una familia, etiquetas en verde y la mitad de aire en el título
+
+> reduce el espacio a la mitad, que hay arriba/abajo de Gabriel Alcantara. 1 solo tipo de letra, nada de cursivas. En mayusuculas y en verde BARCELONA REMOTO SOLUTIONS ARCHITED SOFTWARE ENGINEER. El footer letras del mismo color y fuente, no verde.
+
+Medido antes de maquetar, con la familia única: la entradilla a 44 px en mayúsculas **no entraba en ninguna de las ocho tarjetas** (+32 a +354 px). Bajarla a 34 la deja en el mismo cuerpo que el antetítulo, así que la escala queda en dos tamaños y sigue entrando (dos `cardSub` hubo que recortar: `Lenguaje común, límites y decisiones.` y `Repartir responsabilidades, no mensajería.`).
+
+Decisiones de la pasada:
+
+- Una familia, Newsreader, en las cinco ranuras; se eliminó la cara sans del archivo y el `@font-face` de la itálica, que ya no usa nadie.
+- Antetítulo y entradilla: mayúsculas, tracking 0.06em, verde de acento.
+- Pie y dominio: misma familia, gris `#6f6960`; el verde queda solo en las dos etiquetas.
+- Huecos: `--space` 58 entre filas y `--space-tight` 29 alrededor del título; los márgenes (74.5) absorben lo que sobra y siguen iguales entre sí. Las cinco posiciones ya no son números escritos a mano: se derivan con `calc()` de las cinco alturas y los dos huecos.
+- La puerta pasó de «seis espacios iguales» a «los seis espacios que la hoja declara», leyendo `--space`, `--space-tight` y `--margin` en tiempo de ejecución. Un `top` editado a mano ya no pasa.
+- La línea de rol del pie dice «Solutions Architect · Software Engineer». `SITE.roles` sigue diciendo «Software Architect»: se dejó como constante de tarjeta con comentario en lugar de tocar los datos del sitio, que están en migración.
 
 ### L6 · verificación
 

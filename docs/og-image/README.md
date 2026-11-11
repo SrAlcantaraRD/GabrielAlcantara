@@ -8,53 +8,57 @@ the browser, and export when the copy or the layout changes.
 
 ## The one rule
 
-The card is a rigid template: **five slots, one line each, nothing reflows.**
+The card is a rigid template: **one typeface, two sizes, five slots, one line
+each, nothing reflows.**
 
-| # | Slot | Size | Top | Box | Holds |
-| --- | --- | --- | --- | --- | --- |
-| 1 | domain | 34 px | 58 | 52 | the mark and `gabrielalcantara.com` |
-| 2 | eyebrow | 34 px | 171 | 45 | green label: category, `Caso de estudio · Company`, place |
-| 3 | title | 96 px | 278 | 96 | the name or the headline |
-| 4 | sub | 44 px | 419 | 44 | standfirst, always serif italic |
-| 5 | foot | 34 px | 504 | 45 | stack or tags on the left, years or date on the right |
+| # | Slot | Size | Height | Holds |
+| --- | --- | --- | --- | --- |
+| 1 | domain | 34 px | 52 | the mark and `gabrielalcantara.com`, in the muted grey |
+| 2 | eyebrow | 34 px | 40 | uppercase, tracked, in the accent: category, `Caso de estudio · Company`, place |
+| 3 | title | 96 px | 110 | the name or the headline |
+| 4 | sub | 34 px | 40 | uppercase, tracked, in the accent: role or standfirst |
+| 5 | foot | 34 px | 65 | stack or tags on the left, years or date on the right — same face, same grey, never the accent |
 
-All five are filled on every card. There is no auto-fit and no second line: the
-copy is edited until it fits, which is why the articles carry their own
-`cardTitle` and `cardSub` in `src/data/blog.ts` while the page keeps its longer
-`title` and `description`.
-
-## The rhythm
-
-Those five box heights and five tops leave **58 px in all six spaces**: above the
-first row, between every pair, and below the last. The exporter recomputes the six
-from the typographic box of each slot and refuses the card when they disagree by
-more than half a pixel, so the rhythm cannot rot.
-
-The spacing is measured on the box, not on ink. A `Q` tail, an accent over a
-capital or the descender of a `g` dips into the space below without moving it;
-measuring ink would make the gaps depend on which words a card happens to use.
-That is also why the standfirst is one family on every card: the sans and the
-serif have different ascent boxes, and that difference alone moved the gaps above
-and below the row by six pixels between cards.
-
-Changing a size or a line-height means re-solving the five `--y-*` values. Set
-them by measuring — the six spaces tell you when they are right — and let the
-exporter confirm it.
+Everything is Newsreader. There are no italics and no second family: the labels
+differ from the footer by colour, not by face. All five slots are filled on every
+card. There is no auto-fit and no second line — the copy is edited until it fits,
+which is why the articles carry their own `cardTitle` and `cardSub` in
+`src/data/blog.ts` while the page keeps its longer `title` and `description`.
 
 `export.mjs` enforces it. It measures the rendered card and refuses to write a
 PNG when a slot is empty, wraps to a second line, overflows its width, falls
-outside the canvas, drops below 34 px, or breaks the 58 px rhythm. It also
-refuses an image that is not exactly 1200×630 or heavier than `--max-kb`.
-
-The accent is `#1b7343`: OKLCH L 0.4925 and C 0.1116, against 0.5182 and 0.1128
-for the terracotta it replaced, so the perceived lightness, the saturation and
-the contrast against the paper (5.53 vs 5.51) stayed put while the hue moved into
-the family of the site's sage.
+outside the canvas, drops below 34 px, or breaks the rhythm. It also refuses an
+image that is not exactly 1200×630 or heavier than `--max-kb`.
 
 34 px is the floor because the canvas is not what people see: a timeline draws
 the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about
-14 px. At 76 px a title fits roughly 31 characters, and that is the budget the
-card copy is written to.
+14 px. At 96 px a title fits roughly 23 characters, and in uppercase at 34 px a
+label fits roughly 44 — that is the budget the card copy is written to.
+
+The accent is `#1b7343`: OKLCH L 0.4925 and C 0.1116, against 0.5182 and 0.1128
+for the terracotta it replaced, so perceived lightness, saturation and contrast
+against the paper (5.53 vs 5.51) stayed put while the hue moved into the family
+of the site's sage. It marks the two labels and nothing else.
+
+## The rhythm
+
+The five heights and two gaps derive all five tops in `card.html`:
+
+```
+--space       58px   between the rows
+--space-tight 29px   above and below the title, half of the other gap
+--margin      74.5px above the first row and below the last, whatever is left
+```
+
+The six spaces are therefore `74.5 / 58 / 29 / 29 / 58 / 74.5`, identical on all
+eight cards. `export.mjs` reads `--space`, `--space-tight` and `--margin` from the
+stylesheet, re-derives the six spaces from the slot boxes, and refuses the card
+when any of them is off by more than half a pixel. Change a gap or a height and
+the four tops follow; there are no hand-tuned numbers to forget.
+
+The rhythm is measured on the slot boxes, not on ink. A `Q` tail, an accent over
+a capital or the descender of a `g` dips into the space below without moving it;
+measuring ink would make the gaps depend on which words a card happens to use.
 
 ## The loop
 

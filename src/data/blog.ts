@@ -76,7 +76,7 @@ export const POSTS: PostMeta[] = [
 		slug: "ddd-dominios-complejos",
 		title: "DDD cuando el dominio es complejo",
 		cardTitle: "Dominios complejos",
-		cardSub: "Límites, lenguaje común y decisiones al modelar.",
+		cardSub: "Lenguaje común, límites y decisiones.",
 		description:
 			"Qué cambia cuando el dominio tiene reglas que no caben en una tabla: límites, lenguaje común y las decisiones que tomé al modelar el inventario de una bodega.",
 		date: "2026-11-03",
@@ -104,7 +104,7 @@ export const POSTS: PostMeta[] = [
 		slug: "arquitectura-orientada-a-eventos",
 		title: "Arquitectura orientada a eventos en sistemas reales",
 		cardTitle: "Arquitectura por eventos",
-		cardSub: "Repartir responsabilidades, no añadir mensajería.",
+		cardSub: "Repartir responsabilidades, no mensajería.",
 		description:
 			"Los eventos no son una capa de mensajería añadida al final: son una forma de repartir responsabilidades. Dónde ayudan y dónde solo añaden ceremonia.",
 		date: "2026-10-06",
@@ -118,9 +118,9 @@ export const POSTS: PostMeta[] = [
 		slug: "lecciones-plataforma-industrial",
 		title: "Lecciones de diseñar una plataforma industrial conectada",
 		cardTitle: "Plataforma conectada",
-		cardSub: "El hardware marca el ritmo; la traza no es opcional.",
+		cardSub: "El hardware marca el ritmo; la traza queda.",
 		description:
-			"Un almacén automatizado enseña cosas que un CRUD no enseña: el hardware marca el ritmo, las versiones conviven y la trazabilidad no es opcional.",
+			"Un almacén automatizado donde el hardware marca el ritmo, las necesidades del cliente marcan las versiones y la trazabilidad es crítica para el administrador, los operarios y la maquinaria.",
 		date: "2026-09-15",
 		category: "automatizacion-industrial",
 		tags: ["Industrial", "Integración", "Arquitectura"],

@@ -48,7 +48,7 @@ const CASES: CaseStudy[] = [
 			"Frontend reactivo por WebSocket y RBAC: la interfaz se adapta al rol y al tipo de operador.",
 		],
 		caseStudyHref: "/projects/nakire-tps/",
-		tagline: "Software distribuido para la operación industrial.",
+		tagline: "Software distribuido para la industria.",
 		featured: true,
 	},
 	{

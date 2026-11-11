@@ -145,39 +145,22 @@ function audit({ minFontPx, slotNames, tolerance }) {
 		if (!filled.has(name)) problems.push(`la ranura "${name}" quedó sin texto`);
 	}
 
-	// The rhythm is measured on the typographic box of each slot rather than on
-	// ink: a Q tail or a descender dips into the space below without moving it,
-	// and measuring ink would make the gaps depend on which words a card uses.
-	const slotBox = (name) => {
+	// The rhythm is read from the slot boxes, which the stylesheet derives from
+	// two declared gaps: one between rows, half of it around the title. The gate
+	// re-derives the six spaces and compares them with those two declarations,
+	// so a hand-edited top cannot slip through.
+	const style = getComputedStyle(card);
+	const space = Number.parseFloat(style.getPropertyValue("--space"));
+	const tight = Number.parseFloat(style.getPropertyValue("--space-tight"));
+	const margin = Number.parseFloat(style.getPropertyValue("--margin"));
+
+	const boxes = slotNames.map((name) => {
 		const host = card.querySelector(`[data-slot="${name}"]`);
 		if (!host) return null;
+		const box = host.getBoundingClientRect();
+		return { top: box.top - frame.top, bottom: box.bottom - frame.top };
+	});
 
-		const rects = [];
-		const mark = host.querySelector(".mark");
-		if (mark) rects.push(mark.getBoundingClientRect());
-
-		const carriesText = (node) =>
-			Array.from(node.childNodes).some(
-				(child) => child.nodeType === Node.TEXT_NODE && child.textContent.trim(),
-			);
-
-		const leaves = Array.from(host.querySelectorAll("*")).filter(carriesText);
-		if (!leaves.length && carriesText(host)) leaves.push(host);
-
-		for (const leaf of leaves) {
-			const range = document.createRange();
-			range.selectNodeContents(leaf);
-			for (const rect of range.getClientRects()) rects.push(rect);
-		}
-
-		if (!rects.length) return null;
-		return {
-			top: Math.min(...rects.map((rect) => rect.top)) - frame.top,
-			bottom: Math.max(...rects.map((rect) => rect.bottom)) - frame.top,
-		};
-	};
-
-	const boxes = slotNames.map(slotBox).filter(Boolean);
 	const spaces = [boxes[0].top];
 
 	for (let i = 1; i < boxes.length; i += 1) {
@@ -185,10 +168,14 @@ function audit({ minFontPx, slotNames, tolerance }) {
 	}
 	spaces.push(card.offsetHeight - boxes[boxes.length - 1].bottom);
 
-	const spread = Math.max(...spaces) - Math.min(...spaces);
-	if (spread > tolerance) {
+	const expected = [margin, space, tight, tight, space, margin];
+	const off = spaces
+		.map((value, i) => ({ value, want: expected[i] }))
+		.filter((pair) => Math.abs(pair.value - pair.want) > tolerance);
+
+	if (off.length) {
 		problems.push(
-			`los seis espacios no son simétricos: [${spaces.map((s) => s.toFixed(1)).join(", ")}], dispersión ${spread.toFixed(1)}px`,
+			`los espacios no siguen la retícula [${spaces.map((s) => s.toFixed(1)).join(", ")}], esperado [${expected.map((s) => s.toFixed(1)).join(", ")}]`,
 		);
 	}
 
