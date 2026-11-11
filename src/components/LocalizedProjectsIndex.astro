@@ -75,7 +75,7 @@ const jsonLd = [
       <h2 class="section-title" id="seleccionados-title">{copy.selected}</h2>
       <span class="section-meta">{SELECTED_CASES.length} {copy.cases}</span>
     </div>
-    <div class="grid grid--2">
+    <div class="grid grid--2 is-aligned">
       {SELECTED_CASES.map((project) => <ProjectCard project={project} lang={lang} />)}
     </div>
   </section>

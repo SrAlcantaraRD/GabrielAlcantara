@@ -503,11 +503,111 @@ svg {
 	.grid--2 {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
+
+	/*
+	 * The projects page lists full cards in two columns: the same table of shared
+	 * rows as the home, with one more row for the decision block. Nine rows are
+	 * the area, name, meta, problem, role, decision, outcome, stack and link of
+	 * `ProjectCard` when it is not `brief`.
+	 */
+	.grid--2.is-aligned {
+		grid-template-rows: repeat(9, auto);
+		row-gap: 0.7rem;
+	}
+
+	.grid--2.is-aligned > .project-card {
+		grid-row: span 9;
+		grid-template-rows: subgrid;
+	}
+
+	.grid--2.is-aligned > .project-card > .project-facts {
+		grid-row: span 3;
+		grid-template-rows: subgrid;
+		margin-block: 0;
+		padding-block: 0;
+	}
+
+	.grid--2.is-aligned > .project-card > .project-facts > div {
+		grid-template-columns: 4.25rem minmax(0, 1fr);
+		column-gap: 0.75rem;
+		align-content: start;
+		align-items: start;
+	}
+
+	.grid--2.is-aligned > .project-card > .project-facts > div:first-child {
+		padding-block-start: 0.75rem;
+	}
+
+	.grid--2.is-aligned > .project-card > .project-facts > div:last-child {
+		padding-block-end: 0.75rem;
+	}
+
+	.grid--2.is-aligned > .project-card > .tag-row {
+		align-content: start;
+	}
 }
 
 @media (min-width: 900px) {
 	.grid--3 {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	/*
+	 * Three project cards that read as one table: the rows belong to the grid,
+	 * not to each card, so ROL, RESULTADO and the rules between them start on the
+	 * same line in every column whatever the length of the copy. Eight rows are
+	 * the area, name, meta, problem, role, outcome, stack and link of
+	 * `ProjectCard`, which is rendered here with `brief`.
+	 */
+	.grid--3.is-aligned {
+		grid-template-rows: repeat(8, auto);
+		/* Same rhythm as inside one card, now shared by the three. */
+		row-gap: 0.7rem;
+	}
+
+	.grid--3.is-aligned > .project-card {
+		grid-row: span 8;
+		grid-template-rows: subgrid;
+	}
+
+	/*
+	 * The facts block spans the role and the outcome rows, so both labels sit at
+	 * the same height in the three cards. It keeps its two hairlines, and gives
+	 * up its own padding: the rows already carry the rhythm, and the inner space
+	 * moves to the first and last block so the rules keep their distance.
+	 */
+	.grid--3.is-aligned > .project-card > .project-facts {
+		grid-row: span 2;
+		grid-template-rows: subgrid;
+		margin-block: 0;
+		padding-block: 0;
+	}
+
+	/*
+	 * Inside each shared row the label and its value sit in two columns, so the
+	 * block reads as one table: every label starts on the same x (the width is
+	 * fixed, not fitted per card) and every value starts on the same x. A taller
+	 * row must not spread the copy that is shorter, and the value keeps the
+	 * baseline of its label.
+	 */
+	.grid--3.is-aligned > .project-card > .project-facts > div {
+		grid-template-columns: 4.25rem minmax(0, 1fr);
+		column-gap: 0.75rem;
+		align-content: start;
+		/* Top, not baseline: the 13 px of air under the rule must not move. */
+		align-items: start;
+	}
+
+	.grid--3.is-aligned > .project-card > .project-facts > div:first-child {
+		padding-block-start: 0.75rem;
+	}
+
+	.grid--3.is-aligned > .project-card > .project-facts > div:last-child {
+		padding-block-end: 0.75rem;
+	}
+
+	.grid--3.is-aligned > .project-card > .tag-row {
+		align-content: start;
 	}
 
 	.grid--4 {
