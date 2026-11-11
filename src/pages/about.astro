@@ -41,7 +41,7 @@ const jsonLd = [
 >
   <header class="page-head">
     <p class="eyebrow">Sobre mí</p>
-    <h1 class="display">Arquitectura, ingeniería y claridad para sistemas complejos.</h1>
+    <h1 class="display">Arquitectura, ingeniería, mentoría y consultoría.</h1>
     <p class="lede">
       Soy arquitecto de software y Software Engineer con más de quince años de experiencia
       diseñando, construyendo y evolucionando sistemas de software. Mi trabajo combina
@@ -97,15 +97,51 @@ const jsonLd = [
     </ol>
   </section>
 
+  <section class="section" aria-labelledby="evolucion-title">
+    <div class="section-head">
+      <h2 class="section-title" id="evolucion-title">Cómo he llegado hasta aquí</h2>
+      <span class="section-meta">2011 → hoy</span>
+    </div>
+    <div class="prose">
+      <p>
+        Quince años dan para pasar por todas las etapas del desarrollo: requisitos,
+        implementación, base de datos, mantenimiento, diseño, arquitectura, móvil, web,
+        frontend y backend. Empecé de junior y he ido liderando lo que tocaba.
+      </p>
+      <p>
+        En Basetis diseñé e implementé el core de un buscador en Node: consultas que
+        anidaban corchetes —AND, OR, NOT, NOR— y un validador por expresiones regulares.
+        Años después supe que aquel motor seguía vivo y que lo habían extendido.
+      </p>
+      <p>
+        En LoveISDIN lideré el frontend de un producto que el backend definía por partes
+        desde un backoffice: los componentes llegaban con su propia iteratividad y el
+        frontend tenía que representarlos. Sin criterio de arquitectura para el frontend,
+        la parte visual creció en componentes enormes hasta que llegué a Atomic Design, al
+        que añadí una capa previa, las partículas: partículas, átomos, moléculas,
+        organismos, layouts y páginas. Allí fue también mi primer encuentro con DDD y
+        hexagonal en el backend.
+      </p>
+      <p>
+        Ese hallazgo cambió cómo trabajo. En Bodega Digital llevé por primera vez esa
+        arquitectura de backend al frontend, combinando la capa de lógica de DDD con Atomic
+        Design. En Nakire TPS la misma idea pasó a microservicios: un DDD core y cada módulo
+        con su API, su backoffice y su frontend. En Pachanga Community he vuelto a un
+        monolito por capas con un harness determinista, para que el código lo escriban y lo
+        prueben agentes y la revisión final siga siendo mía.
+      </p>
+    </div>
+  </section>
+
   <section class="section" aria-labelledby="forma-title">
     <div class="section-head">
       <h2 class="section-title" id="forma-title">Forma de trabajar</h2>
       <span class="section-meta">principios</span>
     </div>
     <blockquote class="working-quote">
-      Me interesa entender el dominio antes de elegir la tecnología. Busco soluciones
-      que sean comprensibles para los equipos, sostenibles en producción y capaces de
-      evolucionar cuando cambian las necesidades del negocio.
+      Me interesa entender el dominio antes de elegir la tecnología. La ingeniería está al
+      servicio del negocio: sin entender el negocio, sus necesidades, los requisitos y los
+      tiempos, lo demás no sirve de nada.
     </blockquote>
     <ul class="principles">
       {PRINCIPLES.map((principle) => <li>{principle}</li>)}

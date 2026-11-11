@@ -87,9 +87,13 @@ const jsonLd = [
       </p>
       <p>
         Aquí no hay equipo detrás: hay producto, diseño, app, web, infraestructura y
-        soporte en la misma persona. Ese es el aprendizaje real del proyecto: la
-        complejidad no está en una pieza, está en que todas las piezas tienen que
-        funcionar a la vez.
+        soporte en la misma persona. He picado poco código: el 95% lo ha escrito LaIA,
+        que es como llamo al uso de LLM y agentes. Vengo siendo Tony Stark, delego tanto
+        como puedo y aun así no doy abasto, porque son muchas las piezas que tienen que
+        funcionar a la vez —infraestructura, cloud, web, stores, ingresos, monitoring,
+        PostHog, etc.— para darle al usuario una experiencia cuidada, elegante, sencilla
+        y directa que resuelva su problema. Todo va sobre optimistic update y sobre guiar
+        al usuario, intuyendo la acción que quiere hacer.
       </p>
 
       <h2 id="contexto">Contexto</h2>
@@ -157,9 +161,10 @@ const jsonLd = [
         de ahí a los puertos, que implementan adaptadores de Supabase o en memoria.
       </p>
       <p>
-        La regla que sostiene todo es simple: el dominio es TypeScript puro y Zod, sin
-        React Native, sin Expo y sin base de datos. Los casos de uso se prueban sin
-        infraestructura, y cambiar de proveedor es escribir otro adaptador. La interfaz se
+        La capa de dominio es solo TypeScript, sin React Native, sin Expo y sin base de
+        datos: los tipos y una línea de validación con Zod controlan el dato que entra,
+        sale y se mueve dentro de la app. Los casos de uso se prueban sin infraestructura,
+        y cambiar de proveedor es escribir otro adaptador. La interfaz se
         organiza en Atomic Design —átomos, moléculas, organismos, layouts y pantallas— para
         que un cambio visual no obligue a tocar la lógica.
       </p>
@@ -227,6 +232,21 @@ const jsonLd = [
         primera si un fichero de configuración no está donde toca.
       </p>
 
+      <h2 id="harness">Cómo se escribe el código: el agent-harness</h2>
+      <p>
+        Buena parte del código de Pachanga la escriben agentes. A ellos les toca implementar
+        y probar; a mí, definir el problema, revisar y decidir. El harness es lo que hace
+        que esa división funcione: ficheros <code>.instructions</code> que dicen cómo se
+        escribe cada pieza, plugins de Biome que atajan lo que no debe ni llegar a revisión
+        y scripts deterministas que comprueban lo que una revisión a ojo no ve.
+      </p>
+      <p>
+        No busco escribir más código más rápido. Busco que el agente escriba mejor: el mismo
+        criterio en todas las capas, menos decisiones repetidas y más tiempo mío en lo que
+        mueve el negocio. Cuando el patrón es el mismo de arriba abajo, revisar deja de ser
+        arqueología.
+      </p>
+
       <h2 id="decisiones">Decisiones técnicas</h2>
       <ul>
         <li>
@@ -269,16 +289,18 @@ const jsonLd = [
           tu yo de dentro de seis meses.
         </li>
         <li>
-          La arquitectura no se demuestra en el diagrama, se demuestra cuando toca cambiar
-          una pieza y solo cambia una.
+          Me gusta hacer de lo complejo algo sencillo. Cuando todo el proyecto sigue el
+          mismo patrón con reglas claras —enum → entidad → puerto → caso de uso, con los
+          hooks inyectando el adaptador que implementa el puerto—, saber dónde vive cada
+          pieza es rápido. En Pachanga he cambiado los adaptadores con cierta frecuencia,
+          reimplementándolos para que pasaran los e2e, los unitarios y los mocks; sin esa
+          arquitectura, cada cambio habría atravesado la app entera. Es inyección de
+          dependencias, lo de backend, traído al frontend. Junto con los plugins de Biome
+          y los scripts deterministas, es una de las piezas del agent-harness del proyecto.
         </li>
         <li>
-          La parte que nadie ve —enlaces universales, tiendas, despliegue— es la que decide
-          si el producto se siente terminado.
-        </li>
-        <li>
-          Un producto propio sin usuarios de pago sigue siendo el mejor banco de pruebas
-          para decisiones de arquitectura que luego aplico en equipos.
+          Los enlaces universales, las tiendas y el despliegue no los ve nadie, y son los
+          que deciden si el producto está terminado o solo publicado.
         </li>
       </ul>
     </div>

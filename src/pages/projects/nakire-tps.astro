@@ -56,8 +56,8 @@ const jsonLd = [
         Nakire TPS: software distribuido para operaciones industriales en tiempo real.
       </h1>
       <p class="lede">
-        La evolución distribuida de la arquitectura que nació en Bodega Digital: servicios,
-        eventos y dispositivos industriales coordinados en tiempo real.
+        Un desarrollo propio: dominios por módulo con su propia API, microservicios por
+        familia de dispositivos, backoffice, frontend y control de acceso por rol.
       </p>
       <div class="meta-row">
         <span>{spanLabel(project.startMonth, project.endMonth)}</span>
@@ -101,19 +101,22 @@ const jsonLd = [
         de septiembre de 2025 a junio de 2026.
       </p>
 
-      <h2 id="origen">De Bodega Digital a Nakire TPS</h2>
+      <h2 id="origen">De dónde viene la arquitectura</h2>
       <p>
-        Nakire TPS no partió de una hoja en blanco. El modelo de dominio, el lenguaje
-        compartido con la operación y la disciplina de pruebas venían de
-        <a href="/projects/bodega-digital/">Bodega Digital</a>, el monolito monorepo
-        anterior: frontend, backend y base de datos en un mismo repositorio, con DDD y
-        TDD.
+        Nakire TPS es un desarrollo propio. Lo que viene de atrás es la forma de pensar el
+        sistema, no su código: el primer motor que escribí fue el buscador de Basetis, con
+        consultas entre corchetes —AND, OR, NOT, NOR— y un validador por expresiones
+        regulares. En LoveISDIN llevé el frontend y me encontré por primera vez con DDD y
+        hexagonal en el backend; la parte visual, que hasta entonces crecía en componentes
+        enormes, pasó a Atomic Design con una capa previa: partículas, átomos, moléculas,
+        organismos, layouts y páginas.
       </p>
       <p>
-        Lo que cambió fue la escala. Coordinar dispositivos industriales en tiempo real
-        exigía separar servicios, comunicarlos por eventos y asumir el fallo de cada
-        borde. Nakire TPS es esa evolución: la misma arquitectura de dominio, llevada a un
-        sistema distribuido.
+        En <a href="/projects/bodega-digital/">Bodega Digital</a> llevé por primera vez esa
+        arquitectura de backend al frontend, dentro de un monolito: un solo despliegue y
+        límites de dominio en el código. Nakire TPS lleva la idea a microservicios: cada
+        familia de dispositivos con su propio servicio, un core de dominio que conoce las
+        tareas y reglas iguales en todos los módulos.
       </p>
 
       <h2 id="contexto">Contexto industrial</h2>
@@ -125,17 +128,12 @@ const jsonLd = [
         qué.
       </p>
       <p>
-        El punto de partida no era una hoja en blanco: cada almacén tiene su mapa, sus
-        versiones de robot y sus reglas de negocio. El sistema debía absorber esa
-        variación sin multiplicar el código ni depender de un fabricante concreto.
+        Cada almacén llega con su mapa, sus versiones de robot y sus reglas de negocio. El
+        sistema debía absorber esa variación sin multiplicar el código ni depender de un
+        fabricante concreto.
       </p>
 
       <h2 id="problema">El problema</h2>
-      <p>
-        El reto no consistía únicamente en construir una aplicación, sino en coordinar
-        distintos actores, dispositivos y flujos operativos dentro de un sistema que debía
-        ser trazable, mantenible y capaz de evolucionar.
-      </p>
       <ul>
         <li>
           Coordinar tareas entre familias de dispositivos muy distintas, cada una con su
@@ -213,10 +211,8 @@ const jsonLd = [
 
       <h2 id="arquitectura">Arquitectura</h2>
       <p>
-        La solución se organizó alrededor de dominios y servicios con responsabilidades
-        claras, comunicación orientada a eventos y canales en tiempo real. El frontend y
-        la API hablan con un core que conoce las tareas; el core no conoce los protocolos
-        de cada dispositivo, solo sus capacidades.
+        El frontend y la API hablan con un core que conoce las tareas; el core no conoce
+        los protocolos de cada dispositivo, solo sus capacidades.
       </p>
 
       <ArchitectureDiagram />
@@ -247,6 +243,12 @@ const jsonLd = [
         es maximizar la disponibilidad de los dispositivos y minimizar los movimientos
         necesarios para completar las tareas.
       </p>
+      <p>
+        Cada módulo tenía su API, su backoffice y su frontend, y compartía un DDD core con el
+        resto: las reglas de negocio vivían en el dominio del módulo. El control de acceso por
+        rol atravesaba el sistema entero, de modo que el mismo operador veía lo que le tocaba
+        en cualquier módulo.
+      </p>
 
       <h2 id="eventos">Eventos y comunicación</h2>
       <p>
@@ -260,6 +262,18 @@ const jsonLd = [
         responder no bloquea la coordinación del resto, aunque el sistema deba decidir qué
         hacer con las tareas que dependían de él. La persistencia acompaña esa división:
         time-series para métricas, PostgreSQL y Redis para transacciones.
+      </p>
+
+      <h2 id="reglas">Reglas del sistema</h2>
+      <p>
+        Un caso de uso puede emitir los eventos que decida el negocio, pero cada evento lo
+        consume un solo caso de uso. La regla parece pequeña y cambia el sistema entero: deja
+        una traza limpia de quién hizo qué y un único punto de error, siempre en el mismo
+        sitio, por el que pasan todos los eventos.
+      </p>
+      <p>
+        Esa trazabilidad se pensó para la operación: cuando una tarea no avanza, hay un sitio
+        donde mirar. Con la misma lógica, el tiempo real se declara en el caso de uso.
       </p>
 
       <h2 id="hardware">Integración con hardware</h2>
@@ -286,6 +300,12 @@ const jsonLd = [
         La consecuencia práctica es que el operador ve la siguiente acción que le
         corresponde, con el contexto de lo que está pasando en el almacén, y no una pantalla
         genérica con todas las posibilidades.
+      </p>
+      <p>
+        Además del WebSocket, el sistema usaba SSE para las actualizaciones delta: el caso de
+        uso decide si un cambio de estado —una tarea que pasa de PENDING a IN_PROGRESS—
+        merece un envío, lo publica en el bus y el handler lo reparte entre los listeners
+        suscritos a esa tarea. La suscripción la declara el cliente al abrir la tarea.
       </p>
 
       <h2 id="despliegue">CI/CD y despliegue</h2>
@@ -355,10 +375,6 @@ const jsonLd = [
         <li>
           Los contratos explícitos entre dominio y dispositivo ahorran más tiempo que
           cualquier optimización prematura.
-        </li>
-        <li>
-          Probar sobre hardware real cambia la conversación con el equipo: los problemas
-          aparecen antes y con nombre propio.
         </li>
         <li>
           La documentación y el vocabulario compartido con fabricantes son parte de la

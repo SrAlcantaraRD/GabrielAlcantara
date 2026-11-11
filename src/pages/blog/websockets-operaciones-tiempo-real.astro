@@ -20,9 +20,26 @@ const post = postOf("websockets-operaciones-tiempo-real");
     el cliente mantenga una conexión abierta mientras dura la sesión de trabajo.
   </p>
   <p>
-    Lo importante es tener claro qué se transporta: no un flujo infinito de datos, sino
-    <strong>eventos de estado relevantes para ese rol</strong>. El canal no es una base de
-    datos en streaming.
+    El canal transporta <strong>eventos de estado relevantes para ese rol</strong>, no un
+    flujo infinito de datos ni una base de datos en streaming.
+  </p>
+
+  <h2>Quién decide qué se envía</h2>
+  <p>
+    El canal no decide nada: la actualización la define el caso de uso. Si un operador
+    tiene abierta una tarea, el cliente se registra como consumidor de los eventos de esa
+    tarea. Cuando otro microservicio consume de Kafka el cambio —de PENDING a IN_PROGRESS,
+    por ejemplo—, el caso de uso decide si ese cambio se reenvía y lo publica en el bus; el
+    handler lo reparte entre los listeners que tocan.
+  </p>
+  <p>
+    En Nakire convivían los dos canales: WebSocket para el frontend reactivo y SSE para las
+    actualizaciones delta que definía cada caso de uso.
+  </p>
+  <p>
+    La regla es la misma en todo el sistema: un caso de uso puede emitir los eventos que
+    necesite el negocio, pero cada evento lo consume un solo caso de uso. Así hay un único
+    punto de error, siempre en el mismo sitio, por el que pasan todos los eventos.
   </p>
 
   <h2>El estado viene del servidor</h2>
@@ -62,9 +79,9 @@ const post = postOf("websockets-operaciones-tiempo-real");
 
   <h2>Reconexión y estado inicial</h2>
   <p>
-    Una conexión WebSocket se cae. La pregunta no es si, sino cuándo. El cliente necesita
-    reconectar con una estrategia acotada, y al volver debe recuperar el estado en lugar
-    de asumir que no se ha perdido nada.
+    Una conexión WebSocket se cae. El cliente necesita reconectar con una estrategia
+    acotada, y al volver debe recuperar el estado en lugar de asumir que no se ha perdido
+    nada.
   </p>
   <ul>
     <li>Reconexión con espera creciente y un límite claro.</li>
@@ -86,8 +103,7 @@ const post = postOf("websockets-operaciones-tiempo-real");
   </p>
   <p>
     El servidor también debe protegerse: límites de mensajes por conexión, validación de
-    tamaño y un mecanismo para cerrar conexiones que no consumen. Un canal abierto es un
-    recurso, no un detalle.
+    tamaño y un mecanismo para cerrar conexiones que no consumen.
   </p>
 
   <h2>Probar el canal</h2>
@@ -104,9 +120,8 @@ const post = postOf("websockets-operaciones-tiempo-real");
 
   <h2>Cierre</h2>
   <p>
-    El tiempo real en una interfaz operativa no va de la tecnología del canal, sino de la
-    confianza: el servidor decide, el cliente muestra y el usuario sabe cuándo la
-    información está al día. Si esa confianza se rompe, la interfaz más rápida sigue
-    siendo una interfaz en la que no se puede trabajar.
+    El servidor decide, el cliente muestra y el usuario sabe cuándo la información está al
+    día: eso es tiempo real en una interfaz operativa. Si esa confianza se rompe, la
+    interfaz más rápida sigue siendo una interfaz en la que no se puede trabajar.
   </p>
 </ArticleLayout>

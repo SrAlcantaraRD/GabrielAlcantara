@@ -9,8 +9,9 @@ const post = postOf("ddd-dominios-complejos");
   <p>
     Hay dominios donde una tabla por entidad basta. Y hay dominios donde las reglas no
     caben en columnas: dependen del contexto, cambian por instalación y afectan a varias
-    partes del sistema a la vez. En esos casos, DDD no es una capa de carpetas; es una
-    forma de decidir dónde vive cada regla.
+    partes del sistema a la vez. En esos casos, DDD decide dónde vive cada regla, y cuántas
+    capas necesita el negocio: las que exijan la complejidad del sistema y sus
+    integraciones, ni una más.
   </p>
 
   <h2>El dominio no es la base de datos</h2>
@@ -34,8 +35,7 @@ const post = postOf("ddd-dominios-complejos");
   <p>
     En Bodega Digital ese vocabulario fue parte del diseño: una botella es una unidad
     identificable —añada, variedad, parcela—, no una fila de stock; un lector RFID tiene
-    capacidades, no solo un identificador. El modelo refleja cómo se trabaja, no cómo se
-    almacena.
+    capacidades, no solo un identificador. El modelo refleja cómo se trabaja.
   </p>
 
   <h2>Límites: dónde está el coste de cambiar</h2>
@@ -92,7 +92,8 @@ const post = postOf("ddd-dominios-complejos");
   <h2>Cierre</h2>
   <p>
     DDD no hace que un dominio sea complejo; reconoce que ya lo era y decide dónde poner
-    cada cosa. La señal de que ha funcionado no es la elegancia del diagrama, sino que
-    añadir una variante nueva toca menos archivos de los que tocaba antes.
+    cada cosa. El diagrama puede quedar elegante y claro, pero eso no es la señal: la
+    señal es que añadir otra implementación de un puerto o una abstracción nueva toque
+    menos archivos de los que tocaba antes.
   </p>
 </ArticleLayout>

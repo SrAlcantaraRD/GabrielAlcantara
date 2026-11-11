@@ -15,7 +15,7 @@ export const SITE = {
 	title: "Software Architect & Software Engineer",
 	roles: ["Software Architect", "Software Engineer"],
 	headline:
-		"Diseño sistemas complejos para convertir problemas difíciles en software evolutivo.",
+		"Quince años de evolución, de junior a ingeniero: requisitos, base de datos, backend, frontend, móvil y arquitectura.",
 	description:
 		"Soy Gabriel Alcántara, arquitecto de software y Software Engineer especializado en sistemas distribuidos, arquitecturas orientadas a eventos, backend y soluciones industriales conectadas.",
 	email: "gabriel@alcantaramoreno.com",
@@ -130,11 +130,10 @@ export const SPECIALTIES: Specialty[] = [
 ];
 
 export const PRINCIPLES: string[] = [
-	"Entender el problema antes de aumentar la complejidad.",
-	"Diseñar límites claros entre responsabilidades.",
-	"Automatizar todo lo que pueda repetirse.",
-	"Validar las decisiones con feedback real.",
-	"Compartir contexto para que los equipos puedan avanzar con autonomía.",
+	"Entiendo negocio y requisitos antes de elegir tecnología.",
+	"Propongo alternativas y explico sus compromisos.",
+	"Decisiones escritas y límites explícitos.",
+	"Pruebas sobre el comportamiento real, no sobre la intención.",
 ];
 
 export interface Service {

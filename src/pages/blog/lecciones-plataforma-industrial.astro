@@ -18,8 +18,7 @@ const post = postOf("lecciones-plataforma-industrial");
   <p>
     En una aplicación de negocio, el estado lo controla tu base de datos. En una bodega,
     el estado lo controla el mundo: una carretilla bloqueada, un PLC que no responde o una
-    cámara que no lee una etiqueta. El software puede decidir qué debería pasar; no puede
-    decidir que haya pasado.
+    cámara que no lee una etiqueta.
   </p>
   <p>
     Asumir eso cambia el diseño. Las operaciones dejan de ser transacciones instantáneas y
@@ -117,7 +116,6 @@ export interface DevicePort &#123;
   </ul>
   <p>
     Si estás diseñando algo parecido, el orden que me funcionó fue: entender la operación,
-    separar los dominios y solo después elegir la tecnología de cada borde. La
-    arquitectura no empieza en el broker; empieza en el problema.
+    separar los dominios y solo después elegir la tecnología de cada borde.
   </p>
 </ArticleLayout>

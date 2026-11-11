@@ -92,9 +92,8 @@ const jsonLd = [
       </p>
       <p>
         Se construyó en dos fases —de marzo a julio de 2024 y de octubre de 2024 a febrero
-        de 2025—, separadas por el desarrollo de los Atlassian Addons de Quabu. La
-        estructura que quedó fue la base sobre la que después se construyó
-        <a href="/projects/nakire-tps/">Nakire TPS</a>.
+        de 2025—, separadas por el desarrollo de los Atlassian Addons de Quabu. Un solo
+        despliegue y un solo ciclo de integración para las dos fases.
       </p>
 
       <h2 id="contexto">Contexto: una bodega no es un almacén cualquiera</h2>
@@ -190,6 +189,11 @@ const jsonLd = [
         casos de uso, capas y límites de dominio. La infraestructura era una sola, pero el
         código no era un único montón.
       </p>
+      <p>
+        Aquí fue donde llevé por primera vez la arquitectura de backend al frontend: la misma
+        capa de lógica de DDD que usaba el servidor, combinada con Atomic Design en la
+        interfaz.
+      </p>
 
       <h2 id="ddd-tdd">DDD y TDD dentro del monolito</h2>
       <p>
@@ -220,18 +224,17 @@ const jsonLd = [
         de hardware o de modelo no obliga a tocar las reglas de negocio.
       </p>
 
-      <h2 id="evolucion">De Bodega Digital a Nakire TPS</h2>
+      <h2 id="evolucion">Lo que quedó del monolito</h2>
       <p>
-        La estructura funcionó lo suficiente como para ser el punto de partida de
-        <a href="/projects/nakire-tps/">Nakire TPS</a>. Cuando el sistema pasó a coordinar
-        dispositivos industriales en tiempo real, el modelo de dominio, el lenguaje y la
-        forma de probar se mantuvieron; lo que cambió fue el despliegue: lo que era un
-        monolito pasó a repartirse en servicios y eventos.
+        El monolito aguantó las dos fases del producto: un despliegue, un ciclo de
+        integración y el dominio en un mismo repositorio. Del proyecto sobrevivieron el
+        modelo de dominio, el lenguaje compartido con la operación y la forma de probar.
       </p>
       <p>
-        Esa continuidad es la parte interesante del proyecto. El monolito no fue un atajo
-        que hubo que deshacer: fue el sitio donde el dominio se entendió lo bastante bien
-        como para poder repartirlo después.
+        <a href="/projects/nakire-tps/">Nakire TPS</a> es un desarrollo propio, con
+        servicios y eventos. Lo que trae de aquí es la forma de trabajar: el monolito no
+        fue un atajo que hubo que deshacer, fue el sitio donde el dominio se entendió lo
+        bastante bien como para que el modelo sirviera después en otro sistema.
       </p>
 
       <h2 id="decisiones">Decisiones técnicas</h2>
@@ -278,10 +281,6 @@ const jsonLd = [
       <h2 id="aprendizajes">Aprendizajes</h2>
       <ul>
         <li>
-          La radiofrecuencia y el líquido no se llevan bien: el hardware marca el diseño
-          tanto como el dominio.
-        </li>
-        <li>
           La separación se decide dentro del código antes que en la infraestructura: un
           monolito con límites claros se puede repartir después; uno sin ellos, no.
         </li>
@@ -291,7 +290,7 @@ const jsonLd = [
         </li>
         <li>
           En proyectos con financiación pública y varios socios, el vocabulario compartido
-          es parte de la entrega, no un adorno.
+          forma parte de la entrega.
         </li>
       </ul>
     </div>

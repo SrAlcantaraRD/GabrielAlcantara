@@ -58,7 +58,7 @@ const CASES: CaseStudy[] = [
 		decision:
 			"Un monolito monorepo con DDD y TDD, con adaptadores para lectores RFID, visión por computadora y el modelo de predicción de demanda.",
 		outcome:
-			"Inventario en tiempo real, predicción de demanda y trazabilidad por botella. Su estructura se convirtió después en el punto de partida de Nakire TPS.",
+			"Inventario en tiempo real, predicción de demanda y trazabilidad por botella. La forma de trabajar —dominio modelado, adaptadores por integración y pruebas primero— pasó a los proyectos siguientes.",
 		highlights: [
 			"Identificación individual por RFID (UHF) y predicción de demanda con machine learning.",
 			"Adaptadores para RFID, visión por computadora y predicción: el dominio no conoce protocolos.",

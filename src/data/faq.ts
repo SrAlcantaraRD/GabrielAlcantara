@@ -49,6 +49,6 @@ export const FAQ: FaqEntry[] = [
 	},
 	{
 		question: "¿Cómo te contacto?",
-		answer: `Puedes escribirme a ${SITE.email}. Cuéntame qué está pasando, en qué fase está el proyecto y qué tipo de ayuda necesitas. Con eso puedo decirte si aporto valor y cómo lo abordaría.`,
+		answer: `Puedes escribirme a ${SITE.email}. Cuéntame qué está pasando, en qué fase está el proyecto y qué tipo de ayuda necesitas. Con eso puedo decirte si encaja y cómo lo abordaría.`,
 	},
 ];
