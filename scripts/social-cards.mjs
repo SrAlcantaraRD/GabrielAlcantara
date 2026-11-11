@@ -52,6 +52,7 @@ function yearSpan(project) {
 function copyKey(copy) {
 	return [
 		copy.kind,
+		copy.status,
 		copy.eyebrow,
 		copy.title,
 		copy.sub,
@@ -101,6 +102,7 @@ export async function socialCardSpecs() {
 		copy: {
 			kind: "default",
 			domain,
+			status: site.SITE.availability,
 			eyebrow: site.SITE.location,
 			title: site.SITE.name,
 			sub: ROLE_LINE,
@@ -123,10 +125,11 @@ export async function socialCardSpecs() {
 			copy: {
 				kind: "case",
 				domain,
+				status: site.SITE.availability,
 				eyebrow,
 				title: project.name,
 				sub: project.tagline ?? project.outcome,
-				footLeft: (project.stack ?? []).slice(0, 4).join(" · "),
+				footLeft: (project.stack ?? []).slice(0, 3).join(" · "),
 				footRight: yearSpan(project),
 			},
 		};
@@ -143,6 +146,7 @@ export async function socialCardSpecs() {
 			copy: {
 				kind: "post",
 				domain,
+				status: site.SITE.availability,
 				eyebrow: blog.categoryOf(post.category).label,
 				title: post.cardTitle ?? post.title,
 				sub: post.cardSub ?? null,

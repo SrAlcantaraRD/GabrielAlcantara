@@ -4,49 +4,49 @@
 			"file": "/og-image.png",
 			"page": "/",
 			"title": "Gabriel Alcántara",
-			"renderHash": "1a8c759c320e541343a47b7c69db2bda9a4d85aa68e368d294f008d137eb9e72"
+			"renderHash": "4f0c94958fcdce565dba233471c61adfb1abcae88ce3ca8639b42a41b2394c53"
 		},
 		{
 			"file": "/og/nakire-tps.png",
 			"page": "/projects/nakire-tps/",
 			"title": "Nakire TPS",
-			"renderHash": "b8717832a6f37366ffdb3f43103f69f860547746a836c7bb8979f26192e1f092"
+			"renderHash": "aa63c2f37769c8493eafdf31f92363624102c60b8c48c88e6389712180a15836"
 		},
 		{
 			"file": "/og/bodega-digital.png",
 			"page": "/projects/bodega-digital/",
 			"title": "Bodega Digital",
-			"renderHash": "57d57e37b25c7fa88cd05126e3508fc4a1f97c4825deb810cd7c0a2ead64e78e"
+			"renderHash": "152561e3496662288e6f4e191d2d6732ac0f77ecd031be5c8814e5527b707614"
 		},
 		{
 			"file": "/og/pachanga-community.png",
 			"page": "/projects/pachanga-community/",
 			"title": "Pachanga Community",
-			"renderHash": "d47d31ad514f29731a6017d4ad14b4ea408e96601972f341d7d0a066cf99af84"
+			"renderHash": "758f3ff11be3090482d9459c555361792a03ba6b049c7d09ae3ca41c5ea89c8a"
 		},
 		{
 			"file": "/og/ddd-dominios-complejos.png",
 			"page": "/blog/ddd-dominios-complejos/",
 			"title": "Dominios complejos",
-			"renderHash": "187bd32feeb6b9c4f3ba6512b1eb83c26d87e0a6770dd53be4ebeb6a055ab082"
+			"renderHash": "4e459a5957a0f54390c9a5f0553a9f341e8af0851e4da9f136686409441ef157"
 		},
 		{
 			"file": "/og/websockets-operaciones-tiempo-real.png",
 			"page": "/blog/websockets-operaciones-tiempo-real/",
 			"title": "WebSockets en operación",
-			"renderHash": "52f3af4de8a47a6b3ca7b6a813a30389845f256e7801d0d82611ab65240eb6bb"
+			"renderHash": "32e319f4684410a7fd488f289f73793ac7698eaa42f8f56f8178398b65065a18"
 		},
 		{
 			"file": "/og/arquitectura-orientada-a-eventos.png",
 			"page": "/blog/arquitectura-orientada-a-eventos/",
 			"title": "Arquitectura por eventos",
-			"renderHash": "1d138edd434a8bea8da16b46147e2b0498b64ef2c82b24ed1c71b64532fb9eba"
+			"renderHash": "a22039bc81651573ecf7b41ac93399604280c524cdc384520439aaa8d4245bb8"
 		},
 		{
 			"file": "/og/lecciones-plataforma-industrial.png",
 			"page": "/blog/lecciones-plataforma-industrial/",
 			"title": "Plataforma conectada",
-			"renderHash": "6be05b8f77ac5c8c11dca8ee79742a44c399b95373a037cf2bc8ff9c17b13a75"
+			"renderHash": "3e70242a8766782198f0ead7a3bd73246711b7345c5b24ccfb8e7fa08624dcb2"
 		}
 	]
 }

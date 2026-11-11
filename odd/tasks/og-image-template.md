@@ -9,14 +9,14 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - **S1.** «lo unico leíble es el nombre "Gabriel Alcántara"». Ningún elemento de texto de una tarjeta baja de **34 px** en el lienzo de 1200×630, y el exportador termina en error, nombrando el elemento y su tamaño, cuando alguno lo hace. Justificación: a 504 px de ancho (el tamaño real de un feed) el factor es 0.42, así que 34 px llegan como ~14 px; los 16–18 px monoespaciados de hoy llegan como ~7 px.
 - **S2.** «Vamos a montar un sistema como el de `/Users/gabrielalcantara/Documents/personal/projects/sport-analytics/website/docs/og-image`». El lienzo vive en `docs/og-image/card.html` como HTML autónomo, con las fuentes por ruta relativa a `node_modules`, y se previsualiza abriéndolo en el navegador sin servidor ni build.
 - **S3.** La previsualización acepta `?kind=`, `?title=`, `?sub=`, `?eyebrow=`, `?footLeft=`, `?footRight=` y `?scale=`. `?scale=504` dibuja el lienzo al tamaño de un feed, para juzgar la legibilidad sin reducirlo a mano.
-- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras, **un solo tipo de letra y dos tamaños**: `34` (dominio, antetítulo, entradilla, pie) y `96` (título). Cada ranura ocupa **una sola línea** en una caja de altura fija (52 / 40 / 110 / 40 / 65); las posiciones se derivan por `calc()` de esas alturas y de los dos huecos, no se escriben a mano. Las ocho rellenan las cinco.
-- **S14.** «1 solo tipo de letra, nada de cursivas. En mayusuculas y en verde» — Newsreader en toda la tarjeta, sin cursivas ni segunda familia; antetítulo y entradilla en mayúsculas con tracking y en el verde de acento.
-- **S15.** «El footer letras del mismo color y fuente, no verde» — el pie usa la misma familia y el mismo gris que el dominio; el acento queda solo en las dos etiquetas.
-- **S16.** «reduce el espacio a la mitad, que hay arriba/abajo de Gabriel Alcantara» — los dos huecos contiguos al título son `--space-tight` (29), la mitad de `--space` (58); los márgenes absorben el resto (74.5) y siguen iguales entre sí.
-- **S12.** «el color pasalo a verde, manteniendo tonalidad, brillo, contraste» — el acento es `#1b7343`, con L 0.4925 y C 0.1116 en OKLCH frente a 0.5182 y 0.1128 del terracota anterior, y contraste 5.53 contra 5.51 sobre el papel. La entradilla y el antetítulo van en ese acento.
-- **S13.** «Estudia con regla y establece espacios simetricos» — los seis espacios salen de dos declaraciones (`--space`, `--space-tight`) más el margen calculado, y son idénticos en las ocho tarjetas. `export.mjs` los re-deriva de las cajas y los compara con lo declarado, con tolerancia de 0.5 px.
-- **S5.** No hay ajuste automático. El copy se recorta para encajar y `export.mjs` rechaza la tarjeta cuyo texto no quepa en su ranura, se salga del lienzo, pase de una línea o deje una ranura vacía. Donde antes se encogía el título, ahora falla el export.
-- **S10.** «habría que ajustar los copys para que entren» — el título corto de cada artículo vive en `PostMeta.cardTitle` y su entradilla en `PostMeta.cardSub`; `title` y `description` de la página no cambian. Las entradillas de caso se recortan en `tagline`, que ya era copy de tarjeta.
+- **S4.** «hay 5 líneas de contenido, que no varien. Siempre igual, uniformidad. Tamaño de la letra fijo» — la tarjeta es una plantilla rígida de cinco ranuras, **tres caras y tres tamaños** (S14): `34` en mono (dominio, antetítulo, pie), `34` en sans (entradilla) y `96` en serif light (título). Cada ranura ocupa **una sola línea** en una caja de altura fija (34 / 34 / 96 / 46 / 34); las posiciones se derivan por `calc()` de esas alturas y de los dos huecos, no se escriben a mano. Las ocho rellenan las cinco.
+- **S14.** «1 solo tipo de letra, nada de cursivas. En mayusuculas y en verde» → **sustituida por L11: la tarjeta usa el sistema tipográfico del sitio.** JetBrains Mono para las etiquetas micro en mayúsculas con tracking, Newsreader 300 para el título y Plus Jakarta Sans para la entradilla. Sin cursivas.
+- **S15.** «El footer letras del mismo color y fuente, no verde» → el pie sigue en mono y en el gris apagado `#6f6960`, como la cabecera de la tarjeta; el acento queda solo en el antetítulo. Sustituida en la práctica por L11: la familia del pie es ahora la mono del sitio.
+- **S16.** «reduce el espacio a la mitad, que hay arriba/abajo de Gabriel Alcantara» — los dos huecos contiguos al título son `--space-tight` (18), el más pequeño de la retícula, y la caja del título es exactamente su cuerpo (96), así que las tres líneas centrales leen como un bloque. Los márgenes absorben el resto (97) y siguen iguales entre sí.
+- **S12.** «el color pasalo a verde…» (L9) → **sustituida por L11: el acento es el terracota del sitio, `#9e4e36`**, el mismo de sus antetítulos. El verde queda como señal de disponibilidad: texto `#3e5c49` con punto `#059669`, tal y como lo pinta el hero.
+- **S13.** «Estudia con regla y establece espacios simetricos» — los seis espacios salen de dos declaraciones (`--space` 78, `--space-tight` 18) más el margen calculado (97), y son idénticos en las ocho tarjetas: `97 / 78 / 18 / 18 / 78 / 97`. `export.mjs` los re-deriva de las cajas y los compara con lo declarado, con tolerancia de 0.5 px.
+- **S5.** No hay ajuste automático. El copy se recorta para encajar y `export.mjs` rechaza la tarjeta cuyo texto no quepa en su ranura, se salga de la **columna de contenido** (80 px de margen), pase de una línea o deje una ranura vacía. Donde antes se encogía el título, ahora falla el export.
+- **S10.** «habría que ajustar los copys para que entren» — el título corto de cada artículo vive en `PostMeta.cardTitle` y su entradilla en `PostMeta.cardSub`; `title` y `description` de la página no cambian. Las entradillas de caso se recortan en `tagline`, que ya era copy de tarjeta, y el pie de un caso lista como mucho tres tecnologías: a 34 px una cuarta invade el margen.
 - **S11.** El antetítulo y la entradilla de la tarjeta por defecto se derivan de `SITE.location` y `SITE.roles`: ninguna cadena nueva que pueda desincronizarse.
 - **S6.** Las tarjetas se escriben como PNG de exactamente 1200×630 (`og:image:type` en `Seo.astro` declara `image/png`) y por debajo de `--max-kb`; el exportador rechaza cualquier otra medida o peso.
 - **S7.** `pnpm social:cards` sigue siendo el único punto de entrada, y sigue generando además `apple-touch-icon.png`, `icon-192.png` e `icon-512.png`.
@@ -32,6 +32,9 @@ Rama: `feat/og-image-template`. Runner: `pnpm social:cards` + `pnpm test` + `pnp
 - [x] T5 · S8 · inline · `tests/social-cards.test.ts`: tarjeta por defecto cubierta y deriva de copy detectada
 - [x] T6 · S9,S2 · inline · `docs/og-image/README.md` + sección del README raíz
 - [x] T7 · verificación · inline · `pnpm social:cards`, `pnpm test`, `pnpm build`
+- [x] T8 · S4,S5,S10,S12,S13,S14,S15,S16 · inline · `docs/og-image/card.html`, `docs/og-image/export.mjs`, `scripts/social-cards.mjs`, PNG y manifiesto regenerados, `docs/og-image/README.md`
+- [x] T9 · S3,S4 · inline · `docs/og-image/editor.html` (taller visual) + sección en `docs/og-image/README.md`
+- [x] T10 · S3,S4,S13 · inline · marca, reglas y alineación en `docs/og-image/editor.html`
 
 ## Slices
 
@@ -134,3 +137,119 @@ Decisiones de la pasada:
 ### L6 · verificación
 
 `pnpm social:cards` (8 tarjetas + 3 iconos), `pnpm test` (50 pruebas), `pnpm build`. Revisión visual a 1200 px y a 504 px de las tres composiciones.
+
+### L11 · cambio de requisito: la tarjeta adopta la estética del sitio
+
+> vamos a mejorar el og-image. Tal y como está ahora, es asquero y no sigue la estetica de la web. Además, de está está desproporcionado y con demasiado aire entre el bloque central (3 lineas)
+
+Diagnóstico de lo que había, contra la web real: la tarjeta usaba Newsreader
+para todo (el sitio reserva la serif al display y usa mono para cada etiqueta
+micro), verde `#1b7343` en dos etiquetas (el sitio acentúa con terracota y
+reserva el verde a la disponibilidad), un logo que no existe en el sitio, dos
+degradados radiales y cinco cajas de 52/40/110/40/65 con huecos de 58: el título
+respiraba 110 px para un cuerpo de 96 y el bloque central se deshacía.
+
+Cómo se resolvió:
+
+1. Tres familias, las mismas del sitio y cargadas de `node_modules` por ruta
+   relativa: JetBrains Mono para las cinco etiquetas micro, Newsreader 300 para
+   el título, Plus Jakarta Sans para la entradilla. Sin cursivas.
+2. Composición de cabecera editorial: filo de filete bajo el dominio y sobre el
+   pie, los dos a 24 px de su fila, que es lo que cierra el bloque sin añadir
+   texto. Se fueron el logo y los degradados.
+3. El bloque central se aprieta por geometría: la caja del título pasa a 96 (una
+   línea exacta, sin aire de interlineado) y los dos huecos contiguos a 18, con
+   los márgenes en 97. Los seis espacios quedan `97 / 78 / 18 / 18 / 78 / 97`.
+4. Acento terracota `#9e4e36` en el antetítulo; el verde vuelve a su papel del
+   sitio: punto y texto de disponibilidad en la cabecera. La disponibilidad es
+   copy (`status`), no un adorno del CSS.
+5. Un caso lista tres tecnologías en el pie. Con cuatro, `React Native · Expo ·
+   TypeScript · Supabase` empujaba `2026` fuera de la columna.
+
+Dos agujeros de la puerta que aparecieron al rediseñar:
+
+- `--margin` es un `calc()`, y una custom property conserva su texto de origen:
+  `Number.parseFloat` devolvía `NaN` y la comparación de los dos espacios
+  exteriores nunca se ejecutaba. Ahora se mide con una sonda de `width:
+  var(--margin)`. Verificado desviando `--y-sub` 10 px: falla con
+  `[97.0, 78.0, 18.0, 28.0, 78.0, 87.0]`.
+- La puerta comparaba contra el lienzo de 1200, no contra la columna de 1040, así
+  que un pie que invadía los 80 px de margen pasaba. Ahora exige la columna y lo
+  nombra. Verificado con el pie de cuatro tecnologías: `span#footRight se sale
+  de su columna («2026»): 1041,499 → 1126,533`.
+
+Un primer intento fue un pie con píldoras (la `.pill` del sitio). Se descartó: a
+34 px la píldora de `sistemas distribuidos` pesa más que el título y la tarjeta
+pasaba de cartel a ficha de catálogo.
+
+Verificación: `pnpm social:cards` (8 tarjetas, mínimo 34 px, espacios idénticos),
+`pnpm test` (72 pruebas), `pnpm build`, y revisión de las ocho a 1200 y a 504 px.
+
+### L12 · el taller visual
+
+> sabes que. genera un html donde yo pueda editar las pocicinoes, tamaño, colores, etc.. y texto. Así será más rápido construir lo que quiero.
+
+`docs/og-image/editor.html`: el mismo lienzo de 1200×630 con panel de control, sin
+servidor ni build, con las fuentes del sitio por ruta relativa.
+
+Decisiones:
+
+- Se arrastran **filas**, no cajas sueltas: la tarjeta es una retícula de cinco, y
+  arrastrar el título fuera de su fila rompería lo que la puerta defiende. El
+  arrastre escribe un desplazamiento (`dx`, `dy`), no un `top` absoluto, así que
+  los huecos siguen derivando las cinco posiciones y el JSON exportado se puede
+  portar sin reinterpretar nada.
+- Las ranuras referencian **tokens de color por nombre** (`ink`, `accent`, …), no
+  valores sueltos: cambiar el acento en el panel retiñe lo que lo use, y el JSON
+  sale ya en el vocabulario de `card.html`.
+- El taller mide lo mismo que la puerta: si una fila no cabe o baja de 34 px, la
+  marca en rojo y lo dice en la línea de cierre. Un diseño no puede celebrarse
+  como bueno si el exportador lo va a rechazar.
+- Las ocho copias reales están dentro (instantánea de `scripts/social-cards.mjs`)
+  para juzgar cada título en su sitio, no solo el de la portada.
+- El estado vive en `localStorage` y la sección **Salida** emite el `:root`
+  resultante y un JSON con geometría resuelta. Ese JSON es el contrato de vuelta:
+  el taller dibuja, el exportador decide.
+
+Verificación en navegador: arrastre (dy 30 con zoom 0.7 → 21 px de pantalla),
+cambio a 504, cambio de copy real, título a 120 px (1038/1040, al borde), recarga
+con el estado intacto, `Restaurar base` y cero errores de consola.
+
+### L13 · marca, reglas y alineación en el taller
+
+> me falta el logo, y reglas, y alineamiento
+
+El taller dibujaba la tarjeta pero solo dejaba tocar la tipografía: no había
+marca, los dos filetes eran fijos y todo iba alineado a la izquierda.
+
+- **Marca**: el símbolo del sitio (el mismo de `icon.html`), dentro de la
+  cabecera. La fila crece hasta el alto de la marca —`heights[0]` pasa a
+  `max(texto, marca)`— para que el símbolo nunca se salga del filete, y el margen
+  calculado absorbe la diferencia. Color por token, tamaño, separación y
+  desplazamiento propios.
+- **Reglas**: pasan de dos filetes derivados de `ruleGap` a una lista. Cada una
+  se ancla a una fila (por encima o por debajo), con desfase, sangrado lateral,
+  grosor y color. Se añaden y se quitan desde el panel; la retícula ya no sabe
+  nada de filetes.
+- **Alineación** por ranura: extremos, izquierda, centro o derecha. En las filas
+  de dos textos (cabecera y pie) «extremos» es el `space-between`; en las de uno
+  es izquierda.
+- **Guías** de columna (bordes y centro) y de fila (el top de cada una), con
+  interruptor: son del taller y no llegan al PNG.
+
+Dos detalles de fidelidad, porque el taller dibuja a 0.7 y a 0.42:
+
+- Los filetes se dibujan con un mínimo de un píxel de dispositivo
+  (`max(grosor, 1/zoom)`): un filete de 1 px a escala 0.42 desaparecía y daba la
+  impresión de que la tarjeta no tenía reglas. El grosor exportado sigue siendo
+  el declarado.
+- La medición cuenta solo hojas con texto. La cabecera envuelve el dominio en un
+  `lockup` con la marca, y contar el envoltorio y su hijo sumaba el mismo texto
+  dos veces: la fila se declaraba «NO CABE» con 1149/1040 px de un contenido que
+  ocupaba 651.
+
+Verificación en navegador: base con marca de 40 px y dos filetes; marca a 64 px
+en acento (la fila pasa a 64 y los filetes la siguen); título y entradilla
+centrados; antetítulo a la derecha; filete con sangrado 120 y grosor 3; tercera
+regla añadida y quitada; cambio a copy de WebSockets; recarga con el estado
+intacto; `Restaurar base`; cero errores de consola.

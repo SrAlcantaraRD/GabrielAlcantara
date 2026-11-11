@@ -2,11 +2,12 @@
  * Exports the social share cards and app icons in `public/` from the artboards
  * in this directory.
  *
- * The artboards do the layout; this script does the proof. `card.html` shrinks
- * a title until it fits, and this file then re-measures the rendered card on
- * its own terms and refuses to write anything that breaks a rule: any text
- * below MIN_FONT_PX, any element outside the canvas or overflowing its box, any
- * image that is not exactly 1200x630, any image over --max-kb.
+ * The artboards do the layout; this script does the proof. It re-measures the
+ * rendered card on its own terms and refuses to write anything that breaks a
+ * rule: any text below MIN_FONT_PX, any element outside the content column or
+ * overflowing its box, any empty slot, any rhythm that drifts from the two
+ * declared gaps, any image that is not exactly 1200x630, any image over
+ * --max-kb.
  *
  * Usage: pnpm social:cards
  *        node docs/og-image/export.mjs --only nakire-tps
@@ -92,6 +93,12 @@ function audit({ minFontPx, slotNames, tolerance }) {
 	const frame = card.getBoundingClientRect();
 	const problems = [];
 
+	// Text may not invade the page margin: the canvas check alone would accept a
+	// footer that runs into the 80px gutter and still stays inside 1200px.
+	const gutter = Number.parseFloat(getComputedStyle(card).getPropertyValue("--x"));
+	const left = frame.left + gutter;
+	const right = frame.right - gutter;
+
 	const carriesText = (element) =>
 		Array.from(element.childNodes).some(
 			(node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
@@ -124,13 +131,13 @@ function audit({ minFontPx, slotNames, tolerance }) {
 			);
 		}
 		if (
-			box.left < frame.left - 0.5 ||
+			box.left < left - 0.5 ||
 			box.top < frame.top - 0.5 ||
-			box.right > frame.right + 0.5 ||
+			box.right > right + 0.5 ||
 			box.bottom > frame.bottom + 0.5
 		) {
 			problems.push(
-				`${label} se sale del lienzo («${excerpt}»): ${Math.round(box.left)},${Math.round(box.top)} → ${Math.round(box.right)},${Math.round(box.bottom)}`,
+				`${label} se sale de su columna («${excerpt}»): ${Math.round(box.left)},${Math.round(box.top)} → ${Math.round(box.right)},${Math.round(box.bottom)}`,
 			);
 		}
 		if (element.scrollWidth > element.clientWidth + 1) {
@@ -146,13 +153,22 @@ function audit({ minFontPx, slotNames, tolerance }) {
 	}
 
 	// The rhythm is read from the slot boxes, which the stylesheet derives from
-	// two declared gaps: one between rows, half of it around the title. The gate
-	// re-derives the six spaces and compares them with those two declarations,
+	// two declared gaps: one between rows and a tighter one inside the block. The
+	// gate re-derives the six spaces and compares them with those declarations,
 	// so a hand-edited top cannot slip through.
 	const style = getComputedStyle(card);
 	const space = Number.parseFloat(style.getPropertyValue("--space"));
 	const tight = Number.parseFloat(style.getPropertyValue("--space-tight"));
-	const margin = Number.parseFloat(style.getPropertyValue("--margin"));
+
+	// `--margin` is a calc(), and a custom property keeps its source text, so it
+	// is measured through a probe instead of parsed: otherwise the outer two
+	// spaces would be compared against NaN and never checked at all.
+	const probe = document.createElement("div");
+	probe.style.cssText =
+		"position:absolute;visibility:hidden;height:0;width:var(--margin)";
+	card.appendChild(probe);
+	const margin = probe.getBoundingClientRect().width;
+	probe.remove();
 
 	const boxes = slotNames.map((name) => {
 		const host = card.querySelector(`[data-slot="${name}"]`);

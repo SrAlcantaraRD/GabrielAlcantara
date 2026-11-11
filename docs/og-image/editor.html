@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>og-image · taller visual</title>
+<style>
+/* The three faces the site loads, by relative path so the file opens over
+   file:// with no server and no build. */
+@font-face {
+	font-family: "CardSerif";
+	src: url("../../node_modules/@fontsource/newsreader/files/newsreader-latin-300-normal.woff2") format("woff2");
+	font-weight: 300;
+	font-style: normal;
+	font-display: block;
+}
+
+@font-face {
+	font-family: "CardSerif";
+	src: url("../../node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: block;
+}
+
+@font-face {
+	font-family: "CardMono";
+	src: url("../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+	font-weight: 100 800;
+	font-style: normal;
+	font-display: block;
+}
+
+@font-face {
+	font-family: "CardSans";
+	src: url("../../node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2");
+	font-weight: 200 800;
+	font-style: normal;
+	font-display: block;
+}
+
+:root {
+	--ui-bg: #0e0e11;
+	--ui-panel: #17171b;
+	--ui-field: #222228;
+	--ui-line: #2e2e36;
+	--ui-ink: #ece9e3;
+	--ui-dim: #99958c;
+	--ui-accent: #7aa7ff;
+	--ui-bad: #ff6b6b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+	display: grid;
+	grid-template-columns: 372px minmax(0, 1fr);
+	height: 100vh;
+	overflow: hidden;
+	background: var(--ui-bg);
+	color: var(--ui-ink);
+	font: 12px/1.5 "CardSans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---------- panel ---------- */
+.panel {
+	overflow-y: auto;
+	padding: 18px 18px 40px;
+	border-right: 1px solid var(--ui-line);
+	background: var(--ui-panel);
+}
+
+.panel h1 {
+	margin-bottom: 2px;
+	font-family: "CardMono", monospace;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: .04em;
+}
+
+.panel .lede {
+	margin-bottom: 18px;
+	color: var(--ui-dim);
+	font-size: 11.5px;
+}
+
+.panel section { margin-bottom: 22px; }
+
+.panel h2 {
+	margin-bottom: 9px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--ui-line);
+	color: var(--ui-dim);
+	font-family: "CardMono", monospace;
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: .16em;
+	text-transform: uppercase;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 104px minmax(0, 1fr);
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 5px;
+}
+
+.row > span {
+	color: var(--ui-dim);
+	font-size: 11px;
+	letter-spacing: .01em;
+}
+
+.wide { display: grid; gap: 3px; margin-bottom: 6px; }
+
+.wide > span { color: var(--ui-dim); font-size: 11px; }
+
+input[type="text"],
+input[type="number"],
+select {
+	width: 100%;
+	min-width: 0;
+	padding: 5px 7px;
+	border: 1px solid var(--ui-line);
+	border-radius: 5px;
+	background: var(--ui-field);
+	color: var(--ui-ink);
+	font-family: "CardMono", monospace;
+	font-size: 11px;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus { outline: 1px solid var(--ui-accent); outline-offset: -1px; }
+
+input[type="color"] {
+	width: 100%;
+	height: 26px;
+	padding: 2px;
+	border: 1px solid var(--ui-line);
+	border-radius: 5px;
+	background: var(--ui-field);
+}
+
+input[type="checkbox"] { justify-self: start; width: 15px; height: 15px; accent-color: var(--ui-accent); }
+
+fieldset {
+	margin-bottom: 9px;
+	padding: 9px 10px 7px;
+	border: 1px solid #24242b;
+	border-radius: 7px;
+}
+
+legend {
+	padding: 0 5px;
+	color: var(--ui-ink);
+	font-family: "CardMono", monospace;
+	font-size: 10.5px;
+	letter-spacing: .06em;
+}
+
+.meta {
+	margin-top: 3px;
+	color: var(--ui-dim);
+	font-family: "CardMono", monospace;
+	font-size: 10px;
+}
+
+.meta.is-bad { color: var(--ui-bad); }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+
+button {
+	padding: 6px 10px;
+	border: 1px solid var(--ui-line);
+	border-radius: 6px;
+	background: var(--ui-field);
+	color: var(--ui-ink);
+	font: inherit;
+	cursor: pointer;
+}
+
+button:hover { border-color: #45454f; }
+button.is-on { border-color: var(--ui-accent); color: var(--ui-accent); }
+
+pre {
+	max-height: 190px;
+	margin-top: 8px;
+	padding: 9px;
+	overflow: auto;
+	border: 1px solid var(--ui-line);
+	border-radius: 6px;
+	background: #101013;
+	color: #b9d4ff;
+	font-family: "CardMono", monospace;
+	font-size: 10px;
+	line-height: 1.55;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.hint { margin-top: 6px; color: var(--ui-dim); font-size: 10.5px; }
+.saved { color: var(--ui-accent); }
+
+/* ---------- stage ---------- */
+.stage {
+	display: grid;
+	place-items: center;
+	padding: 32px;
+	overflow: auto;
+	background:
+		radial-gradient(1200px 600px at 50% 0%, #191920, var(--ui-bg) 70%);
+}
+
+.frame { position: relative; flex: none; }
+
+.scaled { position: absolute; inset: 0 auto auto 0; transform-origin: 0 0; }
+
+.card {
+	position: relative;
+	width: 1200px;
+	height: 630px;
+	overflow: hidden;
+	background: var(--paper);
+	color: var(--ink);
+	-webkit-font-smoothing: antialiased;
+	user-select: none;
+}
+
+.slot {
+	position: absolute;
+	white-space: nowrap;
+	cursor: grab;
+}
+
+.slot.is-dragging { cursor: grabbing; }
+
+.slot:focus-visible { outline: 2px dashed var(--ui-accent); outline-offset: 4px; }
+
+.slot.is-bad { outline: 2px dashed #e5484d; outline-offset: 3px; }
+
+.masthead,
+.foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.foot { align-items: flex-end; }
+
+.lockup { display: inline-flex; align-items: center; gap: var(--logo-gap); }
+
+.mark {
+	display: inline-flex;
+	flex: none;
+	width: var(--logo-size);
+	height: var(--logo-size);
+}
+
+.mark svg { display: block; width: 100%; height: 100%; }
+
+.masthead .status { display: inline-flex; align-items: center; flex: none; }
+.masthead .status .dot { width: 12px; height: 12px; margin-right: 14px; border-radius: 999px; }
+.foot .right { flex: none; }
+
+#rules { position: absolute; inset: 0; pointer-events: none; }
+
+.rule { position: absolute; height: 1px; background: var(--line); }
+
+/* Guides are workshop only: the exporter never sees them. */
+.guides { position: absolute; inset: 0; pointer-events: none; }
+.guides .g { position: absolute; border-left: 1px dashed rgb(122 167 255 / 0.45); }
+.guides .g--h { border-left: 0; border-top: 1px dashed rgb(122 167 255 / 0.3); height: 0; }
+
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<aside class="panel">
+	<h1>og-image · taller</h1>
+	<p class="lede">Arrastra una fila en el lienzo para moverla. Flechas: 1 px, con Mayús: 10 px. Todo queda guardado en este navegador.</p>
+
+	<section>
+		<h2>Tarjeta</h2>
+		<label class="row"><span>Copy real</span><select id="preset"></select></label>
+		<div class="buttons" id="zoom">
+			<button type="button" data-zoom="1">1200</button>
+			<button type="button" data-zoom="0.7">840</button>
+			<button type="button" data-zoom="0.42">504 (feed)</button>
+		</div>
+		<label class="row" style="margin-top: 5px"><span>Guías</span><input type="checkbox" data-set="guides"></label>
+	</section>
+
+	<section>
+		<h2>Texto</h2>
+		<div id="copyControls"></div>
+	</section>
+
+	<section>
+		<h2>Ranuras</h2>
+		<div id="slotControls"></div>
+		<p class="meta" id="fit"></p>
+	</section>
+
+	<section>
+		<h2>Marca</h2>
+		<div id="logoControls"></div>
+	</section>
+
+	<section>
+		<h2>Reglas</h2>
+		<div id="ruleControls"></div>
+		<div class="buttons" style="margin-top: 6px">
+			<button type="button" data-rule-add>Añadir regla</button>
+		</div>
+	</section>
+
+	<section>
+		<h2>Retícula</h2>
+		<div id="gridControls"></div>
+	</section>
+
+	<section>
+		<h2>Colores</h2>
+		<div id="colorControls"></div>
+	</section>
+
+	<section>
+		<h2>Salida</h2>
+		<div class="buttons">
+			<button type="button" id="copyJson">Copiar JSON</button>
+			<button type="button" id="copyCss">Copiar CSS</button>
+			<button type="button" id="reset">Restaurar base</button>
+		</div>
+		<p class="hint" id="status">Pega el JSON en el chat y lo aplico a <code>card.html</code>.</p>
+		<pre id="preview"></pre>
+	</section>
+</aside>
+
+<main class="stage" id="stage">
+	<div class="frame" id="frame">
+		<div class="scaled" id="scaled">
+			<div class="card" id="card">
+				<div id="rules"></div>
+				<div class="guides" id="guides" hidden></div>
+
+				<div class="masthead slot" id="slot-domain" data-slot="domain" tabindex="0">
+					<span class="lockup">
+						<span class="mark" id="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128"><path fill="currentColor" d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z"/></svg></span>
+						<span id="t-domain"></span>
+					</span>
+					<span class="status" id="t-status"><i class="dot" id="dot"></i><b id="statusText"></b></span>
+				</div>
+
+				<p class="slot" id="slot-eyebrow" data-slot="eyebrow" tabindex="0"><span id="t-eyebrow"></span></p>
+				<h1 class="slot" id="slot-title" data-slot="title" tabindex="0"><span id="t-title"></span></h1>
+				<p class="slot" id="slot-sub" data-slot="sub" tabindex="0"><span id="t-sub"></span></p>
+
+				<footer class="foot slot" id="slot-foot" data-slot="foot" tabindex="0">
+					<span id="t-footLeft"></span>
+					<span class="right" id="t-footRight"></span>
+				</footer>
+			</div>
+		</div>
+	</div>
+</main>
+
+<script>
+(function () {
+	const FAMILIES = {
+		mono: '"CardMono", ui-monospace, monospace',
+		serif: '"CardSerif", Georgia, "Times New Roman", serif',
+		sans: '"CardSans", ui-sans-serif, system-ui, sans-serif',
+	};
+
+	// The eight cards the exporter renders, copied from scripts/social-cards.mjs.
+	// A copy edited here is a design probe; the exporter stays the source of truth.
+	const COPIES = [
+		{
+			name: "Por defecto",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Barcelona · remoto",
+				title: "Gabriel Alcántara",
+				sub: "Solutions Architect · Software Engineer",
+				footLeft: "sistemas distribuidos · EDA · DDD",
+				footRight: "desde 2011",
+			},
+		},
+		{
+			name: "Nakire TPS",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Caso de estudio · Quabu Solutions",
+				title: "Nakire TPS",
+				sub: "Software distribuido para la industria.",
+				footLeft: "EDA · DDD · TDD",
+				footRight: "2025 — 2026",
+			},
+		},
+		{
+			name: "Bodega Digital",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Caso de estudio · Quabu Solutions",
+				title: "Bodega Digital",
+				sub: "Inventario de vino con RFID y machine learning.",
+				footLeft: "DDD · TDD · Monorepo",
+				footRight: "2024 — 2025",
+			},
+		},
+		{
+			name: "Pachanga Community",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Caso de estudio",
+				title: "Pachanga Community",
+				sub: "App y web de fútbol amateur, de principio a fin.",
+				footLeft: "React Native · Expo · TypeScript",
+				footRight: "2026",
+			},
+		},
+		{
+			name: "Dominios complejos",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "DDD",
+				title: "Dominios complejos",
+				sub: "Lenguaje común, límites y decisiones.",
+				footLeft: "DDD · Diseño de dominios",
+				footRight: "3 nov 2026 · 8 min",
+			},
+		},
+		{
+			name: "WebSockets en operación",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Backend",
+				title: "WebSockets en operación",
+				sub: "El canal, el rol y la reconexión como diseño.",
+				footLeft: "WebSocket · RBAC",
+				footRight: "20 oct 2026 · 7 min",
+			},
+		},
+		{
+			name: "Arquitectura por eventos",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Sistemas distribuidos",
+				title: "Arquitectura por eventos",
+				sub: "Repartir responsabilidades, no mensajería.",
+				footLeft: "EDA · Eventos",
+				footRight: "6 oct 2026 · 9 min",
+			},
+		},
+		{
+			name: "Plataforma conectada",
+			copy: {
+				domain: "gabrielalcantara.com",
+				status: "Disponible",
+				eyebrow: "Automatización industrial",
+				title: "Plataforma conectada",
+				sub: "El hardware marca el ritmo; la traza queda.",
+				footLeft: "Industrial · Integración",
+				footRight: "15 sept 2026 · 9 min",
+			},
+		},
+	];
+
+	const BASE = {
+		preset: 0,
+		zoom: 0.7,
+		guides: true,
+		copy: COPIES[0].copy,
+		grid: { space: 78, tight: 18, x: 80, width: 1040, footGap: 40, height: 630 },
+		colors: {
+			paper: "#faf8f5",
+			ink: "#1a1a1a",
+			muted: "#4f4b47",
+			faint: "#6f6960",
+			line: "#e6e0d6",
+			accent: "#9e4e36",
+			sage: "#3e5c49",
+			dot: "#059669",
+		},
+		logo: { on: true, size: 40, color: "ink", gap: 16, dx: 0, dy: 0 },
+		rules: [
+			{ on: true, anchor: "domain", side: "below", offset: 24, insetLeft: 0, insetRight: 0, thickness: 1, color: "line" },
+			{ on: true, anchor: "foot", side: "above", offset: 24, insetLeft: 0, insetRight: 0, thickness: 1, color: "line" },
+		],
+		slots: {
+			domain: { family: "mono", size: 34, weight: 400, tracking: -0.01, lh: 1, upper: false, color: "faint", align: "between", dx: 0, dy: 0 },
+			eyebrow: { family: "mono", size: 34, weight: 400, tracking: 0.14, lh: 1, upper: true, color: "accent", align: "left", dx: 0, dy: 0 },
+			title: { family: "serif", size: 96, weight: 300, tracking: -0.03, lh: 1, upper: false, color: "ink", align: "left", dx: 0, dy: 0 },
+			sub: { family: "sans", size: 34, weight: 400, tracking: -0.005, lh: 1.353, upper: false, color: "muted", align: "left", dx: 0, dy: 0 },
+			foot: { family: "mono", size: 34, weight: 400, tracking: 0.02, lh: 1, upper: false, color: "faint", align: "between", dx: 0, dy: 0 },
+			status: { family: "mono", size: 34, weight: 400, tracking: 0.06, lh: 1, upper: true, color: "sage", dx: 0, dy: 0 },
+		},
+	};
+
+	const ROWS = [
+		["domain", "Dominio"],
+		["eyebrow", "Antetítulo"],
+		["title", "Título"],
+		["sub", "Entradilla"],
+		["foot", "Pie"],
+		["status", "Sello"],
+	];
+
+	const ROW_ORDER = ["domain", "eyebrow", "title", "sub", "foot"];
+	const LABELS = Object.fromEntries(ROWS.map(([key, label]) => [key, label]));
+
+	const COPY_FIELDS = [
+		["domain", "Dominio"],
+		["status", "Sello"],
+		["eyebrow", "Antetítulo"],
+		["title", "Título"],
+		["sub", "Entradilla"],
+		["footLeft", "Pie izquierda"],
+		["footRight", "Pie derecha"],
+	];
+
+	const GRID_FIELDS = [
+		["space", "Hueco entre filas", 1],
+		["tight", "Hueco del bloque", 1],
+		["x", "Margen lateral", 1],
+		["width", "Ancho de columna", 1],
+		["footGap", "Separación del pie", 1],
+	];
+
+	const LOGO_FIELDS = [
+		["on", "Visible", "checkbox"],
+		["size", "Tamaño", "number"],
+		["gap", "Separación", "number"],
+		["dx", "Desliz. x", "number"],
+		["dy", "Desliz. y", "number"],
+	];
+
+	const RULE_FIELDS = [
+		["on", "Visible", "checkbox"],
+		["anchor", "Ancla", "anchor"],
+		["side", "Lado", "side"],
+		["offset", "Desfase", "number"],
+		["insetLeft", "Sangrado izq.", "number"],
+		["insetRight", "Sangrado der.", "number"],
+		["thickness", "Grosor", "number"],
+		["color", "Color", "token"],
+	];
+
+	const ALIGN_OPTIONS = [
+		["between", "Extremos"],
+		["left", "Izquierda"],
+		["center", "Centro"],
+		["right", "Derecha"],
+	];
+
+	const COLOR_FIELDS = [
+		["paper", "Papel"],
+		["ink", "Tinta"],
+		["muted", "Tinta media"],
+		["faint", "Tinta tenue"],
+		["line", "Filete"],
+		["accent", "Acento"],
+		["sage", "Sage"],
+		["dot", "Punto"],
+	];
+
+	const COLOR_TOKENS = ["ink", "muted", "faint", "accent", "sage", "line"];
+	const MIN_FONT_PX = 34;
+	const STORE = "og-editor-v2";
+
+	const $ = (selector) => document.querySelector(selector);
+	const clone = (value) => JSON.parse(JSON.stringify(value));
+
+	function merge(base, saved) {
+		const out = clone(base);
+		if (!saved || typeof saved !== "object") return out;
+		for (const key of Object.keys(out)) {
+			const value = saved[key];
+			if (value == null) continue;
+			if (typeof out[key] === "object" && !Array.isArray(out[key])) {
+				if (typeof value === "object") out[key] = merge(out[key], value);
+			} else if (typeof value === typeof out[key]) {
+				out[key] = value;
+			}
+		}
+		return out;
+	}
+
+	let state = merge(BASE, (() => {
+		try {
+			return JSON.parse(localStorage.getItem(STORE) ?? "null");
+		} catch {
+			return null;
+		}
+	})());
+
+	// A half-written or older entry must not leave a rule without its fields.
+	state.rules = (Array.isArray(state.rules) ? state.rules : []).map((rule) => ({
+		...BASE.rules[0],
+		...rule,
+	}));
+	if (!state.rules.length) state.rules = clone(BASE.rules);
+
+	const elements = {
+		card: $("#card"),
+		frame: $("#frame"),
+		scaled: $("#scaled"),
+		rules: $("#rules"),
+		guides: $("#guides"),
+		mark: $("#mark"),
+		dot: $("#dot"),
+		status: $("#status"),
+		fit: $("#fit"),
+		preview: $("#preview"),
+	};
+
+	// `status` has no row of its own: it rides inside the masthead.
+	const rows = Object.fromEntries(
+		ROWS.map(([key]) => [key, $(`#slot-${key}`)]).filter(([, element]) => element),
+	);
+	const texts = {
+		domain: $("#t-domain"),
+		status: $("#t-status"),
+		eyebrow: $("#t-eyebrow"),
+		title: $("#t-title"),
+		sub: $("#t-sub"),
+		footLeft: $("#t-footLeft"),
+		footRight: $("#t-footRight"),
+		statusText: $("#statusText"),
+	};
+
+	// ---------- panel ----------
+	function field(set, value, options = {}) {
+		const type = options.type ?? "number";
+		const step = options.step ?? 1;
+		const extra = type === "checkbox" ? (value ? " checked" : "") : ` value="${value}"`;
+		const control =
+			type === "select"
+				? `<select data-set="${set}">${options.options
+						.map(([key, label]) => `<option value="${key}"${key === value ? " selected" : ""}>${label}</option>`)
+						.join("")}</select>`
+				: `<input type="${type}" data-set="${set}" step="${step}"${extra}>`;
+		return `<label class="row"><span>${options.label}</span>${control}</label>`;
+	}
+
+	function buildPanel() {
+		$("#preset").innerHTML = COPIES.map(
+			(item, index) => `<option value="${index}"${index === state.preset ? " selected" : ""}>${item.name}</option>`,
+		).join("");
+
+		$("#copyControls").innerHTML = COPY_FIELDS.map(([key, label]) =>
+			`<label class="wide"><span>${label}</span><input type="text" data-set="copy.${key}" value="${escapeHtml(state.copy[key] ?? "")}"></label>`,
+		).join("");
+
+		$("#gridControls").innerHTML = GRID_FIELDS.map(([key, label, step]) =>
+			field(`grid.${key}`, state.grid[key], { label, step }),
+		).join("");
+
+		$("#logoControls").innerHTML = [
+			field("logo.on", state.logo.on, { type: "checkbox", label: "Visible" }),
+			field("logo.size", state.logo.size, { label: "Tamaño" }),
+			field("logo.gap", state.logo.gap, { label: "Separación" }),
+			field("logo.color", state.logo.color, {
+				type: "select",
+				label: "Color",
+				options: COLOR_TOKENS.map((token) => [token, token]),
+			}),
+			field("logo.dx", state.logo.dx, { label: "Desliz. x" }),
+			field("logo.dy", state.logo.dy, { label: "Desliz. y" }),
+		].join("");
+
+		$("#ruleControls").innerHTML = state.rules.map((rule, index) => `<fieldset>
+	<legend>Regla ${index + 1}</legend>
+	${field(`rules.${index}.on`, rule.on, { type: "checkbox", label: "Visible" })}
+	${field(`rules.${index}.anchor`, rule.anchor, {
+		type: "select",
+		label: "Ancla",
+		options: ROW_ORDER.map((key) => [key, LABELS[key]]),
+	})}
+	${field(`rules.${index}.side`, rule.side, {
+		type: "select",
+		label: "Lado",
+		options: [["below", "Debajo"], ["above", "Encima"]],
+	})}
+	${field(`rules.${index}.offset`, rule.offset, { label: "Desfase" })}
+	${field(`rules.${index}.insetLeft`, rule.insetLeft, { label: "Sangrado izq." })}
+	${field(`rules.${index}.insetRight`, rule.insetRight, { label: "Sangrado der." })}
+	${field(`rules.${index}.thickness`, rule.thickness, { label: "Grosor" })}
+	${field(`rules.${index}.color`, rule.color, {
+		type: "select",
+		label: "Color",
+		options: COLOR_TOKENS.map((token) => [token, token]),
+	})}
+	<div class="buttons"><button type="button" data-rule-remove="${index}">Quitar regla</button></div>
+</fieldset>`).join("");
+
+		$("#colorControls").innerHTML = COLOR_FIELDS.map(([key, label]) =>
+			field(`colors.${key}`, state.colors[key], { type: "color", label }),
+		).join("");
+
+		$("#slotControls").innerHTML = ROWS.map(([key, label]) => {
+			const slot = state.slots[key];
+			return `<fieldset>
+	<legend>${label}</legend>
+	${field(`slots.${key}.family`, slot.family, {
+		type: "select",
+		label: "Fuente",
+		options: [["mono", "Mono"], ["serif", "Serif"], ["sans", "Sans"]],
+	})}
+	${field(`slots.${key}.size`, slot.size, { label: "Tamaño", step: 1 })}
+	${field(`slots.${key}.weight`, slot.weight, { label: "Peso", step: 100 })}
+	${field(`slots.${key}.tracking`, slot.tracking, { label: "Tracking (em)", step: 0.005 })}
+	${field(`slots.${key}.lh`, slot.lh, { label: "Interlineado", step: 0.01 })}
+	${field(`slots.${key}.upper`, slot.upper, { type: "checkbox", label: "Mayúsculas" })}
+	${key === "status" ? "" : field(`slots.${key}.align`, slot.align ?? "left", { type: "select", label: "Alineación", options: ALIGN_OPTIONS })}
+	${field(`slots.${key}.color`, slot.color, {
+		type: "select",
+		label: "Color",
+		options: COLOR_TOKENS.map((token) => [token, token]),
+	})}
+	${field(`slots.${key}.dx`, slot.dx, { label: "Desliz. x", step: 1 })}
+	${field(`slots.${key}.dy`, slot.dy, { label: "Desliz. y", step: 1 })}
+	<p class="meta" id="meta-${key}"></p>
+</fieldset>`;
+		}).join("");
+	}
+
+	function escapeHtml(value) {
+		return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+	}
+
+	function readPath(path) {
+		return path.split(".").reduce((node, key) => node?.[key], state);
+	}
+
+	function writePath(path, value) {
+		const keys = path.split(".");
+		const last = keys.pop();
+		const target = keys.reduce((node, key) => node[key], state);
+		target[last] = value;
+	}
+
+	function syncInputs() {
+		for (const control of document.querySelectorAll("[data-set]")) {
+			const value = readPath(control.dataset.set);
+			if (control.type === "checkbox") control.checked = Boolean(value);
+			else control.value = value;
+		}
+	}
+
+	// ---------- card ----------
+	function applyType(element, slot, height) {
+		element.style.fontFamily = FAMILIES[slot.family] ?? FAMILIES.sans;
+		element.style.fontSize = `${slot.size}px`;
+		element.style.fontWeight = String(slot.weight);
+		element.style.letterSpacing = `${slot.tracking}em`;
+		element.style.textTransform = slot.upper ? "uppercase" : "none";
+		element.style.color = `var(--${slot.color})`;
+		element.style.lineHeight = `${height}px`;
+	}
+
+	function geometry() {
+		const heights = ROW_ORDER.map((key) => Math.round(state.slots[key].size * state.slots[key].lh));
+		// The mark lives inside the masthead, so the row grows to hold it instead of
+		// letting it leak over the hairline.
+		if (state.logo.on) heights[0] = Math.max(heights[0], Math.round(state.logo.size));
+		const used = heights.reduce((total, value) => total + value, 0);
+		const margin = Math.round((state.grid.height - used - 2 * state.grid.space - 2 * state.grid.tight) / 2);
+		const tops = [];
+		let top = margin;
+		ROW_ORDER.forEach((key, index) => {
+			tops.push(top);
+			const gap = index === 0 || index === 3 ? state.grid.space : state.grid.tight;
+			top += heights[index] + gap;
+		});
+		return { order: ROW_ORDER, heights, tops, margin };
+	}
+
+	const JUSTIFY = { between: "space-between", left: "flex-start", center: "center", right: "flex-end" };
+
+	function ruleTop(rule, geometryNow) {
+		const index = ROW_ORDER.indexOf(rule.anchor);
+		if (index === -1) return 0;
+		const top = geometryNow.tops[index];
+		return rule.side === "below" ? top + geometryNow.heights[index] + rule.offset : top - rule.offset;
+	}
+
+	function render() {
+		const grid = state.grid;
+		const colors = state.colors;
+
+		elements.card.style.setProperty("--paper", colors.paper);
+		elements.card.style.setProperty("--ink", colors.ink);
+		elements.card.style.setProperty("--muted", colors.muted);
+		elements.card.style.setProperty("--faint", colors.faint);
+		elements.card.style.setProperty("--line", colors.line);
+		elements.card.style.setProperty("--accent", colors.accent);
+		elements.card.style.setProperty("--sage", colors.sage);
+		elements.card.style.setProperty("--dot", colors.dot);
+
+		const geom = geometry();
+		const { order, heights, tops } = geom;
+
+		elements.card.style.setProperty("--logo-size", `${state.logo.size}px`);
+		elements.card.style.setProperty("--logo-gap", `${state.logo.gap}px`);
+		elements.mark.hidden = !state.logo.on;
+		elements.mark.style.color = `var(--${state.logo.color})`;
+		elements.mark.style.transform = `translate(${state.logo.dx}px, ${state.logo.dy}px)`;
+
+		order.forEach((key, index) => {
+			const row = rows[key];
+			const slot = state.slots[key];
+			row.style.top = `${tops[index]}px`;
+			row.style.left = `${grid.x}px`;
+			row.style.width = `${grid.width}px`;
+			row.style.height = `${heights[index]}px`;
+			row.style.transform = `translate(${slot.dx}px, ${slot.dy}px)`;
+			row.style.gap = `${grid.footGap}px`;
+			if (key === "domain" || key === "foot") {
+				row.style.justifyContent = JUSTIFY[slot.align] ?? JUSTIFY.between;
+				row.style.textAlign = "left";
+			} else {
+				row.style.justifyContent = "";
+				row.style.textAlign = slot.align === "between" ? "left" : slot.align;
+			}
+			applyType(row, slot, heights[index]);
+		});
+
+		// The masthead and the foot hold two texts each: the flex row carries the
+		// size, the inner spans keep their own family and tracking.
+		texts.domain.style.fontFamily = FAMILIES[state.slots.domain.family];
+		texts.status.style.fontFamily = FAMILIES[state.slots.status.family];
+		texts.status.style.fontSize = `${state.slots.status.size}px`;
+		texts.status.style.fontWeight = String(state.slots.status.weight);
+		texts.status.style.letterSpacing = `${state.slots.status.tracking}em`;
+		texts.status.style.textTransform = state.slots.status.upper ? "uppercase" : "none";
+		texts.status.style.color = `var(--${state.slots.status.color})`;
+		texts.footRight.style.fontFamily = FAMILIES[state.slots.foot.family];
+
+		elements.dot.style.background = colors.dot;
+
+		renderRules(geom);
+		renderGuides(geom);
+
+		const copy = state.copy;
+		texts.domain.textContent = copy.domain ?? "";
+		texts.statusText.textContent = copy.status ?? "";
+		texts.status.hidden = !String(copy.status ?? "").trim();
+		texts.eyebrow.textContent = copy.eyebrow ?? "";
+		texts.title.textContent = copy.title ?? "";
+		texts.sub.textContent = copy.sub ?? "";
+		texts.footLeft.textContent = copy.footLeft ?? "";
+		texts.footRight.textContent = copy.footRight ?? "";
+		texts.footRight.hidden = !String(copy.footRight ?? "").trim();
+
+		const zoom = state.zoom;
+		elements.frame.style.width = `${1200 * zoom}px`;
+		elements.frame.style.height = `${630 * zoom}px`;
+		elements.scaled.style.transform = `scale(${zoom})`;
+
+		measure();
+		writePreview();
+		save();
+	}
+
+	function textWidth(element) {
+		const range = document.createRange();
+		range.selectNodeContents(element);
+		return Math.round(range.getBoundingClientRect().width);
+	}
+
+	function renderRules(geom) {
+		elements.rules.textContent = "";
+		for (const rule of state.rules) {
+			if (!rule.on) continue;
+			const line = document.createElement("div");
+			line.className = "rule";
+			line.style.top = `${ruleTop(rule, geom)}px`;
+			line.style.left = `${state.grid.x + rule.insetLeft}px`;
+			line.style.width = `${state.grid.width - rule.insetLeft - rule.insetRight}px`;
+			// A hairline vanishes under a scaled preview, so the workshop draws it at
+			// one device pixel; the exported thickness stays as declared.
+			line.style.height = `${Math.max(rule.thickness, 1 / state.zoom)}px`;
+			line.style.background = `var(--${rule.color})`;
+			elements.rules.appendChild(line);
+		}
+	}
+
+	function renderGuides(geom) {
+		elements.guides.hidden = !state.guides;
+		elements.guides.textContent = "";
+		if (!state.guides) return;
+		const device = Math.max(1, 1 / state.zoom);
+		for (const x of [state.grid.x, state.grid.x + state.grid.width / 2, state.grid.x + state.grid.width]) {
+			const line = document.createElement("div");
+			line.className = "g";
+			line.style.left = `${x}px`;
+			line.style.height = `${state.grid.height}px`;
+			line.style.borderLeftWidth = `${device}px`;
+			elements.guides.appendChild(line);
+		}
+		for (const top of geom.tops) {
+			const line = document.createElement("div");
+			line.className = "g g--h";
+			line.style.top = `${top}px`;
+			line.style.width = "1200px";
+			line.style.borderTopWidth = `${device}px`;
+			elements.guides.appendChild(line);
+		}
+	}
+
+	function measure() {
+		const problems = [];
+		const { heights, tops } = geometry();
+		const zoom = state.zoom;
+
+		for (const [index, key] of ROW_ORDER.entries()) {
+			const row = rows[key];
+			const slot = state.slots[key];
+			// Only leaves: the masthead wraps the domain in a lockup, and counting the
+			// wrapper and its child would sum the same text twice.
+			const spans = Array.from(row.querySelectorAll("span")).filter(
+				(span) =>
+					!span.querySelector("span") && !span.hidden && span.textContent.trim() !== "",
+			);
+			const widths = spans.map((span) => textWidth(span) / zoom);
+			const twoTexts = key === "domain" || key === "foot";
+			const needed = twoTexts
+				? widths.reduce((total, value) => total + value, 0) + (widths.length > 1 ? state.grid.footGap : 0)
+				: Math.max(...widths, 0);
+			const over = needed > state.grid.width + 0.5 || row.scrollWidth - row.clientWidth > 1;
+			row.classList.toggle("is-bad", over);
+
+			const meta = $(`#meta-${key}`);
+			const lines = [
+				`top ${tops[index]} · alto ${heights[index]}`,
+				`texto ${Math.round(needed)}/${state.grid.width}px`,
+			];
+			if (slot.align && slot.align !== "left" && slot.align !== "between") lines.push(`alineado ${slot.align}`);
+			if (slot.dx || slot.dy) lines.push(`deslizado ${slot.dx >= 0 ? "+" : ""}${slot.dx}, ${slot.dy >= 0 ? "+" : ""}${slot.dy}`);
+			if (over) lines.push("NO CABE");
+			if (slot.size < MIN_FONT_PX) lines.push(`bajo el mínimo de ${MIN_FONT_PX}px`);
+			if (over || slot.size < MIN_FONT_PX) problems.push(key);
+			meta.textContent = lines.join(" · ");
+			meta.classList.toggle("is-bad", over || slot.size < MIN_FONT_PX);
+		}
+
+		const statusMeta = $("#meta-status");
+		const statusWidth = Math.round(textWidth(texts.status) / zoom);
+		statusMeta.textContent = `sobre la cabecera · texto ${statusWidth}px`;
+		statusMeta.classList.toggle(
+			"is-bad",
+			statusWidth + textWidth(texts.domain) / zoom + state.grid.footGap > state.grid.width,
+		);
+
+		elements.fit.textContent = problems.length
+			? `Revisa: ${problems.join(", ")}`
+			: `Las cinco filas caben y ninguna baja de ${MIN_FONT_PX}px.`;
+		elements.fit.classList.toggle("is-bad", problems.length > 0);
+	}
+
+	// ---------- output ----------
+	function snapshot() {
+		const geom = geometry();
+		return {
+			copy: clone(state.copy),
+			grid: clone(state.grid),
+			logo: clone(state.logo),
+			rules: clone(state.rules),
+			colors: clone(state.colors),
+			slots: clone(state.slots),
+			resolved: {
+				margin: geom.margin,
+				rows: Object.fromEntries(
+					ROW_ORDER.map((key, index) => [key, { top: geom.tops[index], height: geom.heights[index] }]),
+				),
+				rules: state.rules.map((rule) => ({ anchor: rule.anchor, side: rule.side, top: ruleTop(rule, geom) })),
+			},
+		};
+	}
+
+	function cssBlock() {
+		const grid = state.grid;
+		const { heights, margin } = geometry();
+		const colors = state.colors;
+		const lines = [
+			":root {",
+			`\t--slot-label: ${state.slots.domain.size}px;`,
+			`\t--slot-title: ${state.slots.title.size}px;`,
+			"",
+			...ROW_ORDER.map((key, index) => `\t--h-${key}: ${heights[index]}px;`),
+			"",
+			`\t--space: ${grid.space}px;`,
+			`\t--space-tight: ${grid.tight}px;`,
+			...state.rules.map((rule, index) => `\t--rule-${index + 1}-gap: ${rule.offset}px;`),
+			`\t--foot-gap: ${grid.footGap}px;`,
+			`\t--x: ${grid.x}px;`,
+			`\t--width: ${grid.width}px;`,
+			`\t--logo-size: ${state.logo.size}px;`,
+			`\t--logo-gap: ${state.logo.gap}px;`,
+			"",
+			`\t--paper: ${colors.paper};`,
+			`\t--ink: ${colors.ink};`,
+			`\t--ink-muted: ${colors.muted};`,
+			`\t--ink-faint: ${colors.faint};`,
+			`\t--line: ${colors.line};`,
+			`\t--accent: ${colors.accent};`,
+			`\t--sage: ${colors.sage};`,
+			`\t--dot: ${colors.dot};`,
+			"}",
+			"",
+			`/* margen calculado: ${margin}px */`,
+			...["domain", "eyebrow", "title", "sub", "foot", "status"].map((key) => {
+				const slot = state.slots[key];
+				const align = slot.align && slot.align !== "left" ? ` · ${slot.align}` : "";
+				return `/* ${key}: ${slot.family} ${slot.size}/${slot.weight} ${slot.tracking}em · ${slot.color}${slot.upper ? " · mayúsculas" : ""}${align}${slot.dx || slot.dy ? ` · desplazado ${slot.dx},${slot.dy}` : ""} */`;
+			}),
+			...state.rules.map(
+				(rule, index) =>
+					`/* regla ${index + 1}: ${rule.side === "below" ? "debajo de" : "encima de"} ${rule.anchor} ± ${rule.offset}px · sangrado ${rule.insetLeft}/${rule.insetRight} · ${rule.thickness}px ${rule.color} */`,
+			),
+		];
+		return lines.join("\n");
+	}
+
+	function writePreview() {
+		elements.preview.textContent = cssBlock();
+	}
+
+	function save() {
+		try {
+			localStorage.setItem(STORE, JSON.stringify(state));
+		} catch {
+			/* a full or blocked localStorage must not break editing */
+		}
+	}
+
+	async function copy(text, label) {
+		try {
+			await navigator.clipboard.writeText(text);
+			flash(`${label} copiado.`);
+		} catch {
+			flash(`${label}: selecciónalo en el bloque de abajo y copia a mano.`);
+		}
+	}
+
+	let flashTimer;
+	function flash(message) {
+		const target = $("#status");
+		target.textContent = message;
+		target.classList.add("saved");
+		clearTimeout(flashTimer);
+		flashTimer = setTimeout(() => target.classList.remove("saved"), 1600);
+	}
+
+	// ---------- interaction ----------
+	document.querySelector(".panel").addEventListener("input", (event) => {
+		const control = event.target.closest("[data-set]");
+		if (!control) return;
+		const path = control.dataset.set;
+		let value;
+		if (control.type === "checkbox") value = control.checked;
+		else if (control.type === "number") value = Number(control.value);
+		else value = control.value;
+		writePath(path, value);
+		render();
+	});
+
+	document.querySelector(".panel").addEventListener("click", (event) => {
+		if (event.target.closest("[data-rule-add]")) {
+			state.rules.push({
+				on: true,
+				anchor: "title",
+				side: "below",
+				offset: 12,
+				insetLeft: 0,
+				insetRight: 0,
+				thickness: 1,
+				color: "line",
+			});
+			buildPanel();
+			syncInputs();
+			render();
+			return;
+		}
+
+		const remove = event.target.closest("[data-rule-remove]");
+		if (remove) {
+			state.rules.splice(Number(remove.dataset.ruleRemove), 1);
+			buildPanel();
+			syncInputs();
+			render();
+		}
+	});
+
+	$("#preset").addEventListener("change", (event) => {		state.preset = Number(event.target.value);
+		state.copy = clone(COPIES[state.preset].copy);
+		syncInputs();
+		render();
+	});
+
+	for (const button of document.querySelectorAll("[data-zoom]")) {
+		button.classList.toggle("is-on", Number(button.dataset.zoom) === state.zoom);
+		button.addEventListener("click", () => {
+			state.zoom = Number(button.dataset.zoom);
+			for (const other of document.querySelectorAll("[data-zoom]")) {
+				other.classList.toggle("is-on", other === button);
+			}
+			render();
+		});
+	}
+
+	// Dragging works in screen pixels, so a delta is divided by the zoom to stay
+	// expressed in canvas pixels.
+	for (const [key, element] of Object.entries(rows)) {
+		element.addEventListener("pointerdown", (event) => {
+			if (event.button !== 0) return;
+			event.preventDefault();
+			element.setPointerCapture(event.pointerId);
+			element.classList.add("is-dragging");
+			const start = { x: event.clientX, y: event.clientY, ...state.slots[key] };
+
+			const move = (moveEvent) => {
+				state.slots[key].dx = Math.round(start.dx + (moveEvent.clientX - start.x) / state.zoom);
+				state.slots[key].dy = Math.round(start.dy + (moveEvent.clientY - start.y) / state.zoom);
+				render();
+				syncInputs();
+			};
+
+			const end = () => {
+				element.classList.remove("is-dragging");
+				element.removeEventListener("pointermove", move);
+				element.removeEventListener("pointerup", end);
+				element.removeEventListener("pointercancel", end);
+			};
+
+			element.addEventListener("pointermove", move);
+			element.addEventListener("pointerup", end);
+			element.addEventListener("pointercancel", end);
+		});
+
+		element.addEventListener("keydown", (event) => {
+			const step = event.shiftKey ? 10 : 1;
+			const moves = {
+				ArrowLeft: [-step, 0],
+				ArrowRight: [step, 0],
+				ArrowUp: [0, -step],
+				ArrowDown: [0, step],
+			};
+			const move = moves[event.key];
+			if (!move) return;
+			event.preventDefault();
+			state.slots[key].dx += move[0];
+			state.slots[key].dy += move[1];
+			render();
+			syncInputs();
+		});
+	}
+
+	$("#copyJson").addEventListener("click", () => copy(JSON.stringify(snapshot(), null, 2), "JSON"));
+	$("#copyCss").addEventListener("click", () => copy(cssBlock(), "CSS"));
+
+	$("#reset").addEventListener("click", () => {
+		state = clone(BASE);
+		localStorage.removeItem(STORE);
+		syncInputs();
+		buildPanel();
+		render();
+		flash("Base restaurada.");
+	});
+
+	buildPanel();
+	syncInputs();
+	render();
+
+	// Metrics depend on the real faces, so measure again once they arrive.
+	if (document.fonts?.ready) document.fonts.ready.then(render);
+})();
+</script>
+</body>
+</html>
