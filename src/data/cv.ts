@@ -255,9 +255,9 @@ export const POSITIONS: Position[] = [
 		start: "2016.09",
 		end: "2017.04",
 		place: "Barcelona",
-		focus: "nueva versión del importador",
+		focus: "importador v2: CSV de más de 1 GB por memoria",
 		summary:
-			"Nueva versión del importador de datos contables del producto ACD.",
+			"ACDAuditor importaba por posiciones dentro de un fichero de texto y volcaba esas columnas en Velneo. La versión 2 tenía que formatear documentos de más de 1 GB en CSV, y abrirlos de golpe era inviable: se hacía por memoria y punteros visuales. La idea salió de abrir un CSV en VS Code y ver que iba suave; leyendo su código, adapté esa forma al importador y quedó fluido. Luego venían las acciones de formateo —comas, fechas, espaciados—. Un proyecto muy técnico, en C++ con algunos algoritmos en ensamblador.",
 		achievements: [],
 		stack: ["Web", "SQL"],
 	},
