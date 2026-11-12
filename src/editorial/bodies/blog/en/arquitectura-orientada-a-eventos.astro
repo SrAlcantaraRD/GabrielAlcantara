@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("arquitectura-orientada-a-eventos");
----
-
-<ArticleLayout
-  {...post}
-  lang="en"
-  alternates={alternateEditorialPaths("/blog/arquitectura-orientada-a-eventos/")}
->
   <p>
     Event-driven architecture is sometimes sold as a messaging layer added at the
     end of the system. In my experience it is the opposite: events are a way of
@@ -124,4 +112,3 @@ const post = postOf("arquitectura-orientada-a-eventos");
     owner. If the only thing visible in the design is the bus, the boundary work is
     missing: the bus carries facts, it does not define them.
   </p>
-</ArticleLayout>

@@ -1,0 +1,16 @@
+---
+/**
+ * Translated home page, generated once per locale from the route table.
+ */
+import LocalizedProfile from "../../components/LocalizedProfile.astro";
+import { translatedLocales } from "../../lib/routes";
+import type { TranslatedLocale } from "../../i18n/routing";
+
+export function getStaticPaths() {
+	return translatedLocales("home").map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: TranslatedLocale };
+---
+
+<LocalizedProfile {lang} />

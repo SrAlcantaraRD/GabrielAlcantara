@@ -2,10 +2,15 @@ import type { APIRoute } from "astro";
 
 import { POSTS, categoryOf, postHref } from "../data/blog.ts";
 import { COMPANIES } from "../data/cv.ts";
-import { OTHER_PROJECTS, PROJECT_CASES } from "../data/projects.ts";
+import {
+	OTHER_PROJECTS,
+	PROJECT_CASES,
+	caseStudyOf,
+} from "../data/projects.ts";
 import { SERVICES, SITE } from "../data/site.ts";
+import type { TranslatedLocale } from "../i18n/routing.ts";
 import { PROFILE } from "../i18n/profile.ts";
-import { STATIC_PAGES, casePath } from "../lib/seo.ts";
+import { indexableRoutes, routesFor, translatedLocales } from "../lib/routes.ts";import { STATIC_PAGES, casePath } from "../lib/seo.ts";
 
 /**
  * `llms.txt` generated from the same data that renders the site.
@@ -19,6 +24,24 @@ const NOTE =
 	"Las cifras de impacto no publicadas se describen en términos cualitativos (trazabilidad, automatización, integración, autonomía de equipo). No se publican métricas que no puedan verificarse.";
 
 const absolute = (path: string) => new URL(path, SITE.url).href;
+
+const LOCALE_LABELS: Record<
+	TranslatedLocale,
+	{ profile: string; writing: string; projects: string; suffix: string }
+> = {
+	en: {
+		profile: "English profile",
+		writing: "English writing",
+		projects: "English projects",
+		suffix: "English",
+	},
+	ca: {
+		profile: "Perfil en català",
+		writing: "Articles en català",
+		projects: "Projectes en català",
+		suffix: "català",
+	},
+};
 
 export const GET: APIRoute = () => {
 	const profile = [
@@ -65,24 +88,36 @@ export const GET: APIRoute = () => {
 	];
 
 	const translated = [
-		`- [English profile](${absolute("/en/")}): ${PROFILE.en.metaDescription}`,
-		`- [Perfil en català](${absolute("/ca/")}): ${PROFILE.ca.metaDescription}`,
-		`- [English writing](${absolute("/en/blog/")}): ${PROFILE.en.writing.title}`,
-		`- [Articles en català](${absolute("/ca/blog/")}): ${PROFILE.ca.writing.title}`,
-		`- [English projects](${absolute("/en/projects/")}): ${PROFILE.en.selected.title}`,
-		`- [Projectes en català](${absolute("/ca/projects/")}): ${PROFILE.ca.selected.title}`,
-		...POSTS.map(
-			(post) =>
-				`- [${PROFILE.en.posts[post.slug].title}](${absolute(`/en/blog/${post.slug}/`)}) · ${PROFILE.en.posts[post.slug].category}`,
+		...translatedLocales("home").flatMap((locale) =>
+			routesFor(locale, "home").map(
+				(route) =>
+					`- [${LOCALE_LABELS[locale].profile}](${absolute(route.path)}): ${PROFILE[locale].metaDescription}`,
+			),
 		),
-		...POSTS.map(
-			(post) =>
-				`- [${PROFILE.ca.posts[post.slug].title}](${absolute(`/ca/blog/${post.slug}/`)}) · ${PROFILE.ca.posts[post.slug].category}`,
+		...translatedLocales("blog").flatMap((locale) =>
+			routesFor(locale, "blog").map(
+				(route) =>
+					`- [${LOCALE_LABELS[locale].writing}](${absolute(route.path)}): ${PROFILE[locale].writing.title}`,
+			),
 		),
-		...PROJECT_CASES.filter((item) => item.caseStudyHref).flatMap((item) => [
-			`- [${item.name} (English)](${absolute(`/en${item.caseStudyHref}`)})`,
-			`- [${item.name} (català)](${absolute(`/ca${item.caseStudyHref}`)})`,
-		]),
+		...translatedLocales("projects").flatMap((locale) =>
+			routesFor(locale, "projects").map(
+				(route) =>
+					`- [${LOCALE_LABELS[locale].projects}](${absolute(route.path)}): ${PROFILE[locale].selected.title}`,
+			),
+		),
+		...translatedLocales("post").flatMap((locale) =>
+			routesFor(locale, "post").map((route) => {
+				const copy = PROFILE[locale].posts[route.slug as string];
+				return `- [${copy.title}](${absolute(route.path)}) · ${copy.category}`;
+			}),
+		),
+		...indexableRoutes()
+			.filter((route) => route.kind === "case" && route.locale !== "es")
+			.map(
+				(route) =>
+					`- [${caseStudyOf(route.slug as string).name} (${LOCALE_LABELS[route.locale as TranslatedLocale].suffix})](${absolute(route.path)})`,
+			),
 	];
 
 	const body = [

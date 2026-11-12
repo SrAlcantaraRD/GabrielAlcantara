@@ -206,3 +206,43 @@ export function caseStudyOf(id: string): ProjectCase {
 	}
 	return item;
 }
+
+export interface CaseMeta {
+	/** Slugs of related articles, in display order. */
+	related: string[];
+	/** ISO date the case study was published. */
+	publishedTime: string;
+}
+
+/**
+ * Presentation metadata of a translated case study.
+ *
+ * The Spanish page authors this inline; the translated pages are generated from
+ * a single template, so the values live here once and both locales read them.
+ */
+export const CASE_META: Record<string, CaseMeta> = {
+	"bodega-digital": {
+		related: ["ddd-dominios-complejos"],
+		publishedTime: "2026-11-10",
+	},
+	"nakire-tps": {
+		related: [
+			"lecciones-plataforma-industrial",
+			"arquitectura-orientada-a-eventos",
+			"websockets-operaciones-tiempo-real",
+		],
+		publishedTime: "2026-11-10",
+	},
+	"pachanga-community": {
+		related: ["ddd-dominios-complejos"],
+		publishedTime: "2026-11-11",
+	},
+};
+
+export function caseMetaOf(id: string): CaseMeta {
+	const meta = CASE_META[id];
+	if (!meta) {
+		throw new Error(`no case meta for project "${id}"`);
+	}
+	return meta;
+}

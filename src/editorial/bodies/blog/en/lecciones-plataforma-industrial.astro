@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("lecciones-plataforma-industrial");
----
-
-<ArticleLayout
-  {...post}
-  lang="en"
-  alternates={alternateEditorialPaths("/blog/lecciones-plataforma-industrial/")}
->
   <p>
     An automated warehouse teaches things a CRUD does not. Not because the
     technology is more exotic, but because the system has to live with the physical
@@ -125,4 +113,3 @@ export interface DevicePort &#123;
     understand the operation, separate the domains and only then choose the
     technology for each edge.
   </p>
-</ArticleLayout>

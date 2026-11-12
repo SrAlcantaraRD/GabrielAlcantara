@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("lecciones-plataforma-industrial");
----
-
-<ArticleLayout
-  {...post}
-  lang="ca"
-  alternates={alternateEditorialPaths("/blog/lecciones-plataforma-industrial/")}
->
   <p>
     Un magatzem automatitzat ensenya coses que un CRUD no ensenya. No perquè la
     tecnologia sigui més exòtica, sinó perquè el sistema ha de conviure amb el món
@@ -127,4 +115,3 @@ export interface DevicePort &#123;
     entendre l'operació, separar els dominis i només després triar la tecnologia de
     cada vora.
   </p>
-</ArticleLayout>

@@ -13,6 +13,7 @@ const load = (relative: string) =>
 	import(pathToFileURL(path.join(ROOT, relative)).href);
 
 const { sitemapEntries, STATIC_PAGES } = await load("src/lib/seo.ts");
+const { indexableRoutes } = await load("src/lib/routes.ts");
 const { SITE } = await load("src/data/site.ts");
 const {
 	ACTIVE_CATEGORIES,
@@ -23,33 +24,63 @@ const {
 const { PROJECT_CASES } = await load("src/data/projects.ts");
 const { GET: getLlmsTxt } = await load("src/pages/llms.txt.ts");
 
+/**
+ * Every page the last build emitted, captured before the translated pages
+ * became dynamic routes. It is the outside evidence the route table is checked
+ * against: a page that disappears from the table still appears here.
+ */
+const baseline: {
+	path: string;
+	canonical: string | null;
+	alternates?: Record<string, string>;
+	noindex?: boolean;
+}[] = JSON.parse(
+	fs.readFileSync(
+		path.join(ROOT, "tests", "fixtures", "url-baseline.json"),
+		"utf8",
+	),
+);
+
+const builtRoutes = baseline
+	.filter((page) => !page.noindex)
+	.map((page) => page.path)
+	.sort();
+
+const tableRoutes = indexableRoutes()
+	.map((route: { path: string }) => route.path)
+	.sort();
+
 const sitemapPaths: string[] = sitemapEntries().map(
 	(entry: { path: string }) => entry.path,
 );
 
-/** Static `.astro` pages, without the error page and the dynamic templates. */
-function pageRoutes(): string[] {
-	const dir = path.join(ROOT, "src", "pages");
-
-	return (fs.readdirSync(dir, { recursive: true }) as string[])
-		.map((file) => file.split(path.sep).join("/"))
-		.filter((file) => file.endsWith(".astro"))
-		.filter((file) => !file.includes("["))
-		.filter((file) => !file.startsWith("404."))
-		.map((file) => {
-			const route = file
-				.replace(/\.astro$/, "")
-				.replace(/(^|\/)index$/, "");
-			return route ? `/${route}/` : "/";
-		});
-}
-
 describe("sitemap", () => {
-	it("lists every static page under src/pages", () => {
-		const missing = pageRoutes().filter(
+	it("matches every route the build emitted", () => {
+		assert.deepEqual(tableRoutes, builtRoutes);
+	});
+
+	it("gives every emitted page a canonical URL", () => {
+		const missing = baseline
+			.filter((page) => !page.canonical)
+			.map((page) => page.path);
+
+		assert.deepEqual(missing, []);
+	});
+
+	it("lists every route of the table", () => {
+		const missing = tableRoutes.filter(
 			(route) => !sitemapPaths.includes(route),
 		);
+
 		assert.deepEqual(missing, []);
+	});
+
+	it("advertises no URL that no route actually renders", () => {
+		const invented = sitemapPaths.filter(
+			(path) => !tableRoutes.includes(path),
+		);
+
+		assert.deepEqual(invented, []);
 	});
 
 	it("lists every case study that has its own page", () => {
@@ -65,23 +96,15 @@ describe("sitemap", () => {
 		}
 	});
 
-	it("advertises no URL that no route actually renders", () => {
-		const real = new Set<string>([
-			...pageRoutes(),
-			...POSTS.map((post: { slug: string }) => postHref(post.slug)),
-			...ACTIVE_CATEGORIES.map((category: { slug: string }) =>
-				categoryHref(category.slug),
-			),
-		]);
-
-		const invented = sitemapPaths.filter((path) => !real.has(path));
-
-		assert.deepEqual(invented, []);
-	});
-
 	it("lists every post", () => {
 		for (const post of POSTS) {
 			assert.ok(sitemapPaths.includes(postHref(post.slug)));
+		}
+	});
+
+	it("lists every active category", () => {
+		for (const category of ACTIVE_CATEGORIES) {
+			assert.ok(sitemapPaths.includes(categoryHref(category.slug)));
 		}
 	});
 
@@ -91,14 +114,14 @@ describe("sitemap", () => {
 
 	it("keeps the error page out", () => {
 		assert.ok(!sitemapPaths.includes("/404/"));
+		assert.ok(!sitemapPaths.includes("/404.html"));
 	});
 
-	it("keeps the static page list in sync with the pages it claims", () => {
-		const routes = new Set(pageRoutes());
+	it("keeps the static page list in sync with the route table", () => {
 		for (const page of STATIC_PAGES) {
 			assert.ok(
-				routes.has(page.path),
-				`${page.path} is listed but no page renders it`,
+				tableRoutes.includes(page.path),
+				`${page.path} is listed but no route renders it`,
 			);
 		}
 	});

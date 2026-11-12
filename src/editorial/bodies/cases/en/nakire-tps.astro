@@ -1,18 +1,6 @@
 ---
-import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
-import ArchitectureDiagram from "../../../components/ArchitectureDiagram.astro";
+import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astro";
 ---
-
-<LocalizedCaseLayout
-  lang="en"
-  projectId="nakire-tps"
-  related={[
-    "lecciones-plataforma-industrial",
-    "arquitectura-orientada-a-eventos",
-    "websockets-operaciones-tiempo-real",
-  ]}
-  publishedTime="2026-11-10"
->
   <h2 id="resumen">Executive summary</h2>
   <p>
     Nakire TPS connects the physical operation of a warehouse with the software that
@@ -307,4 +295,3 @@ import ArchitectureDiagram from "../../../components/ArchitectureDiagram.astro";
       not paperwork.
     </li>
   </ul>
-</LocalizedCaseLayout>

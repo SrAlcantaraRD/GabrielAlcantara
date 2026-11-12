@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("websockets-operaciones-tiempo-real");
----
-
-<ArticleLayout
-  {...post}
-  lang="ca"
-  alternates={alternateEditorialPaths("/blog/websockets-operaciones-tiempo-real/")}
->
   <p>
     Quan la interfície deixa de ser un formulari i passa a reflectir l'estat d'una
     operació física, el canal en temps real esdevé part del disseny. A Nakire TPS
@@ -136,4 +124,3 @@ const post = postOf("websockets-operaciones-tiempo-real");
     trenca, la interfície més ràpida continua sent una interfície en què no es pot
     treballar.
   </p>
-</ArticleLayout>

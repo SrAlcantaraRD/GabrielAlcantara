@@ -1,0 +1,16 @@
+---
+/**
+ * Translated blog index, generated once per locale from the route table.
+ */
+import LocalizedBlogIndex from "../../../components/LocalizedBlogIndex.astro";
+import { translatedLocales } from "../../../lib/routes";
+import type { TranslatedLocale } from "../../../i18n/routing";
+
+export function getStaticPaths() {
+	return translatedLocales("blog").map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: TranslatedLocale };
+---
+
+<LocalizedBlogIndex {lang} />

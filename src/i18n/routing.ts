@@ -10,6 +10,12 @@ export const LOCALES = ["es", "en", "ca"] as const;
 export type Locale = (typeof LOCALES)[number];
 export type TranslatedLocale = Exclude<Locale, "es">;
 
+/** Locales with a translated site, in display order. */
+export const TRANSLATED_LOCALES = [
+	"en",
+	"ca",
+] as const satisfies readonly TranslatedLocale[];
+
 export const DEFAULT_LOCALE: Locale = "es";
 
 export const LOCALE_META: Record<

@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("ddd-dominios-complejos");
----
-
-<ArticleLayout
-  {...post}
-  lang="en"
-  alternates={alternateEditorialPaths("/blog/ddd-dominios-complejos/")}
->
   <p>
     There are domains where one table per entity is enough. And there are domains
     where the rules do not fit into columns: they depend on context, change from
@@ -106,4 +94,3 @@ const post = postOf("ddd-dominios-complejos");
     that is not the signal: the signal is that adding another implementation of a
     port or a new abstraction touches fewer files than it used to.
   </p>
-</ArticleLayout>

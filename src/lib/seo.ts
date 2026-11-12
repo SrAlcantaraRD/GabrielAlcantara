@@ -6,13 +6,9 @@
  * `tests/seo.test.ts` reads the same functions, which is what turns a forgotten
  * route into a failing test instead of a silent gap.
  */
-import {
-	ACTIVE_CATEGORIES,
-	POSTS,
-	categoryHref,
-	postHref,
-} from "../data/blog.ts";
-import { OTHER_PROJECTS, PROJECT_CASES } from "../data/projects.ts";
+import { POSTS } from "../data/blog.ts";
+import { OTHER_PROJECTS } from "../data/projects.ts";
+import { indexableRoutes } from "./routes.ts";
 
 export interface SitemapEntry {
 	path: string;
@@ -29,9 +25,9 @@ export interface PageEntry {
 /**
  * Indexable pages that have no data source to derive them from.
  *
- * Adding a page under `src/pages` means adding it here: the sitemap test fails
- * otherwise. Pages that exist for machines (`sitemap.xml`, `llms.txt`) and the
- * error page are not part of the list.
+ * Adding a page means adding it to the route table in `src/lib/routes.ts` and
+ * to this list: the sitemap test fails otherwise. Pages that exist for machines
+ * (`sitemap.xml`, `llms.txt`) and the error page are not part of the list.
  */
 export const STATIC_PAGES: PageEntry[] = [
 	{
@@ -88,35 +84,21 @@ export function casePath(item: { caseStudyHref?: string }): string | undefined {
 	return item.caseStudyHref;
 }
 
-/** Every indexable route, derived from the same data that renders the pages. */
+/** Every indexable route, derived from the same table that renders the pages. */
 export function sitemapEntries(): SitemapEntry[] {
-	const entries: SitemapEntry[] = STATIC_PAGES.map(({ path }) => ({ path }));
+	const posts = new Map(POSTS.map((post) => [post.slug, post]));
 
-	for (const path of ["/en/blog/", "/ca/blog/", "/en/projects/", "/ca/projects/"]) {
-		entries.push({ path });
-	}
+	return dedupe(
+		indexableRoutes().map((route) => {
+			const post =
+				route.kind === "post" ? posts.get(route.slug ?? "") : undefined;
 
-	for (const item of PROJECT_CASES) {
-		const path = casePath(item);
-		if (path) {
-			entries.push({ path }, { path: `/en${path}` }, { path: `/ca${path}` });
-		}
-	}
-
-	for (const category of ACTIVE_CATEGORIES) {
-		entries.push({ path: categoryHref(category.slug) });
-	}
-
-	for (const post of POSTS) {
-		const lastmod = post.updated ?? post.date;
-		entries.push(
-			{ path: postHref(post.slug), lastmod },
-			{ path: `/en/blog/${post.slug}/`, lastmod },
-			{ path: `/ca/blog/${post.slug}/`, lastmod },
-		);
-	}
-
-	return dedupe(entries);
+			return {
+				path: route.path,
+				lastmod: post ? (post.updated ?? post.date) : undefined,
+			};
+		}),
+	);
 }
 
 /**

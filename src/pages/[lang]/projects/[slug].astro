@@ -1,0 +1,35 @@
+---
+/**
+ * Translated case study, generated once per locale and project from the route
+ * table.
+ *
+ * The body comes from `src/editorial/bodies/cases/<locale>/<id>.astro`; the
+ * related articles and publication date live in `CASE_META`.
+ */
+import LocalizedCaseLayout from "../../../layouts/LocalizedCaseLayout.astro";
+import { caseMetaOf } from "../../../data/projects";
+import { CASE_BODIES } from "../../../editorial/bodies/cases";
+import { routesFor, translatedLocales } from "../../../lib/routes";
+import type { TranslatedLocale } from "../../../i18n/routing";
+
+export function getStaticPaths() {
+	return translatedLocales("case").flatMap((lang) =>
+		routesFor(lang, "case").map((route) => ({
+			params: { lang, slug: route.slug },
+		})),
+	);
+}
+
+const { lang, slug } = Astro.params as { lang: TranslatedLocale; slug: string };
+const meta = caseMetaOf(slug);
+const Body = CASE_BODIES[lang][slug];
+---
+
+<LocalizedCaseLayout
+	lang={lang}
+	projectId={slug}
+	related={meta.related}
+	publishedTime={meta.publishedTime}
+>
+	<Body />
+</LocalizedCaseLayout>

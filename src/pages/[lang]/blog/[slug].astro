@@ -1,0 +1,37 @@
+---
+/**
+ * Translated article, generated once per locale and post from the route table.
+ *
+ * The body comes from `src/editorial/bodies/blog/<locale>/<slug>.astro`, so an
+ * update touches one file per locale instead of one page per URL.
+ */
+import ArticleLayout from "../../../layouts/ArticleLayout.astro";
+import { postOf } from "../../../data/blog";
+import { BLOG_BODIES } from "../../../editorial/bodies/blog";
+import { routesFor, translatedLocales } from "../../../lib/routes";
+import {
+	alternateEditorialPaths,
+	type TranslatedLocale,
+} from "../../../i18n/routing";
+
+export function getStaticPaths() {
+	return translatedLocales("post").flatMap((lang) =>
+		routesFor(lang, "post").map((route) => ({
+			params: { lang, slug: route.slug },
+			props: { post: postOf(route.slug as string) },
+		})),
+	);
+}
+
+const { lang, slug } = Astro.params as { lang: TranslatedLocale; slug: string };
+const { post } = Astro.props;
+const Body = BLOG_BODIES[lang][slug];
+---
+
+<ArticleLayout
+	{...post}
+	{lang}
+	alternates={alternateEditorialPaths(`/blog/${slug}/`)}
+>
+	<Body />
+</ArticleLayout>

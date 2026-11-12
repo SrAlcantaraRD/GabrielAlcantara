@@ -1,16 +1,4 @@
----
-import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { postOf } from "../../../data/blog";
-import { alternateEditorialPaths } from "../../../i18n/routing";
 
-const post = postOf("websockets-operaciones-tiempo-real");
----
-
-<ArticleLayout
-  {...post}
-  lang="en"
-  alternates={alternateEditorialPaths("/blog/websockets-operaciones-tiempo-real/")}
->
   <p>
     When the interface stops being a form and starts reflecting the state of a
     physical operation, the real-time channel becomes part of the design. In
@@ -132,4 +120,3 @@ const post = postOf("websockets-operaciones-tiempo-real");
     is up to date: that is real time in an operational interface. If that trust
     breaks, the fastest interface is still an interface you cannot work in.
   </p>
-</ArticleLayout>
