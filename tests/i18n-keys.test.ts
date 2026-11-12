@@ -55,16 +55,16 @@ describe("translation keys", () => {
 
 	it("has exactly the same translated profile keys in English and Catalan", () => {
 		assert.deepEqual(
-			leafKeys(PROFILE.en as Json).sort(),
-			leafKeys(PROFILE.ca as Json).sort(),
+			leafKeys(PROFILE.en as unknown as Json).sort(),
+			leafKeys(PROFILE.ca as unknown as Json).sort(),
 		);
 	});
 
 	it("does not leave any translated string empty", () => {
 		const dictionaries: Json[] = [
-			...LOCALES.map((locale) => ui[locale] as Json),
-			PROFILE.en as Json,
-			PROFILE.ca as Json,
+			...LOCALES.map((locale) => ui[locale] as unknown as Json),
+			PROFILE.en as unknown as Json,
+			PROFILE.ca as unknown as Json,
 		];
 
 		for (const dictionary of dictionaries) {

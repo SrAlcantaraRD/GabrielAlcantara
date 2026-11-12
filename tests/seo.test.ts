@@ -4,6 +4,8 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import type { ProjectCase } from "../src/data/projects.ts";
+
 const ROOT = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"..",
@@ -69,7 +71,7 @@ describe("sitemap", () => {
 
 	it("lists every route of the table", () => {
 		const missing = tableRoutes.filter(
-			(route) => !sitemapPaths.includes(route),
+			(route: string) => !sitemapPaths.includes(route),
 		);
 
 		assert.deepEqual(missing, []);
@@ -84,7 +86,9 @@ describe("sitemap", () => {
 	});
 
 	it("lists every case study that has its own page", () => {
-		const withPage = PROJECT_CASES.filter((item) => item.caseStudyHref);
+		const withPage = (PROJECT_CASES as ProjectCase[]).filter(
+			(item) => item.caseStudyHref,
+		);
 
 		assert.ok(withPage.length > 0);
 

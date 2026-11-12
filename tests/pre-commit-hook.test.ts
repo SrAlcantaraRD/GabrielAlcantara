@@ -19,6 +19,7 @@ function fixture(): string {
 	for (const file of [
 		".githooks/pre-commit",
 		"scripts/check-social-cards.mjs",
+		"scripts/element-ids.mjs",
 		"scripts/social-cards.mjs",
 		"scripts/social-cards.json",
 		"docs/og-image/card.html",
@@ -49,6 +50,33 @@ function runHook(cwd: string) {
 		encoding: "utf8",
 	});
 }
+
+describe("element id pre-commit hook", () => {
+	it("rejects a staged template whose element has no id, then accepts it", () => {
+		const dir = fixture();
+
+		try {
+			const page = path.join(dir, "src/pages/sample.astro");
+			fs.mkdirSync(path.dirname(page), { recursive: true });
+
+			fs.writeFileSync(page, '---\n---\n<p class="bare">x</p>\n');
+			execFileSync("git", ["add", "src/pages/sample.astro"], { cwd: dir });
+
+			const refused = runHook(dir);
+			assert.equal(refused.status, 1, refused.stderr);
+			assert.match(refused.stderr, /src\/pages\/sample\.astro:3/);
+			assert.match(refused.stderr, /falta id/);
+
+			fs.writeFileSync(page, '---\n---\n<p id="sample-lede" class="bare">x</p>\n');
+			execFileSync("git", ["add", "src/pages/sample.astro"], { cwd: dir });
+
+			const accepted = runHook(dir);
+			assert.equal(accepted.status, 0, accepted.stderr);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	});
+});
 
 describe("social card pre-commit hook", () => {
 	it("accepts the exported manifest and rejects a stale one", () => {
