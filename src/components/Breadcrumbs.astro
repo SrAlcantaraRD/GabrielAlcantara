@@ -16,16 +16,16 @@ const {
 const t = useTranslations(lang);
 ---
 
-<nav class="breadcrumbs" aria-label={t("breadcrumbs")} hidden={hidden}>
-  <ol>
-    <li><a href={localeRoot(lang)}>{t("nav.home")}</a></li>
+<nav id="breadcrumbs" class="breadcrumbs" aria-label={t("breadcrumbs")} hidden={hidden}>
+  <ol id="breadcrumbs-ol">
+    <li id="breadcrumbs-li"><a id="breadcrumbs-a" href={localeRoot(lang)}>{t("nav.home")}</a></li>
     {
-      items.map((item) => (
-        <li>
+      items.map((item, i) => (
+        <li id={`breadcrumbs-li-2-${i}`}>
           {item.href ? (
-            <a href={item.href}>{item.label}</a>
+            <a id={`breadcrumbs-a-2-${i}`} href={item.href}>{item.label}</a>
           ) : (
-            <span aria-current="page">{item.label}</span>
+            <span id={`breadcrumbs-span-${i}`} aria-current="page">{item.label}</span>
           )}
         </li>
       ))

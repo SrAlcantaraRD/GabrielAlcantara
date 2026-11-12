@@ -18,26 +18,26 @@ const t = useTranslations(lang);
 const current = LOCALE_META[lang];
 ---
 
-<details class="locale-switcher">
-	<summary
+<details id="language-switcher-locale" class="locale-switcher">
+	<summary id="language-switcher-locale-trigger"
 		class="locale-trigger"
 		aria-label={`${t("language")}: ${current.label}`}
 		title={`${t("language")}: ${current.label}`}
 	>
-		<span aria-hidden="true">{current.short}</span>
-		<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-			<path d="m2.5 4.5 3.5 3.5 3.5-3.5" />
+		<span id="language-switcher-locale-trigger-span" aria-hidden="true">{current.short}</span>
+		<svg id="language-switcher-locale-trigger-svg" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+			<path id="language-switcher-locale-trigger-path" d="m2.5 4.5 3.5 3.5 3.5-3.5" />
 		</svg>
 	</summary>
 
-	<nav class="locale-menu" aria-label={t("language")}>
-		<ul>
+	<nav id="language-switcher-locale-menu" class="locale-menu" aria-label={t("language")}>
+		<ul id="language-switcher-locale-menu-ul">
 			{
-				LOCALES.map((locale) => {
+				LOCALES.map((locale, i) => {
 					const active = locale === lang;
 					return (
-						<li>
-							<a
+						<li id={`language-switcher-locale-menu-li-${i}`}>
+							<a id={`language-switcher-locale-menu-a-${i}`}
 								href={localizedEntry(locale, pathname, hash)}
 								hreflang={locale}
 								lang={locale}
@@ -45,8 +45,8 @@ const current = LOCALE_META[lang];
 								class:list={["locale-link", { "is-active": active }]}
 								aria-current={active ? "true" : undefined}
 							>
-								<span>{LOCALE_META[locale].label}</span>
-								<span class="locale-code" aria-hidden="true">
+								<span id={`language-switcher-locale-menu-span-${i}`}>{LOCALE_META[locale].label}</span>
+								<span id={`language-switcher-locale-menu-code-${i}`} class="locale-code" aria-hidden="true">
 									{LOCALE_META[locale].short}
 								</span>
 							</a>

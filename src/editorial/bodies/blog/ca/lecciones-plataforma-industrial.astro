@@ -1,5 +1,5 @@
 
-  <p>
+  <p id="lecciones-plataforma-industrial-p">
     Un magatzem automatitzat ensenya coses que un CRUD no ensenya. No perquè la
     tecnologia sigui més exòtica, sinó perquè el sistema ha de conviure amb el món
     físic: els dispositius cauen, les versions conviuen i cada instal·lació té la
@@ -7,110 +7,110 @@
     plataforma de Nakire TPS.
   </p>
 
-  <h2>El maquinari no negocia</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2">El maquinari no negocia</h2>
+  <p id="lecciones-plataforma-industrial-p-2">
     En una aplicació de negoci, l'estat el controla la teva base de dades. En un
     celler, l'estat el controla el món: una carretilla bloquejada, un PLC que no
     respon o una càmera que no llegeix una etiqueta.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-3">
     Assumir això canvia el disseny. Les operacions deixen de ser transaccions
-    instantànies i passen a ser <strong>tasques amb estat</strong>: creades,
+    instantànies i passen a ser <strong id="lecciones-plataforma-industrial-strong">tasques amb estat</strong>: creades,
     assignades, en curs, completades o fallides. I aquest cicle necessita ser
     visible, idempotent i capaç de repetir-se sense efectes duplicats.
   </p>
 
-  <h2>La variació és el cas normal</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-2">La variació és el cas normal</h2>
+  <p id="lecciones-plataforma-industrial-p-4">
     Cada magatzem té el seu mapa, les seves versions de robot i les seves regles. Si
     el codi tracta aquesta variació com una excepció, acaba ple de condicionals per
     instal·lació. Si la tracta com una dada, el domini es manté petit i la
     configuració creix.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-5">
     Per això treballàvem amb DDD i TDD: les regles de negoci, els mapes i les
     versions de robot s'absorbien al domini, en lloc de repartir-se en adaptadors i
     pedaços. La variació baixa al model; no es converteix en deute dins de cada
     servei.
   </p>
 
-  <h2>Separar la intenció del protocol</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-3">Separar la intenció del protocol</h2>
+  <p id="lecciones-plataforma-industrial-p-6">
     La decisió que més vegades es va pagar sola va ser l'abstracció per casos d'ús,
     ports i adaptadors. El domini expressa què vol fer; un adaptador concret sap com
     parlar amb el dispositiu. Canviar una API o un model de robot no arrossega el
     domini.
   </p>
-  <pre><code>// El domini demana una intenció, no un protocol.
+  <pre id="lecciones-plataforma-industrial-pre"><code id="lecciones-plataforma-industrial-code">// El domini demana una intenció, no un protocol.
 export interface DevicePort &#123;
   readonly family: DeviceFamily;
   execute(task: AtomicTask): Promise&lt;TaskResult&gt;;
 &#125;</code></pre>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-7">
     Amb aquest límit, cada família de dispositiu —carretilla, PLC, LED, picking,
     càmera— va poder ser el seu propi microservei, amb adaptadors per model, versió
     i protocol. Un fabricant nou s'incorpora com un adaptador; no com un canvi a les
     regles de negoci.
   </p>
 
-  <h2>El domini no hauria de saber què és un PLC</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-4">El domini no hauria de saber què és un PLC</h2>
+  <p id="lecciones-plataforma-industrial-p-8">
     És temptador modelar el sistema al voltant dels dispositius: una entitat Robot,
     una altra PLC, una altra Càmera. El problema és que el negoci no pensa en
     dispositius, pensa a moure un pallet d'una posició a una altra, preparar una
     comanda o alliberar un forat.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-9">
     El core treballa amb tasques de diferent nivell de detall: des de la que apunta
     a un dispositiu concret fins a la que només expressa la família i l'acció.
     Aquesta granularitat va ser clau perquè el sistema continuï coordinant quan un
     model no està disponible o quan un magatzem incorpora una versió nova.
   </p>
 
-  <h2>Temps real no és temps real dur</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-5">Temps real no és temps real dur</h2>
+  <p id="lecciones-plataforma-industrial-p-10">
     El frontend per WebSocket servia perquè l'operador veiés l'estat de l'operació
     sense refrescar i perquè la interfície s'adaptés al seu rol. Això és temps real
-    d'<em>observació</em>, no un bucle de control industrial.
+    d'<em id="lecciones-plataforma-industrial-em">observació</em>, no un bucle de control industrial.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-11">
     Confondre els dos plans porta a decisions equivocades: posar la seguretat del
     canal dins de la UI, assumir que el missatge arriba sempre o que l'ordre és
     global. El canal informa; el servidor decideix. I quan el missatge no arriba, la
     interfície es reconcilia amb l'estat del servidor.
   </p>
 
-  <h2>Provar sobre maquinari real canvia el disseny</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-6">Provar sobre maquinari real canvia el disseny</h2>
+  <p id="lecciones-plataforma-industrial-p-12">
     Els QA gates del pipeline s'executaven sobre maquinari físic real, no només sobre
     mocks. Això fa el pipeline més lent i dependent de dispositius, però canvia la
     conversa de l'equip: els problemes apareixen abans i amb nom propi.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-13">
     Un mock sempre respon. Un PLC real tarda, falla i de vegades retorna una cosa que
     no esperaves. Dissenyar per a aquesta realitat —timeouts, reintents, estats
     intermedis— és més barat que descobrir-ho a la instal·lació.
   </p>
 
-  <h2>Què me n'enduc</h2>
-  <ul>
-    <li>
+  <h2 id="lecciones-plataforma-industrial-h2-7">Què me n'enduc</h2>
+  <ul id="lecciones-plataforma-industrial-ul">
+    <li id="lecciones-plataforma-industrial-li">
       En sistemes industrials, el maquinari marca el ritme: l'arquitectura ha
       d'assumir fallo, canvi de versió i disponibilitat parcial.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-2">
       Els contractes explícits entre domini i dispositiu estalvien més temps que
       qualsevol optimització prematura.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-3">
       La variació per instal·lació es modela com a dada, no com a excepció al codi.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-4">
       La documentació i el vocabulari compartit amb fabricants són part de
       l'enginyeria.
     </li>
   </ul>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-14">
     Si estàs dissenyant una cosa semblant, l'ordre que em va funcionar va ser:
     entendre l'operació, separar els dominis i només després triar la tecnologia de
     cada vora.

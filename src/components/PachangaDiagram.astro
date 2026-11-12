@@ -12,10 +12,10 @@
 import pachangaDiagramStyles from "../styles/pachanga-diagram.css?url";
 ---
 
-<link rel="stylesheet" href={pachangaDiagramStyles} />
-<figure class="pd-diagram">
-  <div class="pd-scroll">
-    <svg
+<link id="pachanga-diagram-link" rel="stylesheet" href={pachangaDiagramStyles} />
+<figure id="pachanga-diagram-pd" class="pd-diagram">
+  <div id="pachanga-diagram-pd-scroll" class="pd-scroll">
+    <svg id="pachanga-diagram-pd-scroll-svg"
       viewBox="0 0 900 560"
       role="img"
       aria-labelledby="pd-title pd-desc"
@@ -29,7 +29,7 @@ import pachangaDiagramStyles from "../styles/pachanga-diagram.css?url";
         Design: particles, atoms, molecules, organisms, layouts y screens.
       </desc>
 
-      <defs>
+      <defs id="pachanga-diagram-pd-scroll-defs">
         <marker
           id="pd-arrow"
           viewBox="0 0 10 10"
@@ -39,139 +39,139 @@ import pachangaDiagramStyles from "../styles/pachanga-diagram.css?url";
           markerHeight="7"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" class="pd-arrowhead" />
+          <path id="pachanga-diagram-pd-scroll-arrowhead" d="M 0 0 L 10 5 L 0 10 z" class="pd-arrowhead" />
         </marker>
       </defs>
 
       <!-- Flow: app -->
-      <g>
-        <rect class="pd-box" x="24" y="30" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="57">src/app/ · Expo Router</text>
-        <text class="pd-sub" x="44" y="78">
+      <g id="pachanga-diagram-pd-scroll-g">
+        <rect id="pachanga-diagram-pd-scroll-box" class="pd-box" x="24" y="30" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title" class="pd-title" x="44" y="57">src/app/ · Expo Router</text>
+        <text id="pachanga-diagram-pd-scroll-sub" class="pd-sub" x="44" y="78">
           rutas por fichero; cada pantalla vive en src/ui/screens/
         </text>
       </g>
 
-      <line class="pd-line" x1="304" y1="98" x2="304" y2="106" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line" class="pd-line" x1="304" y1="98" x2="304" y2="106" marker-end="url(#pd-arrow)" />
 
       <!-- Flow: hooks -->
-      <g>
-        <rect class="pd-box" x="24" y="110" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="137">Hooks de dominio</text>
-        <text class="pd-sub" x="44" y="158">
+      <g id="pachanga-diagram-pd-scroll-g-2">
+        <rect id="pachanga-diagram-pd-scroll-box-2" class="pd-box" x="24" y="110" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title-2" class="pd-title" x="44" y="137">Hooks de dominio</text>
+        <text id="pachanga-diagram-pd-scroll-sub-2" class="pd-sub" x="44" y="158">
           estado derivado; la pantalla no conoce de dónde vienen los datos
         </text>
       </g>
 
-      <line class="pd-line" x1="304" y1="178" x2="304" y2="186" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-2" class="pd-line" x1="304" y1="178" x2="304" y2="186" marker-end="url(#pd-arrow)" />
 
       <!-- Flow: use cases -->
-      <g>
-        <rect class="pd-box pd-box--core" x="24" y="190" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="217">Casos de uso · domain/**/use-cases</text>
-        <text class="pd-sub" x="44" y="238">
+      <g id="pachanga-diagram-pd-scroll-g-3">
+        <rect id="pachanga-diagram-pd-scroll-box-3" class="pd-box pd-box--core" x="24" y="190" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title-3" class="pd-title" x="44" y="217">Casos de uso · domain/**/use-cases</text>
+        <text id="pachanga-diagram-pd-scroll-sub-3" class="pd-sub" x="44" y="238">
           una regla por caso, con sus pruebas; TypeScript puro y Zod
         </text>
       </g>
 
-      <line class="pd-line" x1="304" y1="258" x2="304" y2="266" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-3" class="pd-line" x1="304" y1="258" x2="304" y2="266" marker-end="url(#pd-arrow)" />
 
       <!-- Flow: ports -->
-      <g>
-        <rect class="pd-box" x="24" y="270" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="297">Puertos · I*Port</text>
-        <text class="pd-sub" x="44" y="318">
+      <g id="pachanga-diagram-pd-scroll-g-4">
+        <rect id="pachanga-diagram-pd-scroll-box-4" class="pd-box" x="24" y="270" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title-4" class="pd-title" x="44" y="297">Puertos · I*Port</text>
+        <text id="pachanga-diagram-pd-scroll-sub-4" class="pd-sub" x="44" y="318">
           el contrato que el dominio necesita, sin saber quién lo cumple
         </text>
       </g>
 
       <!-- Domain boundary -->
-      <line class="pd-boundary" x1="24" y1="352" x2="584" y2="352" />
-      <text class="pd-boundary-label" x="24" y="372">frontera del dominio</text>
+      <line id="pachanga-diagram-pd-scroll-boundary" class="pd-boundary" x1="24" y1="352" x2="584" y2="352" />
+      <text id="pachanga-diagram-pd-scroll-boundary-label" class="pd-boundary-label" x="24" y="372">frontera del dominio</text>
 
       <!-- Adapters implement ports: arrow climbs back into the domain -->
-      <line class="pd-line" x1="304" y1="376" x2="304" y2="340" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-4" class="pd-line" x1="304" y1="376" x2="304" y2="340" marker-end="url(#pd-arrow)" />
 
       <!-- Flow: adapters -->
-      <g>
-        <rect class="pd-box" x="24" y="380" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="407">Adaptadores · src/adapter</text>
-        <text class="pd-sub" x="44" y="428">
+      <g id="pachanga-diagram-pd-scroll-g-5">
+        <rect id="pachanga-diagram-pd-scroll-box-5" class="pd-box" x="24" y="380" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title-5" class="pd-title" x="44" y="407">Adaptadores · src/adapter</text>
+        <text id="pachanga-diagram-pd-scroll-sub-5" class="pd-sub" x="44" y="428">
           Supabase · in-memory · MMKV · TanStack Query · navegación · notificaciones
         </text>
       </g>
 
-      <line class="pd-line" x1="304" y1="448" x2="304" y2="456" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-5" class="pd-line" x1="304" y1="448" x2="304" y2="456" marker-end="url(#pd-arrow)" />
 
       <!-- Flow: infrastructure -->
-      <g>
-        <rect class="pd-box pd-box--soft" x="24" y="460" width="560" height="64" rx="8" />
-        <text class="pd-title" x="44" y="487">Supabase · red</text>
-        <text class="pd-sub" x="44" y="508">
+      <g id="pachanga-diagram-pd-scroll-g-6">
+        <rect id="pachanga-diagram-pd-scroll-box-6" class="pd-box pd-box--soft" x="24" y="460" width="560" height="64" rx="8" />
+        <text id="pachanga-diagram-pd-scroll-title-6" class="pd-title" x="44" y="487">Supabase · red</text>
+        <text id="pachanga-diagram-pd-scroll-sub-6" class="pd-sub" x="44" y="508">
           PostgreSQL, autenticación y sincronización con el dispositivo
         </text>
       </g>
 
       <!-- Atomic Design -->
-      <text class="pd-panel" x="612" y="30">UI · Atomic Design</text>
+      <text id="pachanga-diagram-pd-scroll-panel" class="pd-panel" x="612" y="30">UI · Atomic Design</text>
 
-      <g>
-        <rect class="pd-pill" x="612" y="44" width="268" height="40" rx="20" />
-        <text class="pd-pill-text" x="746" y="69">particles</text>
+      <g id="pachanga-diagram-pd-scroll-g-7">
+        <rect id="pachanga-diagram-pd-scroll-pill" class="pd-pill" x="612" y="44" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text" class="pd-pill-text" x="746" y="69">particles</text>
       </g>
-      <line class="pd-line" x1="746" y1="86" x2="746" y2="94" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-6" class="pd-line" x1="746" y1="86" x2="746" y2="94" marker-end="url(#pd-arrow)" />
 
-      <g>
-        <rect class="pd-pill" x="612" y="98" width="268" height="40" rx="20" />
-        <text class="pd-pill-text" x="746" y="123">atoms</text>
+      <g id="pachanga-diagram-pd-scroll-g-8">
+        <rect id="pachanga-diagram-pd-scroll-pill-2" class="pd-pill" x="612" y="98" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text-2" class="pd-pill-text" x="746" y="123">atoms</text>
       </g>
-      <line class="pd-line" x1="746" y1="140" x2="746" y2="148" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-7" class="pd-line" x1="746" y1="140" x2="746" y2="148" marker-end="url(#pd-arrow)" />
 
-      <g>
-        <rect class="pd-pill" x="612" y="152" width="268" height="40" rx="20" />
-        <text class="pd-pill-text" x="746" y="177">molecules</text>
+      <g id="pachanga-diagram-pd-scroll-g-9">
+        <rect id="pachanga-diagram-pd-scroll-pill-3" class="pd-pill" x="612" y="152" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text-3" class="pd-pill-text" x="746" y="177">molecules</text>
       </g>
-      <line class="pd-line" x1="746" y1="194" x2="746" y2="202" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-8" class="pd-line" x1="746" y1="194" x2="746" y2="202" marker-end="url(#pd-arrow)" />
 
-      <g>
-        <rect class="pd-pill" x="612" y="206" width="268" height="40" rx="20" />
-        <text class="pd-pill-text" x="746" y="231">organisms</text>
+      <g id="pachanga-diagram-pd-scroll-g-10">
+        <rect id="pachanga-diagram-pd-scroll-pill-4" class="pd-pill" x="612" y="206" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text-4" class="pd-pill-text" x="746" y="231">organisms</text>
       </g>
-      <line class="pd-line" x1="746" y1="248" x2="746" y2="256" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-9" class="pd-line" x1="746" y1="248" x2="746" y2="256" marker-end="url(#pd-arrow)" />
 
-      <g>
-        <rect class="pd-pill" x="612" y="260" width="268" height="40" rx="20" />
-        <text class="pd-pill-text" x="746" y="285">layouts</text>
+      <g id="pachanga-diagram-pd-scroll-g-11">
+        <rect id="pachanga-diagram-pd-scroll-pill-5" class="pd-pill" x="612" y="260" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text-5" class="pd-pill-text" x="746" y="285">layouts</text>
       </g>
-      <line class="pd-line" x1="746" y1="302" x2="746" y2="310" marker-end="url(#pd-arrow)" />
+      <line id="pachanga-diagram-pd-scroll-line-10" class="pd-line" x1="746" y1="302" x2="746" y2="310" marker-end="url(#pd-arrow)" />
 
-      <g>
-        <rect class="pd-pill pd-pill--screens" x="612" y="314" width="268" height="40" rx="20" />
-        <text class="pd-pill-text pd-pill-text--screens" x="746" y="339">screens</text>
+      <g id="pachanga-diagram-pd-scroll-g-12">
+        <rect id="pachanga-diagram-pd-scroll-pill-6" class="pd-pill pd-pill--screens" x="612" y="314" width="268" height="40" rx="20" />
+        <text id="pachanga-diagram-pd-scroll-pill-text-6" class="pd-pill-text pd-pill-text--screens" x="746" y="339">screens</text>
       </g>
 
-      <text class="pd-note" x="612" y="386">
+      <text id="pachanga-diagram-pd-scroll-note" class="pd-note" x="612" y="386">
         Cada capa compone la anterior y solo
       </text>
-      <text class="pd-note" x="612" y="404">
+      <text id="pachanga-diagram-pd-scroll-note-2" class="pd-note" x="612" y="404">
         habla con la de al lado. Un cambio
       </text>
-      <text class="pd-note" x="612" y="422">
+      <text id="pachanga-diagram-pd-scroll-note-3" class="pd-note" x="612" y="422">
         visual no toca la lógica.
       </text>
-      <text class="pd-note" x="612" y="458">
+      <text id="pachanga-diagram-pd-scroll-note-4" class="pd-note" x="612" y="458">
         Las pantallas llaman a los hooks
       </text>
-      <text class="pd-note" x="612" y="476">
+      <text id="pachanga-diagram-pd-scroll-note-5" class="pd-note" x="612" y="476">
         de dominio: la UI no habla con
       </text>
-      <text class="pd-note" x="612" y="494">
+      <text id="pachanga-diagram-pd-scroll-note-6" class="pd-note" x="612" y="494">
         Supabase directamente.
       </text>
     </svg>
   </div>
 
-  <figcaption>
+  <figcaption id="pachanga-diagram-pd-figcaption">
     Flujo real del proyecto: pantalla → hook de dominio → caso de uso → puerto ← adaptador
     → Supabase. El dominio no importa React Native, Expo ni la base de datos; por eso se
     prueba sin infraestructura.

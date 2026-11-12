@@ -45,18 +45,18 @@ const slots = words.map((word, index) => {
 ---
 
 <h1 class="display hero-title" id={titleId}>
-  <span class="visually-hidden">{lines.join(" ")}</span>
-  <span class="hero-reel-title" aria-hidden="true">
-    <span class="hero-stem">{stem}</span>
-    <span
+  <span id="hero-wheel-display-visually-hidden" class="visually-hidden">{lines.join(" ")}</span>
+  <span id="hero-wheel-display-reel-title" class="hero-reel-title" aria-hidden="true">
+    <span id="hero-wheel-reel-title-stem" class="hero-stem">{stem}</span>
+    <span id="hero-wheel-reel-title"
       class="hero-reel"
       data-hero-reel
       data-active-index="0"
       data-sound="off"
     >
       {
-        slots.map((slot) => (
-          <span
+        slots.map((slot, i) => (
+          <span id={`hero-wheel-reel-item-${i}`}
             class="hero-reel-item"
             data-center={slot.offset === 0 ? "" : undefined}
             style={`--offset: ${slot.offset}; --reel-scale: ${slot.scale}; --reel-opacity: ${slot.opacity}`}

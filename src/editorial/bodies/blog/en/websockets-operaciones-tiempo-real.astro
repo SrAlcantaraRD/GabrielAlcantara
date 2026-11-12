@@ -1,24 +1,26 @@
+---
+---
 
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p">
     When the interface stops being a form and starts reflecting the state of a
     physical operation, the real-time channel becomes part of the design. In
     Nakire TPS the frontend communicated over WebSocket so the operator could see
     what was happening and what to do next. These are the decisions that mattered.
   </p>
 
-  <h2>What problem the channel solves</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2">What problem the channel solves</h2>
+  <p id="websockets-operaciones-tiempo-real-p-2">
     Periodic polling also “updates” the screen, but it multiplies requests and
     arrives late. WebSocket lets the server push changes when they happen and lets
     the client keep a connection open for the duration of the work session.
   </p>
-  <p>
-    The channel carries <strong>state events relevant to that role</strong>, not an
+  <p id="websockets-operaciones-tiempo-real-p-3">
+    The channel carries <strong id="websockets-operaciones-tiempo-real-strong">state events relevant to that role</strong>, not an
     infinite stream of data or a database in streaming mode.
   </p>
 
-  <h2>Who decides what is sent</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-2">Who decides what is sent</h2>
+  <p id="websockets-operaciones-tiempo-real-p-4">
     The channel decides nothing: the use case defines the update. If an operator
     has a task open, the client subscribes to the events for that task. When
     another microservice consumes the change from Kafka —from PENDING to
@@ -26,29 +28,29 @@
     forwarded and publishes it on the bus; the handler distributes it to the
     listeners that should receive it.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-5">
     Nakire had both channels: WebSocket for the reactive frontend and SSE for the
     delta updates defined by each use case.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-6">
     The rule is the same across the system: a use case may emit the events the
     business needs, but each event is consumed by a single use case. That leaves a
     single failure point, always in the same place, through which every event
     passes.
   </p>
 
-  <h2>State comes from the server</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-3">State comes from the server</h2>
+  <p id="websockets-operaciones-tiempo-real-p-7">
     The classic mistake is building state in the browser: applying deltas and
     trusting that order and delivery are perfect. In a real operation, the client
     disconnects, the phone locks or the warehouse network has a gap.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-8">
     That is why the client requests an initial state on connect and then applies
     changes, but can always request the full state again. Deltas speed up the
     interface; the server state is in charge.
   </p>
-  <pre><code>socket.onmessage = (message) =&gt; &#123;
+  <pre id="websockets-operaciones-tiempo-real-pre"><code id="websockets-operaciones-tiempo-real-code">socket.onmessage = (message) =&gt; &#123;
   const event = parse(message.data);
   switch (event.type) &#123;
     case "task.updated":
@@ -60,62 +62,62 @@
   &#125;
 &#125;;</code></pre>
 
-  <h2>Authorisation on the server, not in the interface</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-4">Authorisation on the server, not in the interface</h2>
+  <p id="websockets-operaciones-tiempo-real-p-9">
     RBAC cannot live in the client. Hiding a button is an experience decision, not
     a security one. The server must know which role and which operator type owns
     the connection and filter both the events it sends and the actions it accepts.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-10">
     In practice, that means authenticating on connect, associating the connection
     with an identity and checking permissions on every message that mutates state.
     The interface adapts to the role because the server gives it the right
     context, not because the server trusts it.
   </p>
 
-  <h2>Reconnection and initial state</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-5">Reconnection and initial state</h2>
+  <p id="websockets-operaciones-tiempo-real-p-11">
     A WebSocket connection drops. The client needs a bounded reconnection strategy,
     and when it returns it must recover the state instead of assuming nothing was
     lost.
   </p>
-  <ul>
-    <li>Reconnect with increasing delay and a clear limit.</li>
-    <li>Full initial state after every reconnection.</li>
-    <li>Version or sequence identifiers to detect gaps.</li>
-    <li>A visible indicator that the connection is not alive.</li>
+  <ul id="websockets-operaciones-tiempo-real-ul">
+    <li id="websockets-operaciones-tiempo-real-li">Reconnect with increasing delay and a clear limit.</li>
+    <li id="websockets-operaciones-tiempo-real-li-2">Full initial state after every reconnection.</li>
+    <li id="websockets-operaciones-tiempo-real-li-3">Version or sequence identifiers to detect gaps.</li>
+    <li id="websockets-operaciones-tiempo-real-li-4">A visible indicator that the connection is not alive.</li>
   </ul>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-12">
     That last point matters more than it seems: an operator who believes they are
     seeing the real state while the screen is frozen makes worse decisions than one
     who sees a disconnection warning.
   </p>
 
-  <h2>Frequency and backpressure</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-6">Frequency and backpressure</h2>
+  <p id="websockets-operaciones-tiempo-real-p-13">
     Not every change deserves a message. If a device emits dozens of updates per
     second, forwarding all of them to the browser adds nothing and can saturate the
     connection. It is better to batch, sample or send only state transitions.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-14">
     The server must protect itself too: message limits per connection, size
     validation and a mechanism to close connections that do not consume.
   </p>
 
-  <h2>Testing the channel</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-7">Testing the channel</h2>
+  <p id="websockets-operaciones-tiempo-real-p-15">
     A WebSocket is hard to test if all the logic lives in the event handler.
     Separating parsing, state reduction and authorisation into pure functions lets
     you test the behaviour without opening a real connection.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-16">
     After that, an integration test with two clients and different roles catches
     what unit tests miss: an operator receiving events that do not belong to them,
     or a reconnection leaving the screen in an impossible state.
   </p>
 
-  <h2>Closing</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-8">Closing</h2>
+  <p id="websockets-operaciones-tiempo-real-p-17">
     The server decides, the client displays and the user knows when the information
     is up to date: that is real time in an operational interface. If that trust
     breaks, the fastest interface is still an interface you cannot work in.

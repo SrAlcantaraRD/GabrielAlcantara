@@ -25,47 +25,47 @@ const bodegaHref = localized ? "#proyectos" : "/projects/bodega-digital/";
 const pachangaHref = localized ? "#proyectos" : "/projects/pachanga-community/";
 ---
 
-<footer
+<footer id="site-footer"
 	class="site-footer"
 	transition:persist={`site-footer-${locale}`}
 	data-locale={locale}
 >
-	<div class="container footer-grid">
-		<div class="footer-brand">
-			<span class="footer-name">{SITE.name}</span>
-			<p class="footer-role">{t("footer.role")}</p>
-			<p class="footer-availability">
-				<span class="dot" aria-hidden="true"></span>
+	<div id="site-footer-container" class="container footer-grid">
+		<div id="site-footer-container-brand" class="footer-brand">
+			<span id="site-footer-brand-name" class="footer-name">{SITE.name}</span>
+			<p id="site-footer-brand-role" class="footer-role">{t("footer.role")}</p>
+			<p id="site-footer-brand-availability" class="footer-availability">
+				<span id="site-footer-availability-dot" class="dot" aria-hidden="true"></span>
 				{t("footer.availability")} · {t("footer.location")}
 			</p>
 		</div>
 
-		<nav class="footer-col" aria-label={t("footer.sections")}>
-			<span class="footer-heading">{t("footer.sections")}</span>
-			<ul>
-				{items.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+		<nav id="site-footer-container-col" class="footer-col" aria-label={t("footer.sections")}>
+			<span id="site-footer-col-heading" class="footer-heading">{t("footer.sections")}</span>
+			<ul id="site-footer-col-ul">
+				{items.map((item, i) => <li id={`site-footer-col-li-item-${i}`}><a id={`site-footer-col-a-item-${i}`} href={item.href}>{item.label}</a></li>)}
 			</ul>
 		</nav>
 
-		<div class="footer-col">
-			<span class="footer-heading">{t("footer.profile")}</span>
-			<ul>
-				<li><a href={cvHref}>{t("footer.fullCv")}</a></li>
-				<li><a href={careerHref}>{t("footer.career")}</a></li>
-				<li><a href={nakireHref}>Nakire TPS</a></li>
-				<li><a href={bodegaHref}>Bodega Digital</a></li>
-				<li><a href={pachangaHref}>Pachanga Community</a></li>
+		<div id="site-footer-container-col-2" class="footer-col">
+			<span id="site-footer-col-heading-2" class="footer-heading">{t("footer.profile")}</span>
+			<ul id="site-footer-col-ul-2">
+				<li id="site-footer-col-li"><a id="site-footer-col-a" href={cvHref}>{t("footer.fullCv")}</a></li>
+				<li id="site-footer-col-li-2"><a id="site-footer-col-a-2" href={careerHref}>{t("footer.career")}</a></li>
+				<li id="site-footer-col-li-3"><a id="site-footer-col-a-3" href={nakireHref}>Nakire TPS</a></li>
+				<li id="site-footer-col-li-4"><a id="site-footer-col-a-4" href={bodegaHref}>Bodega Digital</a></li>
+				<li id="site-footer-col-li-5"><a id="site-footer-col-a-5" href={pachangaHref}>Pachanga Community</a></li>
 			</ul>
 		</div>
 
-		<div class="footer-col">
-			<span class="footer-heading">{t("footer.contact")}</span>
-			<ul>
-				<li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+		<div id="site-footer-container-col-3" class="footer-col">
+			<span id="site-footer-col-heading-3" class="footer-heading">{t("footer.contact")}</span>
+			<ul id="site-footer-col-ul-3">
+				<li id="site-footer-col-li-6"><a id="site-footer-col-a-6" href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
 				{
-					SITE.socials.map((social) => (
-						<li>
-							<a href={social.href} rel="me">
+					SITE.socials.map((social, i2) => (
+						<li id={`site-footer-col-li-7-${i2}`}>
+							<a id={`site-footer-col-a-7-${i2}`} href={social.href} rel="me">
 								{social.label}
 							</a>
 						</li>
@@ -75,9 +75,9 @@ const pachangaHref = localized ? "#proyectos" : "/projects/pachanga-community/";
 		</div>
 	</div>
 
-	<div class="container footer-bottom">
-		<span>© {year} {SITE.name}</span>
-		<span class="footer-meta">
+	<div id="site-footer-container-2" class="container footer-bottom">
+		<span id="site-footer-container-span">© {year} {SITE.name}</span>
+		<span id="site-footer-container-meta" class="footer-meta">
 			{companies.length} {t("footer.stages")} · {t("footer.since")} {SITE.careerStart}
 		</span>
 	</div>

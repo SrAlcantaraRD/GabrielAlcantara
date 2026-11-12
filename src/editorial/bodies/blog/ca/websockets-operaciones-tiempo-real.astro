@@ -1,25 +1,27 @@
+---
+---
 
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p">
     Quan la interfície deixa de ser un formulari i passa a reflectir l'estat d'una
     operació física, el canal en temps real esdevé part del disseny. A Nakire TPS
     el frontend es comunicava per WebSocket perquè l'operador veiés què passava i
     què li tocava fer. Aquestes són les decisions que van importar.
   </p>
 
-  <h2>Quin problema resol el canal</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2">Quin problema resol el canal</h2>
+  <p id="websockets-operaciones-tiempo-real-p-2">
     L'enquestament periòdic també «actualitza» la pantalla, però multiplica
     peticions i arriba tard. El WebSocket permet que el servidor empenyi canvis
     quan passen i que el client mantingui una connexió oberta mentre dura la sessió
     de treball.
   </p>
-  <p>
-    El canal transporta <strong>esdeveniments d'estat rellevants per a aquell
+  <p id="websockets-operaciones-tiempo-real-p-3">
+    El canal transporta <strong id="websockets-operaciones-tiempo-real-strong">esdeveniments d'estat rellevants per a aquell
     rol</strong>, no un flux infinit de dades ni una base de dades en streaming.
   </p>
 
-  <h2>Qui decideix què s'envia</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-2">Qui decideix què s'envia</h2>
+  <p id="websockets-operaciones-tiempo-real-p-4">
     El canal no decideix res: l'actualització la defineix el cas d'ús. Si un
     operador té una tasca oberta, el client es registra com a consumidor dels
     esdeveniments d'aquella tasca. Quan un altre microservei consumeix de Kafka el
@@ -27,29 +29,29 @@
     canvi es reenvia i el publica al bus; el handler el reparteix entre els
     listeners que toquen.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-5">
     A Nakire convivien els dos canals: WebSocket per al frontend reactiu i SSE per
     a les actualitzacions delta que definia cada cas d'ús.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-6">
     La regla és la mateixa a tot el sistema: un cas d'ús pot emetre els
     esdeveniments que necessiti el negoci, però cada esdeveniment el consumeix un
     sol cas d'ús. Així hi ha un únic punt d'error, sempre al mateix lloc, pel qual
     passen tots els esdeveniments.
   </p>
 
-  <h2>L'estat ve del servidor</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-3">L'estat ve del servidor</h2>
+  <p id="websockets-operaciones-tiempo-real-p-7">
     L'error clàssic és construir l'estat al navegador: aplicar deltes i confiar que
     l'ordre i el lliurament són perfectes. En una operació real, el client es
     desconnecta, el mòbil es bloqueja o la xarxa del magatzem té un forat.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-8">
     Per això el client demana un estat inicial en connectar i després aplica
     canvis, però sempre pot tornar a demanar l'estat complet. Els deltes acceleren
     la interfície; l'estat del servidor mana.
   </p>
-  <pre><code>socket.onmessage = (message) =&gt; &#123;
+  <pre id="websockets-operaciones-tiempo-real-pre"><code id="websockets-operaciones-tiempo-real-code">socket.onmessage = (message) =&gt; &#123;
   const event = parse(message.data);
   switch (event.type) &#123;
     case "task.updated":
@@ -61,64 +63,64 @@
   &#125;
 &#125;;</code></pre>
 
-  <h2>Autorització al servidor, no a la interfície</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-4">Autorització al servidor, no a la interfície</h2>
+  <p id="websockets-operaciones-tiempo-real-p-9">
     El RBAC no pot viure al client. Que la interfície amagui un botó és una decisió
     d'experiència, no de seguretat. El servidor ha de saber quin rol i quin tipus
     d'operador té la connexió i filtrar tant els esdeveniments que envia com les
     accions que accepta.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-10">
     A la pràctica, això significa autenticar en connectar, associar la connexió a
     una identitat i comprovar permisos en cada missatge que muta estat. La
     interfície s'adapta al rol perquè el servidor li dona el context adequat, no
     perquè hi confiï.
   </p>
 
-  <h2>Reconnexió i estat inicial</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-5">Reconnexió i estat inicial</h2>
+  <p id="websockets-operaciones-tiempo-real-p-11">
     Una connexió WebSocket cau. El client necessita reconectar amb una estratègia
     acotada, i en tornar ha de recuperar l'estat en lloc d'assumir que no s'ha
     perdut res.
   </p>
-  <ul>
-    <li>Reconnexió amb espera creixent i un límit clar.</li>
-    <li>Estat inicial complet després de cada reconnexió.</li>
-    <li>Identificadors de versió o de seqüència per detectar forats.</li>
-    <li>Un indicador visible que la connexió no és viva.</li>
+  <ul id="websockets-operaciones-tiempo-real-ul">
+    <li id="websockets-operaciones-tiempo-real-li">Reconnexió amb espera creixent i un límit clar.</li>
+    <li id="websockets-operaciones-tiempo-real-li-2">Estat inicial complet després de cada reconnexió.</li>
+    <li id="websockets-operaciones-tiempo-real-li-3">Identificadors de versió o de seqüència per detectar forats.</li>
+    <li id="websockets-operaciones-tiempo-real-li-4">Un indicador visible que la connexió no és viva.</li>
   </ul>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-12">
     Aquest últim punt és més important del que sembla: un operador que creu veure
     l'estat real quan la pantalla està congelada pren pitjors decisions que un que
     veu un avís de desconnexió.
   </p>
 
-  <h2>Freqüència i contrapressió</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-6">Freqüència i contrapressió</h2>
+  <p id="websockets-operaciones-tiempo-real-p-13">
     No tots els canvis mereixen un missatge. Si un dispositiu emet desenes
     d'actualitzacions per segon, reenviar-les totes al navegador no aporta res i pot
     saturar la connexió. Convé agrupar, mostrejar o enviar només transicions
     d'estat.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-14">
     El servidor també ha de protegir-se: límits de missatges per connexió,
     validació de mida i un mecanisme per tancar connexions que no consumeixen.
   </p>
 
-  <h2>Provar el canal</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-7">Provar el canal</h2>
+  <p id="websockets-operaciones-tiempo-real-p-15">
     Un WebSocket és difícil de provar si tota la lògica viu al manegador de
     l'esdeveniment. Separar el parseig, la reducció d'estat i l'autorització en
     funcions pures permet provar el comportament sense obrir una connexió real.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-16">
     Després, una prova d'integració amb dos clients i rols diferents detecta el que
     les proves unitàries no veuen: que un operador rep esdeveniments que no li
     corresponen o que la reconnexió deixa la pantalla en un estat impossible.
   </p>
 
-  <h2>Tancament</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-8">Tancament</h2>
+  <p id="websockets-operaciones-tiempo-real-p-17">
     El servidor decideix, el client mostra i l'usuari sap quan la informació està al
     dia: això és temps real en una interfície operativa. Si aquesta confiança es
     trenca, la interfície més ràpida continua sent una interfície en què no es pot

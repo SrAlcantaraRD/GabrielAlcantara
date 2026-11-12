@@ -1,5 +1,7 @@
+---
+---
 
-  <p>
+  <p id="ddd-dominios-complejos-p">
     Hi ha dominis on una taula per entitat és suficient. I hi ha dominis on les
     regles no caben en columnes: depenen del context, canvien per instal·lació i
     afecten diverses parts del sistema alhora. En aquests casos, DDD decideix on
@@ -7,88 +9,88 @@
     complexitat del sistema i les seves integracions, ni una més.
   </p>
 
-  <h2>El domini no és la base de dades</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2">El domini no és la base de dades</h2>
+  <p id="ddd-dominios-complejos-p-2">
     El primer símptoma d'un domini complex és que el model de dades comença a
     decidir el comportament. Les validacions es reparteixen entre la base de
     dades, el controlador i la interfície, i ja ningú sap quina és la font de
     veritat.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-3">
     DDD proposa el contrari: modelar el comportament i el llenguatge del negoci,
     i tractar la persistència com un detall. No perquè la base de dades no
     importi, sinó perquè les regles s'han de poder provar sense ella.
   </p>
 
-  <h2>Llenguatge comú</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-2">Llenguatge comú</h2>
+  <p id="ddd-dominios-complejos-p-4">
     Un celler no parla de «registres» ni de «files»: parla d'ampolles,
     referències, anyades, lots i posicions. Quan el codi fa servir aquest mateix
     vocabulari, les converses amb el negoci i amb els proveïdors de maquinari es
     fan més curtes.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-5">
     A Bodega Digital aquest vocabulari va ser part del disseny: una ampolla és una
     unitat identificable —anyada, varietat, parcel·la—, no una fila d'estoc; un
     lector RFID té capacitats, no només un identificador. El model reflecteix com
     es treballa.
   </p>
 
-  <h2>Límits: on és el cost de canviar</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-3">Límits: on és el cost de canviar</h2>
+  <p id="ddd-dominios-complejos-p-6">
     La pregunta útil per trobar un context delimitat no és «quines entitats van
     juntes?», sinó «què canvia junt i què pot canviar per separat?». Les regles
     d'inventari canvien per celler; el protocol d'un lector RFID canvia per
     fabricant i model. Són dues velocitats diferents i mereixen límits diferents.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-7">
     Per això cada integració —lectors RFID, visió per computador, predicció de
     demanda— va quedar darrere del seu propi adaptador, mentre el domini mantenia
     les regles que no depenen del maquinari. Un canvi de fabricant no obliga a
     tocar el domini; un canvi de regla de negoci no obliga a tocar els adaptadors.
   </p>
 
-  <h2>Agregats i unitats identificables</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-4">Agregats i unitats identificables</h2>
+  <p id="ddd-dominios-complejos-p-8">
     Un agregat és una frontera de consistència. En un inventari de vi, l'ampolla és
     un bon candidat: té identitat pròpia —anyada, varietat, parcel·la—, una
     posició i un cicle de vida. Modelada així, les seves transicions es poden
     provar i els errors deixen de ser efectes secundaris.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-9">
     Aquesta frontera també evita l'agregat gegant que tot ho sap. L'ampolla no
     necessita conèixer l'inventari complet ni el protocol del lector; necessita
     saber què és, on és i en quin estat es troba.
   </p>
 
-  <h2>Esdeveniments de domini</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-5">Esdeveniments de domini</h2>
+  <p id="ddd-dominios-complejos-p-10">
     Quan una ampolla canvia d'estat, aquest canvi és un fet del negoci. Publicar-lo
     com a esdeveniment permet que altres mòduls reaccionin sense que l'ampolla sàpiga
     qui són. És la mateixa idea dels límits, aplicada al temps: el domini declara
     què ha passat i cada consumidor decideix què fer.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-11">
     La disciplina consisteix a no convertir l'esdeveniment en una crida encoberta.
     Si l'emissor necessita una resposta per continuar, probablement no era un
     esdeveniment.
   </p>
 
-  <h2>El cost de DDD</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-6">El cost de DDD</h2>
+  <p id="ddd-dominios-complejos-p-12">
     DDD exigeix més conversa i més modelatge inicial que obrir una taula i seguir.
     En un domini simple, aquest cost no es recupera: una aplicació de formularis
     amb regles clares no necessita agregats ni contextos.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-13">
     Val la pena quan hi ha diverses fonts de variació —instal·lacions, fabricants,
     regles que canvien— i quan el cost d'un canvi mal localitzat és alt. Allà, el
     modelatge és el que evita que cada nova regla es converteixi en un condicional
     més.
   </p>
 
-  <h2>Tancament</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-7">Tancament</h2>
+  <p id="ddd-dominios-complejos-p-14">
     DDD no fa que un domini sigui complex; reconeix que ja ho era i decideix on
     posar cada cosa. El diagrama pot quedar elegant i clar, però això no és el
     senyal: el senyal és que afegir una altra implementació d'un port o una

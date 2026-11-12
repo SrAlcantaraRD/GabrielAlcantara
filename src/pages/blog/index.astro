@@ -42,51 +42,51 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "Blog" }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Blog</p>
-    <h1 class="display">Artículos escritos desde proyectos, mi experiencia y punto de vista.</h1>
-    <p class="lede">
+  <header id="blog-page-head" class="page-head">
+    <p id="blog-page-head-eyebrow" class="eyebrow">Blog</p>
+    <h1 id="blog-page-head-display" class="display">Artículos escritos desde proyectos, mi experiencia y punto de vista.</h1>
+    <p id="blog-page-head-lede" class="lede">
       Escribo sobre los problemas que aparecen al diseñar y mantener sistemas reales:
       límites de dominio, comunicación entre servicios, automatización, testing,
       despliegue y liderazgo técnico.
     </p>
-    <div class="meta-row">
-      <span>{POSTS.length} artículos</span>
-      <span>{ACTIVE_CATEGORIES.length} temas</span>
-      <span>escritos desde proyectos reales</span>
+    <div id="blog-page-head-meta-row" class="meta-row">
+      <span id="blog-meta-row-span">{POSTS.length} artículos</span>
+      <span id="blog-meta-row-span-2">{ACTIVE_CATEGORIES.length} temas</span>
+      <span id="blog-meta-row-span-3">escritos desde proyectos reales</span>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="destacado-title">
-    <div class="section-head">
+  <section id="blog-section" class="section" aria-labelledby="destacado-title">
+    <div id="blog-section-head" class="section-head">
       <h2 class="section-title" id="destacado-title">Artículo destacado</h2>
-      <span class="section-meta">{formatDate(FEATURED_POST.date)}</span>
+      <span id="blog-section-head-meta" class="section-meta">{formatDate(FEATURED_POST.date)}</span>
     </div>
-    <article class="featured-post">
-      <div class="featured-body">
-        <p class="eyebrow">Automatización industrial</p>
-        <h3 class="featured-title">
-          <a href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
+    <article id="blog-section-featured-post" class="featured-post">
+      <div id="blog-featured-post-body" class="featured-body">
+        <p id="blog-featured-body-eyebrow" class="eyebrow">Automatización industrial</p>
+        <h3 id="blog-featured-body-title" class="featured-title">
+          <a id="blog-featured-title-a" href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
         </h3>
-        <p class="featured-text">{FEATURED_POST.description}</p>
-        <div class="meta-row">
-          <span>{formatDate(FEATURED_POST.date)}</span>
-          <span>{FEATURED_POST.readingMinutes} min de lectura</span>
+        <p id="blog-featured-body-text" class="featured-text">{FEATURED_POST.description}</p>
+        <div id="blog-featured-body-meta-row" class="meta-row">
+          <span id="blog-meta-row-span-4">{formatDate(FEATURED_POST.date)}</span>
+          <span id="blog-meta-row-span-5">{FEATURED_POST.readingMinutes} min de lectura</span>
         </div>
-        <div class="tag-row">
-          {FEATURED_POST.tags.map((tag) => <span class="pill">{tag}</span>)}
+        <div id="blog-featured-body-tag-row" class="tag-row">
+          {FEATURED_POST.tags.map((tag, i) => <span id={`blog-tag-row-pill-${i}`} class="pill">{tag}</span>)}
         </div>
-        <a class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
+        <a id="blog-featured-body-btn" class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
       </div>
-      <aside class="topics" aria-labelledby="temas-title">
+      <aside id="blog-featured-post-topics" class="topics" aria-labelledby="temas-title">
         <h2 class="section-title" id="temas-title">Temas</h2>
-        <ul>
+        <ul id="blog-topics-ul">
           {
-            ACTIVE_CATEGORIES.map((category) => (
-              <li>
-                <a href={`/blog/categoria/${category.slug}/`}>
-                  <span>{category.label}</span>
-                  <span class="topic-count">{postsInCategory(category.slug).length}</span>
+            ACTIVE_CATEGORIES.map((category, i2) => (
+              <li id={`blog-topics-li-${i2}`}>
+                <a id={`blog-topics-a-${i2}`} href={`/blog/categoria/${category.slug}/`}>
+                  <span id={`blog-topics-span-${i2}`}>{category.label}</span>
+                  <span id={`blog-topics-topic-count-${i2}`} class="topic-count">{postsInCategory(category.slug).length}</span>
                 </a>
               </li>
             ))
@@ -96,26 +96,26 @@ const jsonLd = [
     </article>
   </section>
 
-  <section class="section" aria-labelledby="articulos-title">
-    <div class="section-head">
+  <section id="blog-section-2" class="section" aria-labelledby="articulos-title">
+    <div id="blog-section-head-2" class="section-head">
       <h2 class="section-title" id="articulos-title">Todos los artículos</h2>
-      <span class="section-meta">más recientes primero</span>
+      <span id="blog-section-head-meta-2" class="section-meta">más recientes primero</span>
     </div>
-    <div class="post-list">
+    <div id="blog-section-post-list" class="post-list">
       {OTHER_POSTS.map((post) => <PostCard post={post} />)}
       <PostCard post={FEATURED_POST} />
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="blog-cierre">
+  <section id="blog-closing" class="closing" aria-labelledby="blog-cierre">
     <h2 class="section-title" id="blog-cierre">Explorar proyectos relacionados</h2>
-    <p>
+    <p id="blog-closing-p">
       Los artículos salen de proyectos concretos. Si quieres ver el problema completo, el
       rol y las decisiones, están en el portfolio.
     </p>
-    <div class="actions">
-      <a class="btn" href="/projects/">Ver proyectos</a>
-      <a class="btn btn--ghost" href="/contact/">Contactar</a>
+    <div id="blog-closing-actions" class="actions">
+      <a id="blog-actions-btn" class="btn" href="/projects/">Ver proyectos</a>
+      <a id="blog-actions-btn-2" class="btn btn--ghost" href="/contact/">Contactar</a>
     </div>
   </section>
 </Layout>

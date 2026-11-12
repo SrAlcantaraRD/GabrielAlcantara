@@ -2,26 +2,26 @@
 import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astro";
 ---
   <h2 id="resumen">Executive summary</h2>
-  <p>
+  <p id="nakire-tps-p">
     Nakire TPS connects the physical operation of a warehouse with the software that
     coordinates it. The system brings people, applications and industrial devices
     —robots, PLCs, LEDs, picking, cameras and sound— into one workflow, with
     traceability and the ability to evolve warehouse by warehouse.
   </p>
-  <p>
+  <p id="nakire-tps-p-2">
     The solution was organised around domains and services with clear
     responsibilities, event-driven communication and real-time channels to reflect
     the state of operations. My work combined architecture, domain modelling,
     service development, device integration and the definition of communication
     flows.
   </p>
-  <p>
+  <p id="nakire-tps-p-3">
     It was built in two phases: an MVP between April and July 2025, and a second
     phase from September 2025 to June 2026.
   </p>
 
   <h2 id="origen">Where the architecture comes from</h2>
-  <p>
+  <p id="nakire-tps-p-4">
     Nakire TPS is an in-house product. What comes from earlier is the way of thinking
     about the system, not its code: the first engine I wrote was Basetis's search
     engine, with bracketed queries —AND, OR, NOT, NOR— and a regular-expression
@@ -30,8 +30,8 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
     huge components, moved to Atomic Design with an extra layer: particles, atoms,
     molecules, organisms, layouts and pages.
   </p>
-  <p>
-    In <a href="/en/projects/bodega-digital/">Bodega Digital</a> I brought that
+  <p id="nakire-tps-p-5">
+    In <a id="nakire-tps-a" href="/en/projects/bodega-digital/">Bodega Digital</a> I brought that
     backend architecture into the frontend for the first time, inside a monolith:
     one deployment and domain boundaries in the code. Nakire TPS takes the idea to
     microservices: each device family with its own service, and a domain core that
@@ -39,102 +39,102 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="contexto">Industrial context</h2>
-  <p>
+  <p id="nakire-tps-p-6">
     In an automated warehouse, moving a pallet is not an isolated operation: it
     involves a task, an available device, an operator who needs to know what to do
     and a record of what happened. The software has to coordinate those actors
     without becoming a bottleneck and without losing sight of who can do what.
   </p>
-  <p>
+  <p id="nakire-tps-p-7">
     Every warehouse arrives with its own map, robot versions and business rules.
     The system had to absorb that variation without multiplying code or depending on
     a specific vendor.
   </p>
 
   <h2 id="problema">The problem</h2>
-  <ul>
-    <li>
+  <ul id="nakire-tps-ul">
+    <li id="nakire-tps-li">
       Coordinate tasks across very different device families, each with its own
       protocol and life cycle.
     </li>
-    <li>
+    <li id="nakire-tps-li-2">
       Let a warehouse's configuration —map, robots, versions— change without
       rewriting the domain.
     </li>
-    <li>
+    <li id="nakire-tps-li-3">
       Reflect the operation state in real time so people can act on what is
       happening.
     </li>
-    <li>
+    <li id="nakire-tps-li-4">
       Keep clear boundaries between what the business decides and what the hardware
       decides.
     </li>
   </ul>
 
   <h2 id="restricciones">Constraints</h2>
-  <ul>
-    <li>
-      <strong>Heterogeneous hardware.</strong> Forklifts, PLCs, LEDs, picking and
+  <ul id="nakire-tps-ul-2">
+    <li id="nakire-tps-li-5">
+      <strong id="nakire-tps-strong">Heterogeneous hardware.</strong> Forklifts, PLCs, LEDs, picking and
       cameras share no model, version or protocol.
     </li>
-    <li>
-      <strong>Validation on real hardware.</strong> The pipeline's QA gates ran on
+    <li id="nakire-tps-li-6">
+      <strong id="nakire-tps-strong-2">Validation on real hardware.</strong> The pipeline's QA gates ran on
       physical devices, not only on mocks.
     </li>
-    <li>
-      <strong>Cloud deployment over VPN.</strong> The software lives in the cloud
+    <li id="nakire-tps-li-7">
+      <strong id="nakire-tps-strong-3">Cloud deployment over VPN.</strong> The software lives in the cloud
       and connects to the industrial installation through a VPN.
     </li>
-    <li>
-      <strong>Vendors and documentation.</strong> Technical communication and
+    <li id="nakire-tps-li-8">
+      <strong id="nakire-tps-strong-4">Vendors and documentation.</strong> Technical communication and
       documentation with Chinese vendors were in English.
     </li>
-    <li>
-      <strong>Traceability and roles.</strong> Each operator should see and execute
+    <li id="nakire-tps-li-9">
+      <strong id="nakire-tps-strong-5">Traceability and roles.</strong> Each operator should see and execute
       only what their role allowed.
     </li>
   </ul>
 
   <h2 id="rol">My role</h2>
-  <p>
+  <p id="nakire-tps-p-8">
     My work combined architecture design, domain modelling, service development,
     device integration, definition of communication flows and support for technical
     decisions. I was part of a team: what follows distinguishes what I designed and
     led from what was collective work.
   </p>
-  <ul>
-    <li>
+  <ul id="nakire-tps-ul-3">
+    <li id="nakire-tps-li-10">
       I designed and implemented an event-driven system on DDD, TDD and
       microservices, with a monolith grouped into frontend, backend, core and a
       subset of devices.
     </li>
-    <li>
+    <li id="nakire-tps-li-11">
       I defined the agent core that orders, prioritises and distributes work across
       available devices.
     </li>
-    <li>
+    <li id="nakire-tps-li-12">
       I separated each device family into its own microservice, with adapters per
       model, version and protocol.
     </li>
-    <li>
+    <li id="nakire-tps-li-13">
       I defined the reactive WebSocket frontend and access control by role and
       operator type.
     </li>
-    <li>
+    <li id="nakire-tps-li-14">
       I supported deployment in Docker on cloud over VPN, with CI/CD and QA gates on
       real physical hardware.
     </li>
   </ul>
 
   <h2 id="arquitectura">Architecture</h2>
-  <p>
+  <p id="nakire-tps-p-9">
     The frontend and the API talk to a core that knows the tasks; the core does not
     know each device's protocols, only its capabilities.
   </p>
 
   <ArchitectureDiagram />
 
-  <p class="diagram-alt">
+  <p id="nakire-tps-diagram-alt" class="diagram-alt">
     In text: the frontend connects to the API; the API delegates to the agent core
     —dictator, ranker and distributor—; the core publishes and consumes events on
     the bus; each device family has its own microservice with adapters per model,
@@ -142,24 +142,24 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="dominios">Domains and services</h2>
-  <p>
+  <p id="nakire-tps-p-10">
     DDD and TDD were used to absorb the business rules, maps and robot versions
     that differ per warehouse. Abstraction happened through use cases, ports and
     adapters: changing an API or a device does not drag the domain along.
   </p>
-  <p>
+  <p id="nakire-tps-p-11">
     The core works with tasks at different levels of detail, from a task pointing to
     a concrete device to one that only expresses the family and the action. That
     granularity lets the system keep coordinating when a robot model is unavailable
     or when a warehouse adds a new version.
   </p>
-  <p>
-    Agents distribute the work: <strong>dictator</strong> orders,
-    <strong>ranker</strong> prioritises and <strong>distributor</strong> delegates.
+  <p id="nakire-tps-p-12">
+    Agents distribute the work: <strong id="nakire-tps-strong-6">dictator</strong> orders,
+    <strong id="nakire-tps-strong-7">ranker</strong> prioritises and <strong id="nakire-tps-strong-8">distributor</strong> delegates.
     The goal is to maximise device availability and minimise the movements needed
     to complete tasks.
   </p>
-  <p>
+  <p id="nakire-tps-p-13">
     Each module had its own API, backoffice and frontend, and shared a DDD core with
     the rest: business rules lived in the module's domain. Role-based access control
     crossed the entire system, so the same operator saw what corresponded to them in
@@ -167,13 +167,13 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="eventos">Events and communication</h2>
-  <p>
+  <p id="nakire-tps-p-14">
     Communication between services is asynchronous and event-driven. The system's
     event bus lets the core publish what it has decided and each service react
     without the producer knowing its consumers. Adding a device family or a new
     capability does not require touching the core.
   </p>
-  <p>
+  <p id="nakire-tps-p-15">
     That separation also contains failure: a device service that stops responding
     does not block coordination for the rest, although the system must decide what
     to do with the tasks that depended on it. Persistence follows the same division:
@@ -181,25 +181,25 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="reglas">System rules</h2>
-  <p>
+  <p id="nakire-tps-p-16">
     A use case may emit the events the business decides, but each event is consumed
     by a single use case. The rule looks small and changes the whole system: it
     leaves a clean trace of who did what and a single failure point, always in the
     same place, through which every event passes.
   </p>
-  <p>
+  <p id="nakire-tps-p-17">
     That traceability was designed for operations: when a task does not move
     forward, there is one place to look. With the same logic, real time is declared
     in the use case.
   </p>
 
   <h2 id="hardware">Hardware integration</h2>
-  <p>
+  <p id="nakire-tps-p-18">
     Each device family —forklift, PLC, LED, picking, camera— is its own
     microservice, with adapters per model, version and protocol. The domain
     expresses the intention; the adapter translates it into the concrete protocol.
   </p>
-  <p>
+  <p id="nakire-tps-p-19">
     That boundary was the decision that paid for itself most often: a new vendor or
     a different robot version joined as an adapter, not as a change to business
     rules. It also made it possible to document and communicate integrations in
@@ -207,18 +207,18 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="tiempo-real">Real time and roles</h2>
-  <p>
+  <p id="nakire-tps-p-20">
     The frontend is reactive and communicates over WebSocket: the interface reflects
     the operation state without the operator having to refresh. RBAC applies over
     that channel, so the interface adapts to the role —admin or operator— and to the
     operator type.
   </p>
-  <p>
+  <p id="nakire-tps-p-21">
     The practical consequence is that the operator sees the next action that
     corresponds to them, with the context of what is happening in the warehouse,
     instead of a generic screen with every possibility.
   </p>
-  <p>
+  <p id="nakire-tps-p-22">
     Besides WebSocket, the system used SSE for delta updates: the use case decides
     whether a state change —a task moving from PENDING to IN_PROGRESS— deserves a
     send, publishes it on the bus and the handler distributes it to listeners
@@ -227,7 +227,7 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="despliegue">CI/CD and deployment</h2>
-  <p>
+  <p id="nakire-tps-p-23">
     The platform is deployed with Docker and Kubernetes in the cloud, under a VPN to
     the installation. The pipeline includes CI/CD and deterministic QA gates on real
     physical hardware: validation did not stop at the integration environment, it
@@ -235,62 +235,62 @@ import ArchitectureDiagram from "../../../../components/ArchitectureDiagram.astr
   </p>
 
   <h2 id="decisiones">Technical decisions</h2>
-  <ul>
-    <li>
-      <strong>Agent core instead of rigid orchestration.</strong> It allows work to
+  <ul id="nakire-tps-ul-4">
+    <li id="nakire-tps-li-15">
+      <strong id="nakire-tps-strong-9">Agent core instead of rigid orchestration.</strong> It allows work to
       be prioritised and distributed by availability, in exchange for assuming state
       and idempotency in tasks.
     </li>
-    <li>
-      <strong>One microservice per device family.</strong> It isolates protocols and
+    <li id="nakire-tps-li-16">
+      <strong id="nakire-tps-strong-10">One microservice per device family.</strong> It isolates protocols and
       versions, in exchange for more services to deploy and observe.
     </li>
-    <li>
-      <strong>Tasks with variable granularity.</strong> The same model serves a
+    <li id="nakire-tps-li-17">
+      <strong id="nakire-tps-strong-11">Tasks with variable granularity.</strong> The same model serves a
       concrete device and an entire family, in exchange for a richer task contract.
     </li>
-    <li>
-      <strong>DDD and TDD for the domain.</strong> They absorb rules that change per
+    <li id="nakire-tps-li-18">
+      <strong id="nakire-tps-strong-12">DDD and TDD for the domain.</strong> They absorb rules that change per
       warehouse, in exchange for initial modelling effort that is recovered with
       every variant.
     </li>
-    <li>
-      <strong>QA on real hardware.</strong> It detects what no mock detects, in
+    <li id="nakire-tps-li-19">
+      <strong id="nakire-tps-strong-13">QA on real hardware.</strong> It detects what no mock detects, in
       exchange for a slower pipeline that depends on devices.
     </li>
   </ul>
 
   <h2 id="resultados">Outcomes</h2>
-  <p>
+  <p id="nakire-tps-p-24">
     The system connected software and industrial operations, improved process
     traceability and automated interactions that previously required manual
     coordination. The outcomes I can state are observable, not invented metrics:
   </p>
-  <ul>
-    <li>Tasks are recorded and associated with their device and their operator.</li>
-    <li>
+  <ul id="nakire-tps-ul-5">
+    <li id="nakire-tps-li-20">Tasks are recorded and associated with their device and their operator.</li>
+    <li id="nakire-tps-li-21">
       The interface reflects the operation state in real time and adapts to the role
       of whoever uses it.
     </li>
-    <li>
+    <li id="nakire-tps-li-22">
       Adding a device model or version does not require rebuilding the domain.
     </li>
-    <li>
+    <li id="nakire-tps-li-23">
       Deployment and validation are automated, including checks on real hardware.
     </li>
   </ul>
 
   <h2 id="aprendizajes">Lessons learned</h2>
-  <ul>
-    <li>
+  <ul id="nakire-tps-ul-6">
+    <li id="nakire-tps-li-24">
       In industrial systems, hardware sets the pace: the architecture has to assume
       that devices fail, change version and are not always available.
     </li>
-    <li>
+    <li id="nakire-tps-li-25">
       Explicit contracts between domain and device save more time than any
       premature optimisation.
     </li>
-    <li>
+    <li id="nakire-tps-li-26">
       Documentation and the vocabulary shared with vendors are part of engineering,
       not paperwork.
     </li>

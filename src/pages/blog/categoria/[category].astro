@@ -47,49 +47,49 @@ const jsonLd = [
     { label: category.label },
   ]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Blog · tema</p>
-    <h1 class="display">{category.label}</h1>
-    <p class="lede">{category.description}</p>
-    <div class="meta-row">
-      <span>{posts.length} {posts.length === 1 ? "artículo" : "artículos"}</span>
-      <a href="/blog/">Ver todos los temas</a>
+  <header id="category-page-head" class="page-head">
+    <p id="category-page-head-eyebrow" class="eyebrow">Blog · tema</p>
+    <h1 id="category-page-head-display" class="display">{category.label}</h1>
+    <p id="category-page-head-lede" class="lede">{category.description}</p>
+    <div id="category-page-head-meta-row" class="meta-row">
+      <span id="category-meta-row-span">{posts.length} {posts.length === 1 ? "artículo" : "artículos"}</span>
+      <a id="category-meta-row-a" href="/blog/">Ver todos los temas</a>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="posts-title">
-    <div class="section-head">
+  <section id="category-section" class="section" aria-labelledby="posts-title">
+    <div id="category-section-head" class="section-head">
       <h2 class="section-title" id="posts-title">Artículos</h2>
-      <span class="section-meta">
+      <span id="category-section-head-meta" class="section-meta">
         {posts.length > 0 ? formatDate(posts[0]!.date) : "próximamente"}
       </span>
     </div>
     {
       posts.length > 0 ? (
-        <div class="post-list">
+        <div id="category-section-post-list" class="post-list">
           {posts.map((post) => <PostCard post={post} />)}
         </div>
       ) : (
-        <p class="empty">
+        <p id="category-section-empty" class="empty">
           Todavía no hay artículos publicados en este tema. El resto del blog sigue
-          disponible en <a href="/blog/">la portada del blog</a>.
+          disponible en <a id="category-empty-a" href="/blog/">la portada del blog</a>.
         </p>
       )
     }
   </section>
 
-  <section class="closing" aria-labelledby="categoria-cierre">
+  <section id="category-closing" class="closing" aria-labelledby="categoria-cierre">
     <h2 class="section-title" id="categoria-cierre">Otros temas</h2>
-    <ul class="other-topics">
+    <ul id="category-closing-other-topics" class="other-topics">
       {
-        ACTIVE_CATEGORIES.filter((item) => item.slug !== category.slug).map((item) => (
-          <li><a href={`/blog/categoria/${item.slug}/`}>{item.label}</a></li>
+        ACTIVE_CATEGORIES.filter((item) => item.slug !== category.slug).map((item, i) => (
+          <li id={`category-other-topics-li-${i}`}><a id={`category-other-topics-a-${i}`} href={`/blog/categoria/${item.slug}/`}>{item.label}</a></li>
         ))
       }
     </ul>
-    <div class="actions">
-      <a class="btn btn--ghost" href="/blog/">Ver todos los artículos</a>
-      <a class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escríbeme</a>
+    <div id="category-closing-actions" class="actions">
+      <a id="category-actions-btn" class="btn btn--ghost" href="/blog/">Ver todos los artículos</a>
+      <a id="category-actions-btn-2" class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escríbeme</a>
     </div>
   </section>
 </Layout>

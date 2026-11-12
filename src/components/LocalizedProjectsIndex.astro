@@ -52,40 +52,40 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: copy.eyebrow }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">{copy.eyebrow}</p>
-    <h1 class="display">{copy.title}</h1>
-    <p class="lede">{copy.lede}</p>
-    <div class="meta-row">
-      <span>{PROJECT_CASES.length} {copy.metaCases}</span>
-      <span>{copy.metaStructure}</span>
+  <header id="localized-projects-index-page-head" class="page-head">
+    <p id="localized-projects-index-page-head-eyebrow" class="eyebrow">{copy.eyebrow}</p>
+    <h1 id="localized-projects-index-page-head-display" class="display">{copy.title}</h1>
+    <p id="localized-projects-index-page-head-lede" class="lede">{copy.lede}</p>
+    <div id="localized-projects-index-page-head-meta-row" class="meta-row">
+      <span id="localized-projects-index-meta-row-span">{PROJECT_CASES.length} {copy.metaCases}</span>
+      <span id="localized-projects-index-meta-row-span-2">{copy.metaStructure}</span>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="destacado-title">
-    <div class="section-head">
+  <section id="localized-projects-index-section" class="section" aria-labelledby="destacado-title">
+    <div id="localized-projects-index-section-head" class="section-head">
       <h2 class="section-title" id="destacado-title">{copy.featured}</h2>
-      <span class="section-meta">{FEATURED_CASE.company}</span>
+      <span id="localized-projects-index-section-head-meta" class="section-meta">{FEATURED_CASE.company}</span>
     </div>
     <ProjectCard project={FEATURED_CASE} lang={lang} />
   </section>
 
-  <section class="section" aria-labelledby="seleccionados-title">
-    <div class="section-head">
+  <section id="localized-projects-index-section-2" class="section" aria-labelledby="seleccionados-title">
+    <div id="localized-projects-index-section-head-2" class="section-head">
       <h2 class="section-title" id="seleccionados-title">{copy.selected}</h2>
-      <span class="section-meta">{SELECTED_CASES.length} {copy.cases}</span>
+      <span id="localized-projects-index-section-head-meta-2" class="section-meta">{SELECTED_CASES.length} {copy.cases}</span>
     </div>
-    <div class="grid grid--2 is-aligned">
+    <div id="localized-projects-index-section-grid" class="grid grid--2 is-aligned">
       {SELECTED_CASES.map((project) => <ProjectCard project={project} lang={lang} />)}
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="projects-cierre">
+  <section id="localized-projects-index-closing" class="closing" aria-labelledby="projects-cierre">
     <h2 class="section-title" id="projects-cierre">{copy.closingTitle}</h2>
-    <p>{copy.closingBody}</p>
-    <div class="actions">
-      <a class="btn" href={`/${lang}/#contacto`}>{copy.contactCta}</a>
-      <a class="btn btn--ghost" href={`/${lang}/blog/`}>{copy.blogCta}</a>
+    <p id="localized-projects-index-closing-p">{copy.closingBody}</p>
+    <div id="localized-projects-index-closing-actions" class="actions">
+      <a id="localized-projects-index-actions-btn" class="btn" href={`/${lang}/#contacto`}>{copy.contactCta}</a>
+      <a id="localized-projects-index-actions-btn-2" class="btn btn--ghost" href={`/${lang}/blog/`}>{copy.blogCta}</a>
     </div>
   </section>
 </Layout>

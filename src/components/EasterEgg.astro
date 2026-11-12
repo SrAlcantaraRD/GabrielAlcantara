@@ -45,28 +45,28 @@ const LEGEND = [
   aria-labelledby="egg-title"
   aria-describedby="egg-intro"
 >
-  <div class="egg-panel">
-    <header class="egg-head">
-      <div>
-        <p class="eyebrow">Easter egg · el porqué</p>
+  <div id="easter-egg-panel" class="egg-panel">
+    <header id="easter-egg-panel-head" class="egg-head">
+      <div id="easter-egg-head-div">
+        <p id="easter-egg-head-eyebrow" class="eyebrow">Easter egg · el porqué</p>
         <h2 class="egg-title" id="egg-title">Cuatro motores y sus manías</h2>
       </div>
-      <button type="button" class="egg-close" data-egg-close aria-label="Cerrar">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 18L18 6M6 6l12 12" />
+      <button id="easter-egg-head-close" type="button" class="egg-close" data-egg-close aria-label="Cerrar">
+        <svg id="easter-egg-close-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path id="easter-egg-close-path" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </header>
 
-    <div class="egg-body">
+    <div id="easter-egg-panel-body" class="egg-body">
       <div class="egg-intro" id="egg-intro">
-        <p class="egg-lede">
+        <p id="easter-egg-intro-lede" class="egg-lede">
           Si tuviera que resumir mi perfil en una frase, diría que soy el resultado
           de crecer entre un padre ingeniero emprendedor y una madre profesora
           periodista. De ahí vienen mis cuatro grandes motores… y también mis
           manías.
         </p>
-        <p>
+        <p id="easter-egg-intro-p">
           De la parte de ingeniería heredé la capacidad estructurada para resolver
           problemas complejos y, cómo no, un punto de perfeccionismo técnico. Del
           periodismo, una curiosidad casi obsesiva por entender el porqué de las
@@ -77,33 +77,33 @@ const LEGEND = [
         </p>
       </div>
 
-      <ul class="engines" aria-label="Los cuatro motores">
+      <ul id="easter-egg-body-engines" class="engines" aria-label="Los cuatro motores">
         {
           ENGINES.map((engine, index) => (
-            <li>
-              <button
+            <li id={`easter-egg-engines-li-${index}`}>
+              <button id={`easter-egg-engines-button-${index}`}
                 type="button"
                 class={`engine engine--${engine.key}`}
                 aria-label={`${engine.name}: lo bueno y lo malo`}
               >
-                <span class="engine-inner">
-                  <span class="engine-face engine-front">
-                    <span class="engine-top">
-                      <span class="engine-dot" aria-hidden="true" />
-                      <span class="engine-name">{engine.name}</span>
-                      <span class="engine-num">{String(index + 1).padStart(2, "0")}</span>
+                <span id={`easter-egg-engines-engine-inner-${index}`} class="engine-inner">
+                  <span id={`easter-egg-engine-inner-face-${index}`} class="engine-face engine-front">
+                    <span id={`easter-egg-engine-face-top-${index}`} class="engine-top">
+                      <span id={`easter-egg-engine-top-dot-${index}`} class="engine-dot" aria-hidden="true" />
+                      <span id={`easter-egg-engine-top-name-${index}`} class="engine-name">{engine.name}</span>
+                      <span id={`easter-egg-engine-top-num-${index}`} class="engine-num">{String(index + 1).padStart(2, "0")}</span>
                     </span>
-                    <span class="engine-side">Lo bueno</span>
-                    <span class="engine-copy">{engine.good}</span>
+                    <span id={`easter-egg-engine-face-side-${index}`} class="engine-side">Lo bueno</span>
+                    <span id={`easter-egg-engine-face-copy-${index}`} class="engine-copy">{engine.good}</span>
                   </span>
-                  <span class="engine-face engine-back">
-                    <span class="engine-top">
-                      <span class="engine-dot" aria-hidden="true" />
-                      <span class="engine-name">{engine.name}</span>
-                      <span class="engine-num">{String(index + 1).padStart(2, "0")}</span>
+                  <span id={`easter-egg-engine-inner-face-2-${index}`} class="engine-face engine-back">
+                    <span id={`easter-egg-engine-face-top-2-${index}`} class="engine-top">
+                      <span id={`easter-egg-engine-top-dot-2-${index}`} class="engine-dot" aria-hidden="true" />
+                      <span id={`easter-egg-engine-top-name-2-${index}`} class="engine-name">{engine.name}</span>
+                      <span id={`easter-egg-engine-top-num-2-${index}`} class="engine-num">{String(index + 1).padStart(2, "0")}</span>
                     </span>
-                    <span class="engine-side">Lo malo</span>
-                    <span class="engine-copy">{engine.bad}</span>
+                    <span id={`easter-egg-engine-face-side-2-${index}`} class="engine-side">Lo malo</span>
+                    <span id={`easter-egg-engine-face-copy-2-${index}`} class="engine-copy">{engine.bad}</span>
                   </span>
                 </span>
               </button>
@@ -112,15 +112,15 @@ const LEGEND = [
         }
       </ul>
 
-      <p class="egg-hint">Pasa el cursor o toca una tarjeta para ver la otra cara.</p>
+      <p id="easter-egg-body-hint" class="egg-hint">Pasa el cursor o toca una tarjeta para ver la otra cara.</p>
 
-      <div class="egg-legend-wrap">
-        <p class="egg-legend-title">Qué es cada color</p>
-        <ul class="egg-legend">
+      <div id="easter-egg-body-legend-wrap" class="egg-legend-wrap">
+        <p id="easter-egg-legend-wrap-title" class="egg-legend-title">Qué es cada color</p>
+        <ul id="easter-egg-legend-wrap" class="egg-legend">
           {
-            LEGEND.map((item) => (
-              <li>
-                <span
+            LEGEND.map((item, i) => (
+              <li id={`easter-egg-legend-li-${i}`}>
+                <span id={`easter-egg-legend-span-${i}`}
                   class={`legend-dot legend-dot--${item.key}`}
                   aria-hidden="true"
                 />
@@ -131,15 +131,15 @@ const LEGEND = [
         </ul>
       </div>
 
-      <p class="egg-note">
+      <p id="easter-egg-body-note" class="egg-note">
         Para mí, la arquitectura de soluciones va exactamente de eso: equilibrar
         rigor técnico, curiosidad, comunicación clara y visión de negocio.
       </p>
     </div>
 
-    <footer class="egg-foot">
-      <span class="egg-foot-hint">esc para cerrar</span>
-      <button type="button" class="egg-ok" data-egg-close>volver</button>
+    <footer id="easter-egg-panel-foot" class="egg-foot">
+      <span id="easter-egg-foot-hint" class="egg-foot-hint">esc para cerrar</span>
+      <button id="easter-egg-foot-ok" type="button" class="egg-ok" data-egg-close>volver</button>
     </footer>
   </div>
 </dialog>

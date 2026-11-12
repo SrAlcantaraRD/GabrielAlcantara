@@ -118,62 +118,62 @@ const structuredData = {
 };
 ---
 
-<title>{title}</title>
-<meta name="description" content={description} />
-<meta name="author" content={SITE.name} />
-<meta name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
-<link rel="canonical" href={canonical.href} />
+<title id="seo-title">{title}</title>
+<meta id="seo-meta" name="description" content={description} />
+<meta id="seo-meta-2" name="author" content={SITE.name} />
+<meta id="seo-meta-3" name="google-site-verification" content="p6O44WOiTJBVMZOkSG7fPmxzhaGeCOlqlwjMkMUPbnA" />
+<link id="seo-link" rel="canonical" href={canonical.href} />
 {
 	resolvedAlternates &&
-		Object.entries(resolvedAlternates).map(([hrefLang, path]) => (
-			<link
+		Object.entries(resolvedAlternates).map(([hrefLang, path], i2) => (
+			<link id={`seo-link-2-${i2}`}
 				rel="alternate"
 				hreflang={hrefLang}
 				href={new URL(path, SITE.url).href}
 			/>
 		))
 }
-<meta
+<meta id="seo-meta-4"
 	name="robots"
 	content={noindex ? "noindex, nofollow" : "max-image-preview:large"}
 />
 
 <!-- Open Graph -->
-<meta property="og:type" content={type} />
-<meta property="og:site_name" content={SITE.name} />
-<meta property="og:locale" content={meta.ogLocale} />
+<meta id="seo-meta-5" property="og:type" content={type} />
+<meta id="seo-meta-6" property="og:site_name" content={SITE.name} />
+<meta id="seo-meta-7" property="og:locale" content={meta.ogLocale} />
 {
 	resolvedAlternates &&
 		Object.keys(resolvedAlternates)
 			.filter((key) => key !== "x-default" && key !== lang)
-			.map((key) => (
-				<meta
+			.map((key, i3) => (
+				<meta id={`seo-meta-8-item-${i3}`}
 					property="og:locale:alternate"
 					content={LOCALE_META[key as Locale].ogLocale}
 				/>
 			))
 }
-<meta property="og:url" content={canonical.href} />
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
-<meta property="og:image" content={socialImage.href} />
-<meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content={imageAlt} />
-{publishedTime && <meta property="article:published_time" content={publishedTime} />}
-{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-{articleSection && <meta property="article:section" content={articleSection} />}
-{tags?.map((tag) => <meta property="article:tag" content={tag} />)}
+<meta id="seo-meta-8" property="og:url" content={canonical.href} />
+<meta id="seo-meta-9" property="og:title" content={title} />
+<meta id="seo-meta-10" property="og:description" content={description} />
+<meta id="seo-meta-11" property="og:image" content={socialImage.href} />
+<meta id="seo-meta-12" property="og:image:type" content="image/png" />
+<meta id="seo-meta-13" property="og:image:width" content="1200" />
+<meta id="seo-meta-14" property="og:image:height" content="630" />
+<meta id="seo-meta-15" property="og:image:alt" content={imageAlt} />
+{publishedTime && <meta id="seo-meta-16" property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta id="seo-meta-17" property="article:modified_time" content={modifiedTime} />}
+{articleSection && <meta id="seo-meta-18" property="article:section" content={articleSection} />}
+{tags?.map((tag, i4) => <meta id={`seo-meta-19-item-${i4}`} property="article:tag" content={tag} />)}
 
 <!-- Twitter / X -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:site" content="@SrAlcantaraRD" />
-<meta name="twitter:creator" content="@SrAlcantaraRD" />
-<meta name="twitter:title" content={title} />
-<meta name="twitter:description" content={description} />
-<meta name="twitter:image" content={socialImage.href} />
-<meta name="twitter:image:alt" content={imageAlt} />
+<meta id="seo-meta-19" name="twitter:card" content="summary_large_image" />
+<meta id="seo-meta-20" name="twitter:site" content="@SrAlcantaraRD" />
+<meta id="seo-meta-21" name="twitter:creator" content="@SrAlcantaraRD" />
+<meta id="seo-meta-22" name="twitter:title" content={title} />
+<meta id="seo-meta-23" name="twitter:description" content={description} />
+<meta id="seo-meta-24" name="twitter:image" content={socialImage.href} />
+<meta id="seo-meta-25" name="twitter:image:alt" content={imageAlt} />
 
 <!-- Structured data -->
 <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

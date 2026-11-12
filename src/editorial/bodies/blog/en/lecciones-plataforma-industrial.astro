@@ -1,114 +1,114 @@
 
-  <p>
+  <p id="lecciones-plataforma-industrial-p">
     An automated warehouse teaches things a CRUD does not. Not because the
     technology is more exotic, but because the system has to live with the physical
     world: devices fail, versions coexist and every installation has its own
     reality. These are the lessons I took from designing the Nakire TPS platform.
   </p>
 
-  <h2>Hardware does not negotiate</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2">Hardware does not negotiate</h2>
+  <p id="lecciones-plataforma-industrial-p-2">
     In a business application, your database controls the state. In a winery, the
     world controls the state: a blocked forklift, a PLC that does not respond or a
     camera that cannot read a label.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-3">
     Assuming that changes the design. Operations stop being instant transactions
-    and become <strong>tasks with state</strong>: created, assigned, in progress,
+    and become <strong id="lecciones-plataforma-industrial-strong">tasks with state</strong>: created, assigned, in progress,
     completed or failed. That cycle needs to be visible, idempotent and able to
     repeat without duplicate effects.
   </p>
 
-  <h2>Variation is the normal case</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-2">Variation is the normal case</h2>
+  <p id="lecciones-plataforma-industrial-p-4">
     Every warehouse has its own map, robot versions and rules. If the code treats
     that variation as an exception, it ends up full of conditionals per
     installation. If it treats it as data, the domain stays small and configuration
     grows.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-5">
     That is why we worked with DDD and TDD: business rules, maps and robot versions
     were absorbed by the domain instead of being spread across adapters and patches.
     Variation moves down into the model; it does not become debt inside every
     service.
   </p>
 
-  <h2>Separate intention from protocol</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-3">Separate intention from protocol</h2>
+  <p id="lecciones-plataforma-industrial-p-6">
     The decision that paid for itself most often was the abstraction through use
     cases, ports and adapters. The domain expresses what it wants to do; a concrete
     adapter knows how to talk to the device. Changing an API or a robot model does
     not drag the domain along.
   </p>
-  <pre><code>// The domain asks for an intention, not a protocol.
+  <pre id="lecciones-plataforma-industrial-pre"><code id="lecciones-plataforma-industrial-code">// The domain asks for an intention, not a protocol.
 export interface DevicePort &#123;
   readonly family: DeviceFamily;
   execute(task: AtomicTask): Promise&lt;TaskResult&gt;;
 &#125;</code></pre>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-7">
     With that boundary, each device family —forklift, PLC, LED, picking, camera—
     could be its own microservice, with adapters per model, version and protocol. A
     new vendor joins as an adapter; not as a change to the business rules.
   </p>
 
-  <h2>The domain should not know what a PLC is</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-4">The domain should not know what a PLC is</h2>
+  <p id="lecciones-plataforma-industrial-p-8">
     It is tempting to model the system around devices: a Robot entity, a PLC entity,
     a Camera entity. The problem is that the business does not think in devices; it
     thinks about moving a pallet from one position to another, preparing an order
     or freeing a slot.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-9">
     The core works with tasks at different levels of detail: from one that points to
     a concrete device to one that only expresses the family and the action. That
     granularity was key to keeping the system coordinating when a model is
     unavailable or when a warehouse adds a new version.
   </p>
 
-  <h2>Real time is not hard real time</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-5">Real time is not hard real time</h2>
+  <p id="lecciones-plataforma-industrial-p-10">
     The WebSocket frontend let the operator see the operation state without
     refreshing and let the interface adapt to their role. That is real time for
-    <em>observation</em>, not an industrial control loop.
+    <em id="lecciones-plataforma-industrial-em">observation</em>, not an industrial control loop.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-11">
     Confusing the two leads to wrong decisions: putting channel security inside the
     UI, assuming the message always arrives or that order is global. The channel
     informs; the server decides. And when the message does not arrive, the interface
     reconciles with the server state.
   </p>
 
-  <h2>Testing on real hardware changes the design</h2>
-  <p>
+  <h2 id="lecciones-plataforma-industrial-h2-6">Testing on real hardware changes the design</h2>
+  <p id="lecciones-plataforma-industrial-p-12">
     The pipeline's QA gates ran on real physical hardware, not only on mocks. That
     makes the pipeline slower and dependent on devices, but it changes the team's
     conversation: problems appear earlier and with a name.
   </p>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-13">
     A mock always responds. A real PLC takes time, fails and sometimes returns
     something you did not expect. Designing for that reality —timeouts, retries,
     intermediate states— is cheaper than discovering it during installation.
   </p>
 
-  <h2>What I take with me</h2>
-  <ul>
-    <li>
+  <h2 id="lecciones-plataforma-industrial-h2-7">What I take with me</h2>
+  <ul id="lecciones-plataforma-industrial-ul">
+    <li id="lecciones-plataforma-industrial-li">
       In industrial systems, hardware sets the pace: the architecture has to assume
       failure, version changes and partial availability.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-2">
       Explicit contracts between domain and device save more time than any
       premature optimisation.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-3">
       Variation per installation is modelled as data, not as an exception in the
       code.
     </li>
-    <li>
+    <li id="lecciones-plataforma-industrial-li-4">
       Documentation and the vocabulary shared with vendors are part of engineering.
     </li>
   </ul>
-  <p>
+  <p id="lecciones-plataforma-industrial-p-14">
     If you are designing something similar, the order that worked for me was:
     understand the operation, separate the domains and only then choose the
     technology for each edge.

@@ -41,23 +41,23 @@ const cvHref = localized ? "#cv" : "/cv/";
 const contactHref = localized ? "#contacto" : "/contact/";
 ---
 
-<header
+<header id="site-header"
   class="site-header"
   transition:persist={`site-header-${locale}`}
   data-locale={locale}
   data-home={home}
   data-sections={JSON.stringify(SECTION_PATHS)}
 >
-  <div class="container header-inner">
-    <a class="brand" href={home}>
-      <span class="brand-name">{SITE.name}</span>
-      <span class="brand-role">Solutions Architect · Software Engineer</span>
+  <div id="site-header-container" class="container header-inner">
+    <a id="site-header-container-brand" class="brand" href={home}>
+      <span id="site-header-brand-name" class="brand-name">{SITE.name}</span>
+      <span id="site-header-brand-role" class="brand-role">Solutions Architect · Software Engineer</span>
     </a>
 
-    <nav class="site-nav" aria-label={t("mainNav")}>
+    <nav id="site-header-container-nav" class="site-nav" aria-label={t("mainNav")}>
       {
-        items.map((item) => (
-          <a
+        items.map((item, i) => (
+          <a id={`site-header-nav-a-${i}`}
             href={item.href}
             class:list={["nav-link", { "is-active": active(item) }]}
             aria-current={active(item) ? "page" : undefined}
@@ -69,31 +69,31 @@ const contactHref = localized ? "#contacto" : "/contact/";
       }
     </nav>
 
-    <div class="header-tools">
+    <div id="site-header-container-tools" class="header-tools">
       <LanguageSwitcher lang={locale} />
       <ThemeToggle lang={locale} />
     </div>
 
-    <div class="header-actions">
-      <a class="action-cv" href={cvHref}>{t("cv")}</a>
-      <a class="action-contact" href={contactHref}>{t("contact")}</a>
+    <div id="site-header-container-actions" class="header-actions">
+      <a id="site-header-actions-action-cv" class="action-cv" href={cvHref}>{t("cv")}</a>
+      <a id="site-header-actions-action-contact" class="action-contact" href={contactHref}>{t("contact")}</a>
     </div>
 
-    <details class="mobile-menu">
-      <summary>
-        <span>{t("menu")}</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16" />
+    <details id="site-header-container-mobile-menu" class="mobile-menu">
+      <summary id="site-header-mobile-menu-summary">
+        <span id="site-header-mobile-menu-span">{t("menu")}</span>
+        <svg id="site-header-mobile-menu-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path id="site-header-mobile-menu-path" d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </summary>
-      <div class="menu-panel">
-        <p class="menu-role">Solutions Architect · Software Engineer</p>
-        <nav aria-label={t("mobileNav")}>
-          <ul>
+      <div id="site-header-mobile-menu-panel" class="menu-panel">
+        <p id="site-header-menu-panel-role" class="menu-role">Solutions Architect · Software Engineer</p>
+        <nav id="site-header-menu-panel-nav" aria-label={t("mobileNav")}>
+          <ul id="site-header-menu-panel-ul">
             {
-              items.map((item) => (
-                <li>
-                  <a
+              items.map((item, i2) => (
+                <li id={`site-header-menu-panel-li-item-${i2}`}>
+                  <a id={`site-header-menu-panel-a-item-${i2}`}
                     href={item.href}
                     class:list={{ "is-active": active(item) }}
                     aria-current={active(item) ? "page" : undefined}
@@ -104,23 +104,23 @@ const contactHref = localized ? "#contacto" : "/contact/";
                 </li>
               ))
             }
-            <li><a href={cvHref}>{t("cv")}</a></li>
+            <li id="site-header-menu-panel-li"><a id="site-header-menu-panel-a" href={cvHref}>{t("cv")}</a></li>
           </ul>
         </nav>
-        <div class="menu-ask">
+        <div id="site-header-menu-panel-ask" class="menu-ask">
           <AskAiLinks variant="menu" lang={locale} />
         </div>
       </div>
     </details>
   </div>
 
-  <div class="container header-crumbs">
+  <div id="site-header-container-2" class="container header-crumbs">
     <Breadcrumbs
       items={breadcrumbs ?? []}
       hidden={!showBreadcrumbs}
       lang={locale}
     />
-    <div class="header-ask">
+    <div id="site-header-container-ask" class="header-ask">
       <AskAiLinks lang={locale} />
     </div>
   </div>

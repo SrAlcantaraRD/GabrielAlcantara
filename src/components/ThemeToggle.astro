@@ -10,7 +10,7 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<button
+<button id="theme-toggle"
 	type="button"
 	class="theme-toggle"
 	data-theme-toggle
@@ -20,12 +20,12 @@ const t = useTranslations(lang);
 	title={t("themeToDark")}
 	aria-pressed="false"
 >
-	<svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
-		<path d="M20.1 14.3A8.2 8.2 0 0 1 9.7 3.9 8.6 8.6 0 1 0 20.1 14.3Z" />
+	<svg id="theme-toggle-icon" class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+		<path id="theme-toggle-icon-path" d="M20.1 14.3A8.2 8.2 0 0 1 9.7 3.9 8.6 8.6 0 1 0 20.1 14.3Z" />
 	</svg>
-	<svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
-		<circle cx="12" cy="12" r="3.6" />
-		<path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+	<svg id="theme-toggle-icon-2" class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+		<circle id="theme-toggle-icon-circle" cx="12" cy="12" r="3.6" />
+		<path id="theme-toggle-icon-path-2" d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
 	</svg>
 </button>
 

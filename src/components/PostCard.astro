@@ -14,6 +14,7 @@ interface Props {
 }
 
 const { post, compact = false, lang = "es" } = Astro.props;
+const suffix = `-${post.slug}`;
 const category = categoryOf(post.category);
 const localized = lang === "es" ? undefined : PROFILE[lang].posts[post.slug];
 const editorial = lang === "es" ? undefined : EDITORIAL[lang];
@@ -32,28 +33,28 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
 }
 ---
 
-<article class:list={["post-card", { "is-compact": compact }]}>
-  <p class="post-kicker">
+<article id={`post-card-article${suffix}`} class:list={["post-card", { "is-compact": compact }]}>
+  <p id={`post-card-kicker${suffix}`} class="post-kicker">
     {categoryHref ? (
-      <a href={categoryHref}>{categoryLabel}</a>
+      <a id={`post-card-kicker-a${suffix}`} href={categoryHref}>{categoryLabel}</a>
     ) : (
-      <span>{categoryLabel}</span>
+      <span id={`post-card-kicker-span${suffix}`}>{categoryLabel}</span>
     )}
-    <span aria-hidden="true">·</span>
-    <time datetime={post.date}>{formatDateIn(post.date, lang)}</time>
-    <span aria-hidden="true">·</span>
-    <span>{post.readingMinutes} {readingLabel}</span>
+    <span id={`post-card-kicker-span-2${suffix}`} aria-hidden="true">·</span>
+    <time id={`post-card-kicker-time${suffix}`} datetime={post.date}>{formatDateIn(post.date, lang)}</time>
+    <span id={`post-card-kicker-span-3${suffix}`} aria-hidden="true">·</span>
+    <span id={`post-card-kicker-span-4${suffix}`}>{post.readingMinutes} {readingLabel}</span>
   </p>
 
-  <h3 class="post-title">
-    <a href={href}>{title}</a>
+  <h3 id={`post-card-title${suffix}`} class="post-title">
+    <a id={`post-card-title-a${suffix}`} href={href}>{title}</a>
   </h3>
 
-  {!compact && <p class="post-description">{description}</p>}
+  {!compact && <p id={`post-card-description${suffix}`} class="post-description">{description}</p>}
 
   {!compact && (
-    <div class="tag-row">
-      {tags.map((tag) => <span class="pill">{tag}</span>)}
+    <div id={`post-card-tag-row${suffix}`} class="tag-row">
+      {tags.map((tag, i) => <span id={`post-card-tag-row-pill-${i}${suffix}`} class="pill">{tag}</span>)}
     </div>
   )}
 </article>

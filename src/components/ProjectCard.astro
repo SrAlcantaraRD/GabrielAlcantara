@@ -13,6 +13,7 @@ interface Props {
 }
 
 const { project, brief = false, lang = "es" } = Astro.props;
+const suffix = `-${project.id}`;
 const copy = lang === "es" ? undefined : PROFILE[lang].projects[project.id];
 const area = copy?.area ?? project.area;
 const role = copy?.role ?? project.role;
@@ -35,46 +36,46 @@ const labels =
       };
 ---
 
-<article class:list={["project-card", { "is-featured": project.featured }]}>
-  <p class="project-area">{area}</p>
+<article id={`project-card-article${suffix}`} class:list={["project-card", { "is-featured": project.featured }]}>
+  <p id={`project-card-area${suffix}`} class="project-area">{area}</p>
 
-  <h3 class="project-name">
-    {href ? <a href={href}>{project.name}</a> : project.name}
+  <h3 id={`project-card-name${suffix}`} class="project-name">
+    {href ? <a id={`project-card-name-a${suffix}`} href={href}>{project.name}</a> : project.name}
   </h3>
 
-  <p class="project-meta">
+  <p id={`project-card-meta${suffix}`} class="project-meta">
     {project.company} · {spanLabelIn(project.startMonth, project.endMonth, lang)}
   </p>
 
-  <p class="project-problem">{problem}</p>
+  <p id={`project-card-problem${suffix}`} class="project-problem">{problem}</p>
 
-  <dl class="project-facts">
-    <div>
-      <dt>{labels.role}</dt>
-      <dd>{role}</dd>
+  <dl id={`project-card-facts${suffix}`} class="project-facts">
+    <div id={`project-card-facts-div${suffix}`}>
+      <dt id={`project-card-facts-dt${suffix}`}>{labels.role}</dt>
+      <dd id={`project-card-facts-dd${suffix}`}>{role}</dd>
     </div>
     {!brief && (
-      <div>
-        <dt>{labels.decision}</dt>
-        <dd>{decision}</dd>
+      <div id={`project-card-facts-div-2${suffix}`}>
+        <dt id={`project-card-facts-dt-2${suffix}`}>{labels.decision}</dt>
+        <dd id={`project-card-facts-dd-2${suffix}`}>{decision}</dd>
       </div>
     )}
-    <div>
-      <dt>{labels.outcome}</dt>
-      <dd>{outcome}</dd>
+    <div id={`project-card-facts-div-3${suffix}`}>
+      <dt id={`project-card-facts-dt-3${suffix}`}>{labels.outcome}</dt>
+      <dd id={`project-card-facts-dd-3${suffix}`}>{outcome}</dd>
     </div>
   </dl>
 
   {project.stack && project.stack.length > 0 && (
-    <div class="tag-row">
-      {project.stack.slice(0, 6).map((item) => <span class="pill">{item}</span>)}
+    <div id={`project-card-tag-row${suffix}`} class="tag-row">
+      {project.stack.slice(0, 6).map((item, i) => <span id={`project-card-tag-row-pill-${i}${suffix}`} class="pill">{item}</span>)}
     </div>
   )}
 
   {href && (
-    <a class="project-link" href={href}>
+    <a id={`project-card-link${suffix}`} class="project-link" href={href}>
       {labels.case}
-      <span aria-hidden="true">→</span>
+      <span id={`project-card-link-span${suffix}`} aria-hidden="true">→</span>
     </a>
   )}
 </article>

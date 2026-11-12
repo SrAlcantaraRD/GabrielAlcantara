@@ -1,112 +1,114 @@
+---
+---
 
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p">
     Event-driven architecture is sometimes sold as a messaging layer added at the
     end of the system. In my experience it is the opposite: events are a way of
     distributing responsibilities. Used that way, the system gains autonomy; used
     as a generic bus, it only gains ceremony.
   </p>
 
-  <h2>An event is not a message</h2>
-  <p>
-    A <strong>command</strong> asks for something to happen and expects a specific
-    recipient. An <strong>event</strong> states that something already happened and
+  <h2 id="arquitectura-orientada-a-eventos-h2">An event is not a message</h2>
+  <p id="arquitectura-orientada-a-eventos-p-2">
+    A <strong id="arquitectura-orientada-a-eventos-strong">command</strong> asks for something to happen and expects a specific
+    recipient. An <strong id="arquitectura-orientada-a-eventos-strong-2">event</strong> states that something already happened and
     does not care who listens. The difference sounds semantic until the system has
     to evolve: commands couple sender and receiver; events let you add consumers
     without touching the producer.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-3">
     In an industrial platform this becomes very concrete: the core decides that a
     task must run and publishes the fact. It does not need to know whether the
     thing that moves it is a forklift, a PLC or a person following an LED.
   </p>
 
-  <h2>What an event carries</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-2">What an event carries</h2>
+  <p id="arquitectura-orientada-a-eventos-p-4">
     A useful event answers four questions without forcing the consumer to query the
     producer: what happened, to what, when and with which identity. That usually
     means an event identifier, the affected aggregate, a timestamp and the minimum
     payload needed to react.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-5">
     The temptation is to put the complete system state into every event. It is
     convenient at first and expensive later: every consumer couples to a huge
     contract that can no longer change. I prefer small events with a stable
     identifier and an explicit query when more context is needed.
   </p>
 
-  <h2>Boundaries matter more than the broker</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-3">Boundaries matter more than the broker</h2>
+  <p id="arquitectura-orientada-a-eventos-p-6">
     Choosing Kafka, RabbitMQ or your own bus does not fix a badly bounded system.
     If two services share the same data model, the bus only makes the coupling
     asynchronous.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-7">
     The real work is deciding which facts belong to which domain and who is the
     source of truth for each one. In Nakire TPS, each device family had its own
     service and adapters; the core coordinated them but did not know protocols.
     That division gave every event a clear owner.
   </p>
 
-  <h2>Consistency: accepting delay</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-4">Consistency: accepting delay</h2>
+  <p id="arquitectura-orientada-a-eventos-p-8">
     When an event takes time to arrive, the system is eventually consistent, not
     instantly consistent. That phrase sounds good in a presentation and demands
     very concrete decisions in production: what the interface shows while state
     converges, which operations can be repeated and how to reconcile what the user
     believes happened with what the system recorded.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-9">
     The solution is not to hide the asynchrony. It is to make it visible:
     intermediate states, timestamps, correlation identifiers and a way to read the
     real state again.
   </p>
 
-  <h2>Idempotency and order</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-5">Idempotency and order</h2>
+  <p id="arquitectura-orientada-a-eventos-p-10">
     The same event can arrive twice. Global order is not guaranteed and, even if it
     were, it is not always the order the business needs. Consumers therefore have
     to be idempotent by design, not by luck.
   </p>
-  <ul>
-    <li>Identify each operation with a stable key.</li>
-    <li>Record what has already been applied before applying it again.</li>
-    <li>Design state transitions that tolerate repetition.</li>
-    <li>Do not depend on order between different aggregates.</li>
+  <ul id="arquitectura-orientada-a-eventos-ul">
+    <li id="arquitectura-orientada-a-eventos-li">Identify each operation with a stable key.</li>
+    <li id="arquitectura-orientada-a-eventos-li-2">Record what has already been applied before applying it again.</li>
+    <li id="arquitectura-orientada-a-eventos-li-3">Design state transitions that tolerate repetition.</li>
+    <li id="arquitectura-orientada-a-eventos-li-4">Do not depend on order between different aggregates.</li>
   </ul>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-11">
     In an industrial task, repeating “move the pallet to position 4” cannot mean
     moving it twice or losing the second intention if the first one was already
     completed. That is the kind of detail that decides whether an event-based
     system survives real operations.
   </p>
 
-  <h2>Isolating failure</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-6">Isolating failure</h2>
+  <p id="arquitectura-orientada-a-eventos-p-12">
     A concrete advantage of asynchronous communication is that a consumer that
     stops responding does not block the producer. But the system must decide what
     to do with whatever depended on it: retry, mark the task as unavailable or
     escalate to another device family.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-13">
     That policy is not improvised. It should be written next to the event contract,
     because it is part of the system's observable behaviour.
   </p>
 
-  <h2>When not to use events</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-7">When not to use events</h2>
+  <p id="arquitectura-orientada-a-eventos-p-14">
     If two operations must be atomic or the consumer needs an immediate response to
     continue, a direct call is usually more honest. Adding a bus to a flow that
     always happens in the same order with the same recipient only introduces
     operational complexity.
   </p>
-  <p>
+  <p id="arquitectura-orientada-a-eventos-p-15">
     My rule is simple: events when several consumers can react to the same fact,
     when the sender should not know the receivers, or when the work can wait.
     Direct calls when the response is part of the result.
   </p>
 
-  <h2>Closing</h2>
-  <p>
+  <h2 id="arquitectura-orientada-a-eventos-h2-8">Closing</h2>
+  <p id="arquitectura-orientada-a-eventos-p-16">
     An event architecture is well placed when adding a capability does not touch
     the core, a failed service does not drag the others down and every fact has an
     owner. If the only thing visible in the design is the bus, the boundary work is

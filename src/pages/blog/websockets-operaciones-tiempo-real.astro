@@ -6,54 +6,54 @@ const post = postOf("websockets-operaciones-tiempo-real");
 ---
 
 <ArticleLayout {...post}>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p">
     Cuando la interfaz deja de ser un formulario y pasa a reflejar el estado de una
     operación física, el canal en tiempo real se vuelve parte del diseño. En Nakire TPS
     el frontend se comunicaba por WebSocket para que el operador viera qué estaba
     pasando y qué le tocaba hacer. Estas son las decisiones que importaron.
   </p>
 
-  <h2>Qué problema resuelve el canal</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2">Qué problema resuelve el canal</h2>
+  <p id="websockets-operaciones-tiempo-real-p-2">
     Un sondeo periódico también «actualiza» la pantalla, pero multiplica peticiones y
     llega tarde. El WebSocket permite que el servidor empuje cambios cuando ocurren y que
     el cliente mantenga una conexión abierta mientras dura la sesión de trabajo.
   </p>
-  <p>
-    El canal transporta <strong>eventos de estado relevantes para ese rol</strong>, no un
+  <p id="websockets-operaciones-tiempo-real-p-3">
+    El canal transporta <strong id="websockets-operaciones-tiempo-real-strong">eventos de estado relevantes para ese rol</strong>, no un
     flujo infinito de datos ni una base de datos en streaming.
   </p>
 
-  <h2>Quién decide qué se envía</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-2">Quién decide qué se envía</h2>
+  <p id="websockets-operaciones-tiempo-real-p-4">
     El canal no decide nada: la actualización la define el caso de uso. Si un operador
     tiene abierta una tarea, el cliente se registra como consumidor de los eventos de esa
     tarea. Cuando otro microservicio consume de Kafka el cambio —de PENDING a IN_PROGRESS,
     por ejemplo—, el caso de uso decide si ese cambio se reenvía y lo publica en el bus; el
     handler lo reparte entre los listeners que tocan.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-5">
     En Nakire convivían los dos canales: WebSocket para el frontend reactivo y SSE para las
     actualizaciones delta que definía cada caso de uso.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-6">
     La regla es la misma en todo el sistema: un caso de uso puede emitir los eventos que
     necesite el negocio, pero cada evento lo consume un solo caso de uso. Así hay un único
     punto de error, siempre en el mismo sitio, por el que pasan todos los eventos.
   </p>
 
-  <h2>El estado viene del servidor</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-3">El estado viene del servidor</h2>
+  <p id="websockets-operaciones-tiempo-real-p-7">
     El error clásico es construir el estado en el navegador: aplicar deltas y confiar en
     que el orden y la entrega son perfectos. En una operación real, el cliente se
     desconecta, el móvil se bloquea o la red del almacén tiene un hueco.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-8">
     Por eso el cliente pide un estado inicial al conectar y después aplica cambios, pero
     siempre puede volver a pedir el estado completo. Los deltas aceleran la interfaz; el
     estado del servidor manda.
   </p>
-  <pre><code>socket.onmessage = (message) =&gt; &#123;
+  <pre id="websockets-operaciones-tiempo-real-pre"><code id="websockets-operaciones-tiempo-real-code">socket.onmessage = (message) =&gt; &#123;
   const event = parse(message.data);
   switch (event.type) &#123;
     case "task.updated":
@@ -65,61 +65,61 @@ const post = postOf("websockets-operaciones-tiempo-real");
   &#125;
 &#125;;</code></pre>
 
-  <h2>Autorización en el servidor, no en la interfaz</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-4">Autorización en el servidor, no en la interfaz</h2>
+  <p id="websockets-operaciones-tiempo-real-p-9">
     El RBAC no puede vivir en el cliente. Que la interfaz oculte un botón es una decisión
     de experiencia, no de seguridad. El servidor debe saber qué rol y qué tipo de operador
     tiene la conexión y filtrar tanto los eventos que envía como las acciones que acepta.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-10">
     En la práctica, eso significa autenticar al conectar, asociar la conexión a una
     identidad y comprobar permisos en cada mensaje que muta estado. La interfaz se adapta
     al rol porque el servidor le da el contexto adecuado, no porque confíe en ella.
   </p>
 
-  <h2>Reconexión y estado inicial</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-5">Reconexión y estado inicial</h2>
+  <p id="websockets-operaciones-tiempo-real-p-11">
     Una conexión WebSocket se cae. El cliente necesita reconectar con una estrategia
     acotada, y al volver debe recuperar el estado en lugar de asumir que no se ha perdido
     nada.
   </p>
-  <ul>
-    <li>Reconexión con espera creciente y un límite claro.</li>
-    <li>Estado inicial completo después de cada reconexión.</li>
-    <li>Identificadores de versión o de secuencia para detectar huecos.</li>
-    <li>Un indicador visible de que la conexión no está viva.</li>
+  <ul id="websockets-operaciones-tiempo-real-ul">
+    <li id="websockets-operaciones-tiempo-real-li">Reconexión con espera creciente y un límite claro.</li>
+    <li id="websockets-operaciones-tiempo-real-li-2">Estado inicial completo después de cada reconexión.</li>
+    <li id="websockets-operaciones-tiempo-real-li-3">Identificadores de versión o de secuencia para detectar huecos.</li>
+    <li id="websockets-operaciones-tiempo-real-li-4">Un indicador visible de que la conexión no está viva.</li>
   </ul>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-12">
     Ese último punto es más importante de lo que parece: un operador que cree estar viendo
     el estado real cuando la pantalla está congelada toma decisiones peores que uno que ve
     un aviso de desconexión.
   </p>
 
-  <h2>Frecuencia y contrapresión</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-6">Frecuencia y contrapresión</h2>
+  <p id="websockets-operaciones-tiempo-real-p-13">
     No todos los cambios merecen un mensaje. Si un dispositivo emite decenas de
     actualizaciones por segundo, reenviarlas todas al navegador no aporta nada y puede
     saturar la conexión. Conviene agrupar, muestrear o enviar solo transiciones de estado.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-14">
     El servidor también debe protegerse: límites de mensajes por conexión, validación de
     tamaño y un mecanismo para cerrar conexiones que no consumen.
   </p>
 
-  <h2>Probar el canal</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-7">Probar el canal</h2>
+  <p id="websockets-operaciones-tiempo-real-p-15">
     Un WebSocket es difícil de probar si toda la lógica vive en el manejador del evento.
     Separar el parseo, la reducción de estado y la autorización en funciones puras permite
     probar el comportamiento sin abrir una conexión real.
   </p>
-  <p>
+  <p id="websockets-operaciones-tiempo-real-p-16">
     Después, una prueba de integración con dos clientes y roles distintos detecta lo que
     las pruebas unitarias no ven: que un operador recibe eventos que no le corresponden o
     que la reconexión deja la pantalla en un estado imposible.
   </p>
 
-  <h2>Cierre</h2>
-  <p>
+  <h2 id="websockets-operaciones-tiempo-real-h2-8">Cierre</h2>
+  <p id="websockets-operaciones-tiempo-real-p-17">
     El servidor decide, el cliente muestra y el usuario sabe cuándo la información está al
     día: eso es tiempo real en una interfaz operativa. Si esa confianza se rompe, la
     interfaz más rápida sigue siendo una interfaz en la que no se puede trabajar.

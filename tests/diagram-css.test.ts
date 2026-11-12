@@ -61,7 +61,7 @@ describe("diagram styles", () => {
 			assert.equal(fs.existsSync(path.join(ROOT, resolved)), true);
 			assert.match(
 				source,
-				new RegExp(`<link\\s+rel="stylesheet"\\s+href=\\{${binding}\\}`),
+				new RegExp(`<link[^>]*\\srel="stylesheet"[^>]*\\shref=\\{${binding}\\}`),
 			);
 		});
 

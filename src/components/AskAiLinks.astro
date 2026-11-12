@@ -15,6 +15,7 @@ const {
 	class: className,
 	lang = getLangFromUrl(Astro.url),
 } = Astro.props;
+const suffix = variant === "menu" ? "-menu" : "-bar";
 const t = useTranslations(lang);
 const question = encodeURIComponent(t("askPrompt"));
 
@@ -38,25 +39,25 @@ const MARKS: Record<string, string> = {
 };
 ---
 
-<nav
+<nav id={`ask-ai-links-nav${suffix}`}
 	class:list={["ask-ai", `ask-ai--${variant}`, className]}
 	aria-label={t("askAria")}
 >
-	<p class="ask-ai-label">{t("askLabel")}</p>
-	<ul>
+	<p id={`ask-ai-links-label${suffix}`} class="ask-ai-label">{t("askLabel")}</p>
+	<ul id={`ask-ai-links-ul${suffix}`}>
 		{
-			ASK_ASSISTANTS.map((assistant) => (
-				<li>
-					<a href={HREFS[assistant.id]} target="_blank" rel="noopener noreferrer">
-						<svg
+			ASK_ASSISTANTS.map((assistant, i) => (
+				<li id={`ask-ai-links-li-${i}${suffix}`}>
+					<a id={`ask-ai-links-a-${i}${suffix}`} href={HREFS[assistant.id]} target="_blank" rel="noopener noreferrer">
+						<svg id={`ask-ai-links-mark-${i}${suffix}`}
 							class="ask-ai-mark"
 							viewBox="0 0 24 24"
 							aria-hidden="true"
 							focusable="false"
 						>
-							<path d={MARKS[assistant.id]} />
+							<path id={`ask-ai-links-mark-path-${i}${suffix}`} d={MARKS[assistant.id]} />
 						</svg>
-						<span>{assistant.label}</span>
+						<span id={`ask-ai-links-span-${i}${suffix}`}>{assistant.label}</span>
 					</a>
 				</li>
 			))

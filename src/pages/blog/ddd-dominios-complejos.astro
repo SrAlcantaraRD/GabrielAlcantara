@@ -6,7 +6,7 @@ const post = postOf("ddd-dominios-complejos");
 ---
 
 <ArticleLayout {...post}>
-  <p>
+  <p id="ddd-dominios-complejos-p">
     Hay dominios donde una tabla por entidad basta. Y hay dominios donde las reglas no
     caben en columnas: dependen del contexto, cambian por instalación y afectan a varias
     partes del sistema a la vez. En esos casos, DDD decide dónde vive cada regla, y cuántas
@@ -14,83 +14,83 @@ const post = postOf("ddd-dominios-complejos");
     integraciones, ni una más.
   </p>
 
-  <h2>El dominio no es la base de datos</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2">El dominio no es la base de datos</h2>
+  <p id="ddd-dominios-complejos-p-2">
     El primer síntoma de un dominio complejo es que el modelo de datos empieza a decidir
     el comportamiento. Las validaciones se reparten entre la base de datos, el controlador
     y la interfaz, y ya nadie sabe cuál es la fuente de verdad.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-3">
     DDD propone lo contrario: modelar el comportamiento y el lenguaje del negocio, y
     tratar la persistencia como un detalle. No porque la base de datos no importe, sino
     porque las reglas deben poder probarse sin ella.
   </p>
 
-  <h2>Lenguaje común</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-2">Lenguaje común</h2>
+  <p id="ddd-dominios-complejos-p-4">
     Una bodega no habla de «registros» ni de «filas»: habla de botellas, referencias,
     añadas, lotes y posiciones. Cuando el código usa ese mismo vocabulario, las
     conversaciones con negocio y con los proveedores de hardware se vuelven más cortas.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-5">
     En Bodega Digital ese vocabulario fue parte del diseño: una botella es una unidad
     identificable —añada, variedad, parcela—, no una fila de stock; un lector RFID tiene
     capacidades, no solo un identificador. El modelo refleja cómo se trabaja.
   </p>
 
-  <h2>Límites: dónde está el coste de cambiar</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-3">Límites: dónde está el coste de cambiar</h2>
+  <p id="ddd-dominios-complejos-p-6">
     La pregunta útil para encontrar un contexto delimitado no es «¿qué entidades van
     juntas?», sino «¿qué cambia junto y qué puede cambiar por separado?». Las reglas de
     inventario cambian por bodega; el protocolo de un lector RFID cambia por fabricante y
     modelo. Son dos velocidades distintas y merecen límites distintos.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-7">
     Por eso cada integración —lectores RFID, visión por computadora, predicción de
     demanda— quedó detrás de su propio adaptador, mientras el dominio mantenía las reglas
     que no dependen del hardware. Un cambio de fabricante no obliga a tocar el dominio; un
     cambio de regla de negocio no obliga a tocar los adaptadores.
   </p>
 
-  <h2>Agregados y unidades identificables</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-4">Agregados y unidades identificables</h2>
+  <p id="ddd-dominios-complejos-p-8">
     Un agregado es una frontera de consistencia. En un inventario de vino, la botella es
     un buen candidato: tiene identidad propia —añada, variedad, parcela—, una posición y
     un ciclo de vida. Al modelarla así, sus transiciones se pueden probar y los errores
     dejan de ser efectos secundarios.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-9">
     Esa frontera también evita el agregado gigante que todo lo sabe. La botella no necesita
     conocer el inventario completo ni el protocolo del lector; necesita saber qué es, dónde
     está y en qué estado se encuentra.
   </p>
 
-  <h2>Eventos de dominio</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-5">Eventos de dominio</h2>
+  <p id="ddd-dominios-complejos-p-10">
     Cuando una botella cambia de estado, ese cambio es un hecho del negocio. Publicarlo
     como evento permite que otros módulos reaccionen sin que la botella sepa quiénes son.
     Es la misma idea de los límites, aplicada al tiempo: el dominio declara lo que pasó y
     cada consumidor decide qué hacer.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-11">
     La disciplina está en no convertir el evento en una llamada encubierta. Si el emisor
     necesita una respuesta para continuar, probablemente no era un evento.
   </p>
 
-  <h2>El coste de DDD</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-6">El coste de DDD</h2>
+  <p id="ddd-dominios-complejos-p-12">
     DDD exige más conversación y más modelado inicial que abrir una tabla y seguir. En un
     dominio simple, ese coste no se recupera: una aplicación de formularios con reglas
     claras no necesita agregados ni contextos.
   </p>
-  <p>
+  <p id="ddd-dominios-complejos-p-13">
     Merece la pena cuando hay varias fuentes de variación —instalaciones, fabricantes,
     reglas que cambian— y cuando el coste de un cambio mal localizado es alto. Ahí, el
     modelado es lo que evita que cada nueva regla se convierta en un condicional más.
   </p>
 
-  <h2>Cierre</h2>
-  <p>
+  <h2 id="ddd-dominios-complejos-h2-7">Cierre</h2>
+  <p id="ddd-dominios-complejos-p-14">
     DDD no hace que un dominio sea complejo; reconoce que ya lo era y decide dónde poner
     cada cosa. El diagrama puede quedar elegante y claro, pero eso no es la señal: la
     señal es que añadir otra implementación de un puerto o una abstracción nueva toque

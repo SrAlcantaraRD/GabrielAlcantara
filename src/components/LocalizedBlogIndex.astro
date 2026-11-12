@@ -59,49 +59,49 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: copy.eyebrow }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">{copy.eyebrow}</p>
-    <h1 class="display">{copy.title}</h1>
-    <p class="lede">{copy.lede}</p>
-    <div class="meta-row">
-      <span>{POSTS.length} {articles}</span>
-      <span>{fromProjects}</span>
+  <header id="localized-blog-index-page-head" class="page-head">
+    <p id="localized-blog-index-page-head-eyebrow" class="eyebrow">{copy.eyebrow}</p>
+    <h1 id="localized-blog-index-page-head-display" class="display">{copy.title}</h1>
+    <p id="localized-blog-index-page-head-lede" class="lede">{copy.lede}</p>
+    <div id="localized-blog-index-page-head-meta-row" class="meta-row">
+      <span id="localized-blog-index-meta-row-span">{POSTS.length} {articles}</span>
+      <span id="localized-blog-index-meta-row-span-2">{fromProjects}</span>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="destacado-title">
-    <div class="section-head">
+  <section id="localized-blog-index-section" class="section" aria-labelledby="destacado-title">
+    <div id="localized-blog-index-section-head" class="section-head">
       <h2 class="section-title" id="destacado-title">{copy.featured}</h2>
-      <span class="section-meta">{formatDateIn(FEATURED_POST.date, lang)}</span>
+      <span id="localized-blog-index-section-head-meta" class="section-meta">{formatDateIn(FEATURED_POST.date, lang)}</span>
     </div>
-    <article class="featured-post">
-      <div class="featured-body">
-        <p class="eyebrow">{featuredCopy.category}</p>
-        <h3 class="featured-title">
-          <a href={postHrefIn(lang, FEATURED_POST.slug)}>{featuredCopy.title}</a>
+    <article id="localized-blog-index-section-featured-post" class="featured-post">
+      <div id="localized-blog-index-featured-post-body" class="featured-body">
+        <p id="localized-blog-index-featured-body-eyebrow" class="eyebrow">{featuredCopy.category}</p>
+        <h3 id="localized-blog-index-featured-body-title" class="featured-title">
+          <a id="localized-blog-index-featured-title-a" href={postHrefIn(lang, FEATURED_POST.slug)}>{featuredCopy.title}</a>
         </h3>
-        <p class="featured-text">{featuredCopy.description}</p>
-        <div class="meta-row">
-          <span>{formatDateIn(FEATURED_POST.date, lang)}</span>
-          <span>{FEATURED_POST.readingMinutes} {EDITORIAL[lang].article.readingTime}</span>
+        <p id="localized-blog-index-featured-body-text" class="featured-text">{featuredCopy.description}</p>
+        <div id="localized-blog-index-featured-body-meta-row" class="meta-row">
+          <span id="localized-blog-index-meta-row-span-3">{formatDateIn(FEATURED_POST.date, lang)}</span>
+          <span id="localized-blog-index-meta-row-span-4">{FEATURED_POST.readingMinutes} {EDITORIAL[lang].article.readingTime}</span>
         </div>
-        <div class="tag-row">
-          {EDITORIAL[lang].posts[FEATURED_POST.slug].tags.map((tag) => (
-            <span class="pill">{tag}</span>
+        <div id="localized-blog-index-featured-body-tag-row" class="tag-row">
+          {EDITORIAL[lang].posts[FEATURED_POST.slug].tags.map((tag, i) => (
+            <span id={`localized-blog-index-tag-row-pill-${i}`} class="pill">{tag}</span>
           ))}
         </div>
-        <a class="btn btn--link" href={postHrefIn(lang, FEATURED_POST.slug)}>
+        <a id="localized-blog-index-featured-body-btn" class="btn btn--link" href={postHrefIn(lang, FEATURED_POST.slug)}>
           {copy.readArticle}
         </a>
       </div>
-      <aside class="topics" aria-labelledby="temas-title">
+      <aside id="localized-blog-index-featured-post-topics" class="topics" aria-labelledby="temas-title">
         <h2 class="section-title" id="temas-title">{latest}</h2>
-        <ul>
-          {POSTS.map((post) => (
-            <li>
-              <a href={postHrefIn(lang, post.slug)}>
-                <span>{PROFILE[lang].posts[post.slug].category}</span>
-                <span class="topic-count">{formatDateIn(post.date, lang)}</span>
+        <ul id="localized-blog-index-topics-ul">
+          {POSTS.map((post, i2) => (
+            <li id={`localized-blog-index-topics-li-${i2}`}>
+              <a id={`localized-blog-index-topics-a-${i2}`} href={postHrefIn(lang, post.slug)}>
+                <span id={`localized-blog-index-topics-span-${i2}`}>{PROFILE[lang].posts[post.slug].category}</span>
+                <span id={`localized-blog-index-topics-topic-count-${i2}`} class="topic-count">{formatDateIn(post.date, lang)}</span>
               </a>
             </li>
           ))}
@@ -110,23 +110,23 @@ const jsonLd = [
     </article>
   </section>
 
-  <section class="section" aria-labelledby="articulos-title">
-    <div class="section-head">
+  <section id="localized-blog-index-section-2" class="section" aria-labelledby="articulos-title">
+    <div id="localized-blog-index-section-head-2" class="section-head">
       <h2 class="section-title" id="articulos-title">{copy.allArticles}</h2>
-      <span class="section-meta">{copy.newest}</span>
+      <span id="localized-blog-index-section-head-meta-2" class="section-meta">{copy.newest}</span>
     </div>
-    <div class="post-list">
+    <div id="localized-blog-index-section-post-list" class="post-list">
       {OTHER_POSTS.map((post) => <PostCard post={post} lang={lang} />)}
       <PostCard post={FEATURED_POST} lang={lang} />
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="blog-cierre">
+  <section id="localized-blog-index-closing" class="closing" aria-labelledby="blog-cierre">
     <h2 class="section-title" id="blog-cierre">{copy.closingTitle}</h2>
-    <p>{copy.closingBody}</p>
-    <div class="actions">
-      <a class="btn" href={`/${lang}/projects/`}>{copy.projectsCta}</a>
-      <a class="btn btn--ghost" href={`/${lang}/#contacto`}>{copy.contactCta}</a>
+    <p id="localized-blog-index-closing-p">{copy.closingBody}</p>
+    <div id="localized-blog-index-closing-actions" class="actions">
+      <a id="localized-blog-index-actions-btn" class="btn" href={`/${lang}/projects/`}>{copy.projectsCta}</a>
+      <a id="localized-blog-index-actions-btn-2" class="btn btn--ghost" href={`/${lang}/#contacto`}>{copy.contactCta}</a>
     </div>
   </section>
 </Layout>

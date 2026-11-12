@@ -17,7 +17,7 @@ const payload = {
 };
 ---
 
-<div class="drawer-backdrop" data-drawer-close></div>
+<div id="detail-drawer-backdrop" class="drawer-backdrop" data-drawer-close></div>
 
 <aside
   class="drawer"
@@ -28,9 +28,9 @@ const payload = {
   aria-hidden="true"
   tabindex="-1"
 >
-  <div class="drawer-surface">
-  <header class="drawer-head">
-    <div>
+  <div id="detail-drawer-surface" class="drawer-surface">
+  <header id="detail-drawer-surface-head" class="drawer-head">
+    <div id="detail-drawer-head-div">
       <p class="drawer-meta" id="drawer-meta"></p>
       <h2 class="drawer-title" id="drawer-title"></h2>
       <p class="drawer-role" id="drawer-role"></p>
@@ -42,8 +42,8 @@ const payload = {
       aria-label="cerrar ficha"
       data-drawer-close
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6 18L18 6M6 6l12 12" />
+      <svg id="detail-drawer-close-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path id="detail-drawer-close-path" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
   </header>
@@ -52,22 +52,22 @@ const payload = {
 
   <footer class="drawer-foot" id="drawer-foot">
     <button type="button" class="drawer-step" id="drawer-prev" aria-label="proyecto anterior">
-      <span class="drawer-arrow" aria-hidden="true">‹</span>
-      <span class="drawer-step-text">
+      <span id="detail-drawer-step-arrow" class="drawer-arrow" aria-hidden="true">‹</span>
+      <span id="detail-drawer-step-text" class="drawer-step-text">
         <span class="drawer-step-meta" id="drawer-prev-meta"></span>
         <span class="drawer-step-name" id="drawer-prev-name">anterior</span>
       </span>
     </button>
     <a class="drawer-case" id="drawer-case" hidden>
       ver el caso de estudio
-      <span aria-hidden="true">↗</span>
+      <span id="detail-drawer-case-span" aria-hidden="true">↗</span>
     </a>
     <button type="button" class="drawer-step" id="drawer-next" aria-label="proyecto siguiente">
-      <span class="drawer-step-text">
+      <span id="detail-drawer-step-text-2" class="drawer-step-text">
         <span class="drawer-step-meta" id="drawer-next-meta"></span>
         <span class="drawer-step-name" id="drawer-next-name">siguiente</span>
       </span>
-      <span class="drawer-arrow" aria-hidden="true">›</span>
+      <span id="detail-drawer-step-arrow-2" class="drawer-arrow" aria-hidden="true">›</span>
     </button>
   </footer>
   </div>
@@ -375,9 +375,9 @@ const payload = {
     }
 
     const EASE_IN = "cubic-bezier(.22, 1, .36, 1)";
-    const EASE_OUT = "cubic-bezier(.4, 0, .2, 1)";
     const MORPH_MS = 460;
-    const SHRINK_MS = 320;
+    /** The exit is the entrance backwards: the same frames, and quicker. */
+    const SHRINK_MS = 200;
     const SIZE_MS = 340;
 
     let origin: HTMLElement | null = null;
@@ -418,35 +418,42 @@ const payload = {
       return /rgba?\([^)]*,\s*0\s*\)/.test(color) ? null : color;
     }
 
-    /** The bar expands into the card: one transform, so it never leaves the compositor. */
-    function morphIn() {
-      if (!originRect || prefersReducedMotion() || typeof panel.animate !== "function") {
-        return;
+    /**
+     * The bar expanding into the card, as one transform pair: the drawer grows
+     * out of the row that opened it, and later returns into that same row.
+     */
+    function morphFrames(): Keyframe[] | null {
+      const from =
+        origin && origin.isConnected ? origin.getBoundingClientRect() : originRect;
+      if (!from || prefersReducedMotion() || typeof panel.animate !== "function") {
+        return null;
       }
       const to = panel.getBoundingClientRect();
-      if (!to.width || !to.height) return;
-      const sx = Math.max(0.02, originRect.width / to.width);
-      const sy = Math.max(0.02, originRect.height / to.height);
+      if (!to.width || !to.height) return null;
+      const sx = Math.max(0.02, from.width / to.width);
+      const sy = Math.max(0.02, from.height / to.height);
       const shell = getComputedStyle(panel).backgroundColor;
-      const from = originColor() ?? shell;
+      return [
+        {
+          transformOrigin: "0 0",
+          transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`,
+          borderRadius: "4px",
+          backgroundColor: originColor() ?? shell,
+        },
+        {
+          transformOrigin: "0 0",
+          transform: "none",
+          borderRadius: "14px",
+          backgroundColor: shell,
+        },
+      ];
+    }
+
+    function morphIn() {
+      const frames = morphFrames();
+      if (!frames) return;
       morph?.cancel();
-      morph = panel.animate(
-        [
-          {
-            transformOrigin: "0 0",
-            transform: `translate(${originRect.left - to.left}px, ${originRect.top - to.top}px) scale(${sx}, ${sy})`,
-            borderRadius: "4px",
-            backgroundColor: from,
-          },
-          {
-            transformOrigin: "0 0",
-            transform: "none",
-            borderRadius: "14px",
-            backgroundColor: shell,
-          },
-        ],
-        { duration: MORPH_MS, easing: EASE_IN },
-      );
+      morph = panel.animate(frames, { duration: MORPH_MS, easing: EASE_IN });
       morph.finished.then(() => {
         morph = null;
       }).catch(() => {});
@@ -454,37 +461,22 @@ const payload = {
 
     function close() {
       if (!panel.classList.contains("is-open") || closing) return;
-      const target =
-        origin && origin.isConnected ? origin.getBoundingClientRect() : originRect;
-      if (prefersReducedMotion() || !target || typeof panel.animate !== "function") {
+      // Measured without the entrance still running, or the reverse would start
+      // from wherever that morph had got to.
+      morph?.cancel();
+      morph = null;
+      panel.dataset.closing = "true";
+      backdrop?.classList.remove("is-open");
+      const frames = morphFrames();
+      if (!frames) {
         finishClose();
         return;
       }
-      const from = panel.getBoundingClientRect();
-      const sx = Math.max(0.02, target.width / from.width);
-      const sy = Math.max(0.02, target.height / from.height);
-      const shell = getComputedStyle(panel).backgroundColor;
-      const to = originColor() ?? shell;
-      panel.dataset.closing = "true";
-      backdrop?.classList.remove("is-open");
-      morph?.cancel();
-      morph = panel.animate(
-        [
-          {
-            transformOrigin: "0 0",
-            transform: "none",
-            borderRadius: "14px",
-            backgroundColor: shell,
-          },
-          {
-            transformOrigin: "0 0",
-            transform: `translate(${target.left - from.left}px, ${target.top - from.top}px) scale(${sx}, ${sy})`,
-            borderRadius: "4px",
-            backgroundColor: to,
-          },
-        ],
-        { duration: SHRINK_MS, easing: EASE_OUT },
-      );
+      morph = panel.animate(frames, {
+        duration: SHRINK_MS,
+        easing: EASE_IN,
+        direction: "reverse",
+      });
       closing = finishClose;
       morph.finished.then(finishClose).catch(() => {});
     }
@@ -636,12 +628,15 @@ const payload = {
     transform: none;
   }
 
+  /*
+   * Leaving: only the shell moves. The copy goes with the first frame, so what
+   * returns into the row is a clean card and not a fading, blurred one.
+   */
   .drawer[data-closing="true"] .drawer-surface {
     opacity: 0;
-    filter: blur(6px);
-    transform: scale(0.99);
-    transition-duration: 140ms;
-    transition-delay: 0ms;
+    filter: none;
+    transform: none;
+    transition: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

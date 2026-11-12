@@ -50,58 +50,58 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "Proyectos" }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Proyectos</p>
-    <h1 class="display">Casos de estudio: problema, rol, decisión y resultado.</h1>
-    <p class="lede">
+  <header id="projects-page-head" class="page-head">
+    <p id="projects-page-head-eyebrow" class="eyebrow">Proyectos</p>
+    <h1 id="projects-page-head-display" class="display">Casos de estudio: problema, rol, decisión y resultado.</h1>
+    <p id="projects-page-head-lede" class="lede">
       Estos proyectos muestran algunos de los problemas técnicos y de negocio en los que
       he trabajado, desde plataformas empresariales hasta sistemas industriales
       conectados.
     </p>
-    <div class="meta-row">
-      <span>{PROJECT_CASES.length} casos documentados</span>
-      <span>{PROJECTS.length} proyectos en la trayectoria</span>
-      <span>problema · rol · decisión · resultado</span>
+    <div id="projects-page-head-meta-row" class="meta-row">
+      <span id="projects-meta-row-span">{PROJECT_CASES.length} casos documentados</span>
+      <span id="projects-meta-row-span-2">{PROJECTS.length} proyectos en la trayectoria</span>
+      <span id="projects-meta-row-span-3">problema · rol · decisión · resultado</span>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="destacado-title">
-    <div class="section-head">
+  <section id="projects-section" class="section" aria-labelledby="destacado-title">
+    <div id="projects-section-head" class="section-head">
       <h2 class="section-title" id="destacado-title">Caso de estudio principal</h2>
-      <span class="section-meta">{FEATURED_CASE.company}</span>
+      <span id="projects-section-head-meta" class="section-meta">{FEATURED_CASE.company}</span>
     </div>
     <ProjectCard project={FEATURED_CASE} />
   </section>
 
-  <section class="section" aria-labelledby="seleccionados-title">
-    <div class="section-head">
+  <section id="projects-section-2" class="section" aria-labelledby="seleccionados-title">
+    <div id="projects-section-head-2" class="section-head">
       <h2 class="section-title" id="seleccionados-title">Proyectos seleccionados</h2>
-      <span class="section-meta">{SELECTED_CASES.length} casos</span>
+      <span id="projects-section-head-meta-2" class="section-meta">{SELECTED_CASES.length} casos</span>
     </div>
-    <div class="grid grid--2 is-aligned">
+    <div id="projects-section-grid" class="grid grid--2 is-aligned">
       {SELECTED_CASES.map((project) => <ProjectCard project={project} />)}
     </div>
   </section>
 
-  <section class="section" aria-labelledby="otros-title">
-    <div class="section-head">
+  <section id="projects-section-3" class="section" aria-labelledby="otros-title">
+    <div id="projects-section-head-3" class="section-head">
       <h2 class="section-title" id="otros-title">Resto de la trayectoria</h2>
-      <span class="section-meta">{OTHER_PROJECTS.length} proyectos</span>
+      <span id="projects-section-head-meta-3" class="section-meta">{OTHER_PROJECTS.length} proyectos</span>
     </div>
-    <p class="section-lede">
+    <p id="projects-section-lede" class="section-lede">
       No todos los proyectos tienen un caso escrito. Estos son los que completan el
       recorrido, agrupados por empresa.
     </p>
-    <div class="other-groups">
+    <div id="projects-section-other-groups" class="other-groups">
       {
-        otherGroups.map((group) => (
-          <section class={`other-group accent-${group.company.accent}`}>
-            <h3 class="other-company">{group.company.name}</h3>
-            <ul>
-              {group.projects.map((project) => (
-                <li>
-                  <span class="other-name">{project.name}</span>
-                  <span class="other-summary">{project.summary}</span>
+        otherGroups.map((group, i) => (
+          <section id={`projects-other-groups-section-${i}`} class={`other-group accent-${group.company.accent}`}>
+            <h3 id={`projects-other-groups-company-${i}`} class="other-company">{group.company.name}</h3>
+            <ul id={`projects-other-groups-ul-${i}`}>
+              {group.projects.map((project, i2) => (
+                <li id={`projects-other-groups-li-${i}-${i}-${i}-${i2}`}>
+                  <span id={`projects-other-groups-name-${i}-${i}-${i}-${i2}`} class="other-name">{project.name}</span>
+                  <span id={`projects-other-groups-summary-${i}-${i}-${i}-${i2}`} class="other-summary">{project.summary}</span>
                 </li>
               ))}
             </ul>
@@ -111,16 +111,16 @@ const jsonLd = [
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="projects-cierre">
+  <section id="projects-closing" class="closing" aria-labelledby="projects-cierre">
     <h2 class="section-title" id="projects-cierre">Siguiente paso</h2>
-    <p>
+    <p id="projects-closing-p">
       Si alguno de estos problemas se parece al que tienes delante, puedo contarte con
       más detalle cómo lo abordé y qué aprendí por el camino.
     </p>
-    <div class="actions">
-      <a class="btn" href="/contact/">Contactar</a>
-      <a class="btn btn--ghost" href="/experience/">Ver la trayectoria</a>
-      <a class="btn btn--ghost" href="/blog/">Leer el blog</a>
+    <div id="projects-closing-actions" class="actions">
+      <a id="projects-actions-btn" class="btn" href="/contact/">Contactar</a>
+      <a id="projects-actions-btn-2" class="btn btn--ghost" href="/experience/">Ver la trayectoria</a>
+      <a id="projects-actions-btn-3" class="btn btn--ghost" href="/blog/">Leer el blog</a>
     </div>
   </section>
 </Layout>
