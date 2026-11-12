@@ -22,7 +22,11 @@ interface Props {
 const { breadcrumbs, lang } = Astro.props;
 const locale = lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(locale);
-const items = navItems(locale).filter((item) => item.key !== "home");
+// The header skips the home link (the brand covers it) and the about page, which
+// the footer and the profile still reach; the nav keeps to the work itself.
+const items = navItems(locale).filter(
+	(item) => item.key !== "home" && item.key !== "about",
+);
 const showBreadcrumbs = breadcrumbs && breadcrumbs.length > 0;
 const pathname = Astro.url.pathname;
 const home = localeRoot(locale);
