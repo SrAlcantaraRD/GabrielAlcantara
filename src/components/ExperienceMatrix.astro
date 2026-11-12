@@ -469,8 +469,10 @@ const payload = {
 
       for (const yValue of yValues) {
         const bars = rowBars(projects, state.y, yValue.id, range);
-        const lanes = packLanes(bars);
-        const laneCount = bars.length ? Math.max(...lanes) + 1 : 1;
+        // One line per project: the name sits outside the bar, so it needs room
+        // of its own instead of being packed into shared lanes.
+        const lanes = bars.map((_, index) => index);
+        const laneCount = Math.max(1, bars.length);
 
         const row = element("div", "gantt-row");
         row.style.setProperty("--lanes", String(laneCount));
@@ -682,9 +684,13 @@ const payload = {
     }
 
     function measure() {
-      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
-        const fits = bar.scrollWidth <= bar.clientWidth + 1;
-        bar.classList.toggle("is-labeled", fits && bar.clientWidth >= MIN_LABEL_PX);
+      if (grid.dataset.mode === "timeline") {
+        measureOutsideLabels();
+      } else {
+        for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+          const fits = bar.scrollWidth <= bar.clientWidth + 1;
+          bar.classList.toggle("is-labeled", fits && bar.clientWidth >= MIN_LABEL_PX);
+        }
       }
 
       // One stride for the ruler labels and the year lines, so they line up.
@@ -702,6 +708,29 @@ const payload = {
       );
 
       thinRuler(stride);
+    }
+
+    /**
+     * The name lives outside the bar now: it stays on the right while there is
+     * room, hops to the left when the bar ends near the edge, and only then hides.
+     */
+    function measureOutsideLabels() {
+      const GAP = 6;
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        const label = bar.querySelector<HTMLElement>(".bar-label");
+        const track = bar.closest(".track");
+        if (!label || !track) continue;
+        label.classList.remove("is-flipped", "is-hidden");
+        const width = label.offsetWidth;
+        const barBox = bar.getBoundingClientRect();
+        const trackBox = track.getBoundingClientRect();
+        if (barBox.right + GAP + width <= trackBox.right) continue;
+        if (barBox.left - GAP - width >= trackBox.left) {
+          label.classList.add("is-flipped");
+        } else {
+          label.classList.add("is-hidden");
+        }
+      }
     }
 
     /** Keeps the year ruler readable: drop labels that no longer fit. */
@@ -893,6 +922,43 @@ const payload = {
 
   .matrix-surface {
     overflow-x: auto;
+  }
+
+  /*
+   * Timeline in the 06 register: a 6px line, the name outside it, one project
+   * per lane. The row's own .band already veils everything of one company.
+   */
+  .matrix-grid[data-mode="timeline"] {
+    --bar-h: 6px;
+    --bar-gap: 17px;
+    --lane-h: calc(var(--bar-h) + var(--bar-gap));
+  }
+
+  .matrix-grid[data-mode="timeline"] .bar {
+    overflow: visible;
+    padding: 0;
+    border-radius: 3px;
+    background: var(--bar-color);
+    box-shadow: none;
+  }
+
+  .matrix-grid[data-mode="timeline"] .bar-label {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: calc(100% + 6px);
+    transform: translateY(-50%);
+    visibility: visible;
+    color: var(--color-ink);
+    font-size: 0.625rem;
+  }
+
+  .matrix-grid[data-mode="timeline"] .bar-label.is-flipped {
+    inset-inline-start: auto;
+    inset-inline-end: calc(100% + 6px);
+  }
+
+  .matrix-grid[data-mode="timeline"] .bar-label.is-hidden {
+    display: none;
   }
 
   .matrix-grid {
