@@ -1,11 +1,19 @@
 ---
 import { DOMAIN_LABEL, PILLAR_LABEL, PROJECTS } from "../data/cv";
+import { PROJECT_CASES } from "../data/projects";
 import { openDrawer } from "../lib/open-drawer";
 
 const payload = {
 	projects: PROJECTS,
 	domain: DOMAIN_LABEL,
 	pillar: PILLAR_LABEL,
+	// Only the projects with a written case get a link at the foot of the card.
+	cases: Object.fromEntries(
+		PROJECT_CASES.filter((item) => item.caseStudyHref).map((item) => [
+			item.id,
+			item.caseStudyHref as string,
+		]),
+	) as Record<string, string>,
 };
 ---
 
@@ -42,9 +50,21 @@ const payload = {
 
   <div class="drawer-body" id="drawer-body"></div>
 
-  <footer class="drawer-foot">
-    <span class="drawer-hint" id="drawer-hint">presiona esc para cerrar</span>
-    <button type="button" class="drawer-ok" data-drawer-close>entendido</button>
+  <footer class="drawer-foot" id="drawer-foot">
+    <div class="drawer-nav">
+      <button type="button" class="drawer-step" id="drawer-prev" aria-label="proyecto anterior">
+        <span class="drawer-arrow" aria-hidden="true">‹</span>
+        <span class="drawer-step-name" id="drawer-prev-name">anterior</span>
+      </button>
+      <button type="button" class="drawer-step" id="drawer-next" aria-label="proyecto siguiente">
+        <span class="drawer-step-name" id="drawer-next-name">siguiente</span>
+        <span class="drawer-arrow" aria-hidden="true">›</span>
+      </button>
+    </div>
+    <a class="drawer-case" id="drawer-case" hidden>
+      ver el caso de estudio
+      <span aria-hidden="true">↗</span>
+    </a>
   </footer>
   </div>
 </aside>
@@ -60,6 +80,7 @@ const payload = {
     projects: Project[];
     domain: Record<string, string>;
     pillar: Record<string, string>;
+    cases: Record<string, string>;
   }
 
   let stop: (() => void) | null = null;
@@ -93,6 +114,23 @@ const payload = {
     const projectById = new Map(
       payload.projects.map((project) => [project.id, project]),
     );
+    const foot = must<HTMLElement>("#drawer-foot");
+    const surface = must<HTMLElement>(".drawer-surface");
+    const prevBtn = must<HTMLButtonElement>("#drawer-prev");
+    const nextBtn = must<HTMLButtonElement>("#drawer-next");
+    const prevName = must<HTMLElement>("#drawer-prev-name");
+    const nextName = must<HTMLElement>("#drawer-next-name");
+    const caseLink = must<HTMLAnchorElement>("#drawer-case");
+    // Walking the card walks the career: earlier on the left, later on the right.
+    const order = [...payload.projects]
+      .sort(
+        (a, b) =>
+          a.startMonth - b.startMonth ||
+          a.endMonth - b.endMonth ||
+          a.id.localeCompare(b.id),
+      )
+      .map((project) => project.id);
+    let currentId: string | null = null;
     const controller = new AbortController();
     let restoreFocus: HTMLElement | null = null;
 
@@ -106,6 +144,9 @@ const payload = {
     for (const closer of document.querySelectorAll("[data-drawer-close]")) {
       closer.addEventListener("click", close, { signal: controller.signal });
     }
+
+    prevBtn.addEventListener("click", () => step(-1), { signal: controller.signal });
+    nextBtn.addEventListener("click", () => step(1), { signal: controller.signal });
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -125,6 +166,8 @@ const payload = {
         title.textContent = project.name;
         role.textContent = `${project.company} · ${project.position} · ${spanLabel(project.startMonth, project.endMonth)} (${durationLabel(project.endMonth - project.startMonth)})`;
         body.replaceChildren(projectBody(project));
+        currentId = project.id;
+        syncNav(project);
         return;
       }
 
@@ -132,6 +175,65 @@ const payload = {
       title.textContent = `${request.ids.length} proyectos`;
       role.textContent = "selecciona uno para abrir su ficha";
       body.replaceChildren(listBody(request.ids));
+      currentId = null;
+      syncNav(null);
+    }
+
+    /**
+     * The card can walk the whole career without closing: the footer carries the
+     * neighbouring projects, and only the ones with a written case get a link.
+     */
+    function syncNav(project: Project | null) {
+      foot.hidden = !project;
+      if (!project) return;
+
+      const index = order.indexOf(project.id);
+      const prev = index > 0 ? projectById.get(order[index - 1]) : null;
+      const next =
+        index >= 0 && index < order.length - 1
+          ? projectById.get(order[index + 1])
+          : null;
+
+      prevBtn.disabled = !prev;
+      nextBtn.disabled = !next;
+      prevName.textContent = prev?.short ?? "anterior";
+      nextName.textContent = next?.short ?? "siguiente";
+      prevBtn.setAttribute(
+        "aria-label",
+        prev ? `proyecto anterior: ${prev.name}` : "no hay proyecto anterior",
+      );
+      nextBtn.setAttribute(
+        "aria-label",
+        next ? `proyecto siguiente: ${next.name}` : "no hay proyecto siguiente",
+      );
+
+      const href = payload.cases[project.id] ?? null;
+      caseLink.hidden = !href;
+      if (href) caseLink.href = href;
+
+      // Stepping onto the end disables the button that was just pressed.
+      if (document.activeElement === prevBtn && prevBtn.disabled) nextBtn.focus();
+      if (document.activeElement === nextBtn && nextBtn.disabled) prevBtn.focus();
+    }
+
+    function step(direction: -1 | 1) {
+      if (!currentId) return;
+      const target = order[order.indexOf(currentId) + direction];
+      if (!target) return;
+      render({ kind: "project", id: target });
+      flash();
+    }
+
+    /** A short settle when the card swaps projects, so it never blinks. */
+    function flash() {
+      if (prefersReducedMotion()) return;
+      surface.animate(
+        [
+          { opacity: 0.35, filter: "blur(5px)" },
+          { opacity: 1, filter: "blur(0px)" },
+        ],
+        { duration: 220, easing: "ease-out" },
+      );
     }
 
     function projectBody(project: Project): HTMLElement {
@@ -624,34 +726,85 @@ const payload = {
 
   .drawer-foot {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.9rem 1.9rem;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1.9rem;
     border-top: 1px solid var(--color-border);
     background: var(--color-card);
   }
 
-  .drawer-hint {
+  .drawer-foot[hidden] {
+    display: none;
+  }
+
+  .drawer-nav {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .drawer-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    max-inline-size: 11rem;
+    padding: 0.28rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--color-ink-muted);
     font-family: var(--font-mono);
     font-size: 0.656rem;
-    color: var(--color-ink-faint);
-  }
-
-  .drawer-ok {
-    padding: 0.4rem 0.9rem;
-    border: 0;
-    border-radius: 4px;
-    background: var(--color-ink);
-    color: var(--color-paper);
-    font-family: var(--font-sans);
-    font-size: 0.6875rem;
+    line-height: 1.4;
     cursor: pointer;
-    transition: background 140ms ease;
+    transition:
+      border-color 140ms ease,
+      color 140ms ease,
+      background 140ms ease;
   }
 
-  .drawer-ok:hover {
-    background: var(--color-ink-hover);
+  .drawer-step:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+    color: var(--color-ink);
+  }
+
+  .drawer-step:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .drawer-arrow {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .drawer-step-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .drawer-case {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+    text-underline-offset: 4px;
+  }
+
+  .drawer-case:hover {
+    text-decoration-color: var(--color-ink);
+  }
+
+  .drawer-case[hidden] {
+    display: none;
   }
 
   @media (max-width: 640px) {
