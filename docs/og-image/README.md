@@ -8,16 +8,16 @@ the browser, and export when the copy or the layout changes.
 
 ## The one rule
 
-The card is a rigid template: **three faces, two sizes, five slots, one line
+The card is a rigid template: **two faces, two sizes, five slots, one line
 each, nothing reflows.** The faces and colours are the site's own: JetBrains Mono
-for the labels, Newsreader 300 for the lead, Plus Jakarta Sans for the kicker and
-the standfirst.
+for the address and the foot, Plus Jakarta Sans for the lead, the kicker and the
+standfirst.
 
 | # | Slot | Face | Size | Height | Holds |
 | --- | --- | --- | --- | --- | --- |
 | 1 | domain | mono | 34 px | 40 | the mark, then `gabrielalcantara.com` |
 | 2 | eyebrow | sans | 34 px | 34 | tracked, in the faint ink: category, `Caso de estudio · Company`, place |
-| 3 | title | serif 300 | 96 px | 96 | the name or the headline |
+| 3 | title | sans 300 | 88 px | 96 | the name or the headline |
 | 4 | sub | sans | 34 px | 34 | tracked, in the accent: role or standfirst |
 | 5 | foot | mono | 34 px | 40 | stack or tags on the left, years or date on the right |
 
@@ -34,13 +34,13 @@ foot: at 34 px a fourth one runs into the margin.
 `export.mjs` enforces it. It measures the rendered card and refuses to write a
 PNG when a slot is empty, wraps to a second line, overflows its width, invades
 the 42 px gutter, drops below 34 px, or breaks the rhythm. The lead is the only
-slot allowed past that line, and only by 2 px: a round or pointed capital has to
-hang for its curve to look flush (see below). It also refuses an image that is
+slot allowed past that line, by up to 6 px: its box hangs so the first letter's
+ink lands on the labels' ink (see below). It also refuses an image that is
 not exactly 1200×630 or heavier than `--max-kb`.
 
 34 px is the floor because the canvas is not what people see: a timeline draws
 the card near 504 px wide, a factor of 0.42, so 34 px arrives on screen at about
-14 px. At 96 px a title fits roughly 24 characters, and in uppercase at 34 px a
+14 px. At 88 px a title fits roughly 23 characters, and in uppercase at 34 px a
 label fits roughly 40 — that is the budget the card copy is written to.
 
 The accent is the site's terracotta, `#9e4e36`, and it marks the standfirst only:
@@ -76,11 +76,11 @@ The rhythm is measured on the slot boxes, not on ink. A `Q` tail, an accent over
 a capital or the descender of a `g` dips into the space below without moving it;
 measuring ink would make the gaps depend on which words a card happens to use.
 
-The one exception is the lead's 2 px hang. `card.html` measures nothing and
-decides nothing at export time: it sets the hang from the initial — round and
-pointed capitals (`G`, `C`, `S`, `A`, `W`…) hang, straight stems (`N`, `P`, `L`,
-`B`) stay on the line — so the optical edge is right on every card, not just on
-the one where it was noticed.
+The one exception is the lead's hang. `card.html` measures the first letter's
+side bearing once the face has loaded — `canvas.measureText` reports ink, not
+the box — and hangs the row so the lead's ink reaches the labels' line — 45 px on the
+canvas, `--ink-line`; the exporter allows up to 6 px. The display row stays 96 px although the type is 88,
+so the three-line block keeps its height and the rhythm is still read on boxes.
 
 ## The loop
 

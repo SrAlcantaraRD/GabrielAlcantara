@@ -46,7 +46,13 @@
 	 * follow line-height 1, which moves the margin from 104 to 100.
 	 */
 	--slot-label: 34px;
-	--slot-title: 96px;
+	/* The lead sets at 88 in a 96 row: the row is the line's height, so the
+	   three-line block keeps its 96 and the type sheds only the empty shoulder. */
+	--slot-title: 88px;
+
+	/* Where the labels' ink lands on the shared column. The lead's side bearing
+	   is several pixels wide at 88px, so the script hangs the row to this line. */
+	--ink-line: 45px;
 
 	/* The masthead row is 40 so the mark fits inside it, not over the rule. The
 	   foot row matches it so the two hairlines mirror about the canvas centre. */
@@ -208,19 +214,20 @@ html, body { background: var(--paper); }
 	top: var(--y-title);
 	height: var(--h-title);
 	line-height: var(--h-title);
-	font-family: "CardSerif", Georgia, "Times New Roman", serif;
+	font-family: "CardSans", ui-sans-serif, system-ui, sans-serif;
 	font-size: var(--slot-title);
 	font-weight: 300;
-	letter-spacing: 0;
+	letter-spacing: -.02em;
 	color: var(--ink);
 }
 
 /*
- * The lead hangs two pixels: measured, its round G lands 1px right of the stems
- * of the label rows, and a curve needs that much to look flush. The exporter
- * allows the hang on this slot only; the script clears it for straight initials.
+ * The lead's ink, not its box, is what lines up with the labels: at 88px the
+ * sans' side bearing pushes the first letter five or six pixels right, and it
+ * differs by letter. The script measures that bearing once the face is loaded
+ * and hangs the row by it; the exporter caps the overhang.
  */
-.lead span { transform: translate(var(--lead-hang, -2px), 0); }
+.lead span { transform: translate(var(--lead-hang, 0px), 0); }
 
 /* The line that explains the title: sans at label size, tracked, in the accent. */
 .sub {
@@ -302,6 +309,27 @@ html, body { background: var(--paper); }
 	var footRight = document.getElementById('footRight');
 	var domain = document.getElementById('domain');
 
+	var inkContext = document.createElement('canvas').getContext('2d');
+
+	// Where the first glyph's ink starts, in card coordinates: the box is not
+	// the ink, and on a display line the bearing is several pixels wide.
+	function inkLeft(element) {
+		var style = getComputedStyle(element);
+		inkContext.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+		var metrics = inkContext.measureText(element.textContent.trim());
+		return element.getBoundingClientRect().left - metrics.actualBoundingBoxLeft;
+	}
+
+	// The labels' ink lands on one line; the lead hangs until its own ink does
+	// too, so the three-line block reads as a single column of type.
+	function alignLead() {
+		if (!lead.textContent.trim()) return;
+		var line = Number.parseFloat(getComputedStyle(card).getPropertyValue('--ink-line'));
+		if (!isFinite(line)) line = 45;
+		var hang = Math.round((line - inkLeft(lead)) * 2) / 2;
+		lead.style.setProperty('--lead-hang', hang + 'px');
+	}
+
 	function setText(element, value) {
 		element.textContent = value == null ? '' : String(value);
 		return element.textContent.trim();
@@ -319,10 +347,9 @@ html, body { background: var(--paper); }
 		if (copy.title != null) setText(lead, copy.title);
 		if (copy.sub != null) setText(sub, copy.sub);
 
-		// Only round and pointed capitals hang; a straight stem (N, P, L, B) sits
-		// on the column line, so every card keeps its own optical edge.
-		var initial = lead.textContent.trim().charAt(0).toUpperCase();
-		lead.style.setProperty('--lead-hang', 'ACGOQSVWY'.indexOf(initial) === -1 ? '0px' : '-2px');
+		// The lead's ink has to land on the labels' ink, so the hang is measured
+		// once the copy and the face are in place, not guessed from the initial.
+		lead.style.setProperty('--lead-hang', '0px');
 		if (copy.footLeft != null) setText(footLeft, copy.footLeft);
 		if (copy.footRight != null) footRight.hidden = !setText(footRight, copy.footRight);
 
@@ -337,7 +364,10 @@ html, body { background: var(--paper); }
 		// real faces, so the promise waits for the webfonts before the gate reads
 		// the layout.
 		var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-		return fonts.then(function () { return { kind: card.dataset.kind }; });
+		return fonts.then(function () {
+			alignLead();
+			return { kind: card.dataset.kind };
+		});
 	}
 
 	// export.mjs calls this after the page has loaded (no location.search there).

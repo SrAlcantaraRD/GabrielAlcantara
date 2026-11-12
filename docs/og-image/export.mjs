@@ -94,14 +94,14 @@ function audit({ minFontPx, slotNames, tolerance }) {
 	const problems = [];
 
 	// Text may not invade the page margin: the canvas check alone would accept a
-	// footer that runs into the 80px gutter and still stays inside 1200px.
+	// footer that runs into the 42px gutter and still stays inside 1200px.
 	const gutter = Number.parseFloat(getComputedStyle(card).getPropertyValue("--x"));
 	const left = frame.left + gutter;
 	const right = frame.right - gutter;
-	// The one ink concession: a round or pointed capital at the head of the lead
-	// hangs past the column line so its curve reads flush with the straight stems
-	// above and below it. Capped, and still far inside the 5% safe zone.
-	const OPTICAL_HANG = 2;
+	// The one ink concession: the lead's box hangs past the column line so the
+	// first letter's ink lands on the ink of the labels above and below it. The
+	// sans' side bearings are that wide at 88px; still far inside the safe zone.
+	const OPTICAL_HANG = 6;
 
 	const carriesText = (element) =>
 		Array.from(element.childNodes).some(
