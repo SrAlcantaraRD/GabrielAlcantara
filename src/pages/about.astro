@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import { SITE, PRINCIPLES, SPECIALTIES } from "../data/site";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
 import { spanLabel } from "../lib/period";
+import AutoPreviews from "../components/AutoPreviews.astro";
 
 const companies = COMPANIES.map((company) => {
 	const own = POSITION_VIEWS.filter(
@@ -39,10 +40,10 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "Sobre mí" }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Sobre mí</p>
-    <h1 class="display">Arquitectura, ingeniería, mentoría y consultoría.</h1>
-    <p class="lede">
+  <header id="about-page-head" class="page-head">
+    <p id="about-page-head-eyebrow" class="eyebrow">Sobre mí</p>
+    <h1 id="about-page-head-display" class="display">Arquitectura, ingeniería, mentoría y consultoría.</h1>
+    <p id="about-page-head-lede" class="lede">
       Soy arquitecto de software y Software Engineer con más de quince años de experiencia
       diseñando, construyendo y evolucionando sistemas de software. Mi trabajo combina
       arquitectura, desarrollo backend, sistemas distribuidos, automatización y
@@ -50,45 +51,45 @@ const jsonLd = [
     </p>
   </header>
 
-  <section class="section" aria-labelledby="trayectoria-title">
-    <div class="section-head">
+  <section id="about-section" class="section" aria-labelledby="trayectoria-title">
+    <div id="about-section-head" class="section-head">
       <h2 class="section-title" id="trayectoria-title">Trayectoria profesional</h2>
-      <span class="section-meta">desde {SITE.careerStart}</span>
+      <span id="about-section-head-meta" class="section-meta">desde {SITE.careerStart}</span>
     </div>
-    <div class="prose">
-      <p>
-        Empecé en 2011 en <strong>ACD Sistemes</strong>, una empresa de producto, donde
+    <AutoPreviews id="about-section-prose" class="prose">
+      <p id="about-prose-p">
+        Empecé en 2011 en <strong id="about-prose-strong">ACD Sistemes</strong>, una empresa de producto, donde
         trabajé en el producto de auditoría contable: consultas SQL, el importador de
         datos y la migración del auditor de Delphi a Velneo. Con 21 años viajé a Brasil y
         Angola para implantar y desplegar soluciones de auditoría en instituciones
         públicas. Después llegaron las soluciones web del producto concursal y la
         responsabilidad técnica sobre ellas.
       </p>
-      <p>
-        En <strong>Basetis</strong> entré como full stack y acabé como team lead. Pasé
+      <p id="about-prose-p-2">
+        En <strong id="about-prose-strong-2">Basetis</strong> entré como full stack y acabé como team lead. Pasé
         por desarrollo web y móvil para la Generalitat, Siebel para ACA CSV, un producto
         con capa de integración Mulesoft y gestión de equipo, mantenimiento de
         aplicaciones sobre EC2 y LoveISDIN, donde definí PRDs con negocio, revisé PRs,
         mentorizé al equipo y asumí los componentes más críticos.
       </p>
-      <p>
+      <p id="about-prose-p-3">
         Desde 2024 hasta agosto de 2026 fui arquitecto de soluciones en
-        <strong>Quabu Solutions</strong>. Allí diseñé e implementé un sistema orientado a
+        <strong id="about-prose-strong-3">Quabu Solutions</strong>. Allí diseñé e implementé un sistema orientado a
         eventos sobre DDD, TDD y microservicios para la automatización de almacenes
         inteligentes, con integración de robots, PLC, LEDs, picking y cámaras, y
         comunicación en tiempo real con la operación.
       </p>
-    </div>
+    </AutoPreviews>
 
-    <ol class="trail">
+    <ol id="about-section-trail" class="trail">
       {
-        companies.map((company) => (
-          <li class={`trail-item accent-${company.accent}`}>
-            <div class="trail-head">
-              <span class="trail-name">{company.name}</span>
-              <span class="trail-span">{spanLabel(company.from, company.to)}</span>
+        companies.map((company, i) => (
+          <li id={`about-trail-li-${i}`} class={`trail-item accent-${company.accent}`}>
+            <div id={`about-trail-head-${i}`} class="trail-head">
+              <span id={`about-trail-head-name-${i}`} class="trail-name">{company.name}</span>
+              <span id={`about-trail-head-span-${i}`} class="trail-span">{spanLabel(company.from, company.to)}</span>
             </div>
-            <p class="trail-roles">
+            <p id={`about-trail-roles-${i}`} class="trail-roles">
               {company.first.title} → {company.last.title}
             </p>
           </li>
@@ -97,23 +98,23 @@ const jsonLd = [
     </ol>
   </section>
 
-  <section class="section" aria-labelledby="evolucion-title">
-    <div class="section-head">
+  <section id="about-section-2" class="section" aria-labelledby="evolucion-title">
+    <div id="about-section-head-2" class="section-head">
       <h2 class="section-title" id="evolucion-title">Cómo he llegado hasta aquí</h2>
-      <span class="section-meta">2011 → hoy</span>
+      <span id="about-section-head-meta-2" class="section-meta">2011 → hoy</span>
     </div>
-    <div class="prose">
-      <p>
+    <AutoPreviews id="about-section-prose-2" class="prose">
+      <p id="about-prose-p-4">
         Quince años dan para pasar por todas las etapas del desarrollo: requisitos,
         implementación, base de datos, mantenimiento, diseño, arquitectura, móvil, web,
         frontend y backend. Empecé de junior y he ido liderando lo que tocaba.
       </p>
-      <p>
+      <p id="about-prose-p-5">
         En Basetis diseñé e implementé el core de un buscador en Node: consultas que
         anidaban corchetes —AND, OR, NOT, NOR— y un validador por expresiones regulares.
         Años después supe que aquel motor seguía vivo y que lo habían extendido.
       </p>
-      <p>
+      <p id="about-prose-p-6">
         En LoveISDIN lideré el frontend de un producto que el backend definía por partes
         desde un backoffice: los componentes llegaban con su propia iteratividad y el
         frontend tenía que representarlos. Sin criterio de arquitectura para el frontend,
@@ -122,7 +123,7 @@ const jsonLd = [
         organismos, layouts y páginas. Allí fue también mi primer encuentro con DDD y
         hexagonal en el backend.
       </p>
-      <p>
+      <p id="about-prose-p-7">
         Ese hallazgo cambió cómo trabajo. En Bodega Digital llevé por primera vez esa
         arquitectura de backend al frontend, combinando la capa de lógica de DDD con Atomic
         Design. En Nakire TPS la misma idea pasó a microservicios: un DDD core y cada módulo
@@ -130,73 +131,73 @@ const jsonLd = [
         monolito por capas con un harness determinista, para que el código lo escriban y lo
         prueben agentes y la revisión final siga siendo mía.
       </p>
-    </div>
+    </AutoPreviews>
   </section>
 
-  <section class="section" aria-labelledby="forma-title">
-    <div class="section-head">
+  <section id="about-section-3" class="section" aria-labelledby="forma-title">
+    <div id="about-section-head-3" class="section-head">
       <h2 class="section-title" id="forma-title">Forma de trabajar</h2>
-      <span class="section-meta">principios</span>
+      <span id="about-section-head-meta-3" class="section-meta">principios</span>
     </div>
-    <blockquote class="working-quote">
+    <blockquote id="about-section-working-quote" class="working-quote">
       Me interesa entender el dominio antes de elegir la tecnología. La ingeniería está al
       servicio del negocio: sin entender el negocio, sus necesidades, los requisitos y los
       tiempos, lo demás no sirve de nada.
     </blockquote>
-    <ul class="principles">
-      {PRINCIPLES.map((principle) => <li>{principle}</li>)}
+    <ul id="about-section-principles" class="principles">
+      {PRINCIPLES.map((principle, i2) => <li id={`about-principles-li-${i2}`}>{principle}</li>)}
     </ul>
   </section>
 
-  <section class="section" aria-labelledby="areas-title">
-    <div class="section-head">
+  <section id="about-section-4" class="section" aria-labelledby="areas-title">
+    <div id="about-section-head-4" class="section-head">
       <h2 class="section-title" id="areas-title">Áreas de especialización</h2>
-      <span class="section-meta">{PROJECTS.length} proyectos</span>
+      <span id="about-section-head-meta-4" class="section-meta">{PROJECTS.length} proyectos</span>
     </div>
-    <div class="grid grid--2">
+    <div id="about-section-grid" class="grid grid--2">
       {
-        SPECIALTIES.map((specialty) => (
-          <div class="card">
-            <h3>{specialty.title}</h3>
-            <p>{specialty.body}</p>
+        SPECIALTIES.map((specialty, i3) => (
+          <div id={`about-grid-card-${i3}`} class="card">
+            <h3 id={`about-card-h3-${i3}`}>{specialty.title}</h3>
+            <p id={`about-card-p-${i3}`}>{specialty.body}</p>
           </div>
         ))
       }
     </div>
   </section>
 
-  <section class="section" aria-labelledby="retos-title">
-    <div class="section-head">
+  <section id="about-section-5" class="section" aria-labelledby="retos-title">
+    <div id="about-section-head-5" class="section-head">
       <h2 class="section-title" id="retos-title">Qué tipo de retos busco</h2>
-      <span class="section-meta">enfoque</span>
+      <span id="about-section-head-meta-5" class="section-meta">enfoque</span>
     </div>
-    <div class="prose">
-      <p>
+    <AutoPreviews id="about-section-prose-3" class="prose">
+      <p id="about-prose-p-8">
         Actualmente me interesan especialmente los retos relacionados con arquitectura
         de plataformas, sistemas distribuidos, productos industriales y liderazgo
         técnico: equipos que necesitan ordenar un sistema que ya creció, separar dominios
         que hoy están acoplados o convertir una integración frágil en algo que se pueda
         mantener.
       </p>
-      <p>
+      <p id="about-prose-p-9">
         Disfruto tanto definiendo la arquitectura como bajando al código cuando la
         decisión lo necesita. Y prefiero dejar contexto —decisiones escritas, límites
         explícitos, pruebas sobre el comportamiento real— a dejar una caja negra que solo
         entiende quien la escribió.
       </p>
-    </div>
+    </AutoPreviews>
   </section>
 
-  <section class="closing" aria-labelledby="about-cierre">
+  <section id="about-closing" class="closing" aria-labelledby="about-cierre">
     <h2 class="section-title" id="about-cierre">Siguiente paso</h2>
-    <p>
+    <p id="about-closing-p">
       Puedes ver el CV completo, recorrer la trayectoria con sus proyectos o escribirme
       directamente para hablar de un reto concreto.
     </p>
-    <div class="actions">
-      <a class="btn" href="/cv/">Ver el CV</a>
-      <a class="btn btn--ghost" href="/experience/">Ver experiencia</a>
-      <a class="btn btn--ghost" href="/contact/">Contactar</a>
+    <div id="about-closing-actions" class="actions">
+      <a id="about-actions-btn" class="btn" href="/cv/">Ver el CV</a>
+      <a id="about-actions-btn-2" class="btn btn--ghost" href="/experience/">Ver experiencia</a>
+      <a id="about-actions-btn-3" class="btn btn--ghost" href="/contact/">Contactar</a>
     </div>
   </section>
 </Layout>

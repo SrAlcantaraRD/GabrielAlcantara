@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import AutoPreviews from "./AutoPreviews.astro";
 import HeroWheel from "./HeroWheel.astro";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
 import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
@@ -69,49 +70,57 @@ const formatDate = (iso: string) =>
   jsonLd={jsonLd}
   alternates={alternateProfilePaths()}
 >
-  <header class="profile-hero" aria-labelledby="profile-title">
-    <p class="eyebrow">{copy.eyebrow}</p>
+  <header id="localized-profile-hero" class="profile-hero" aria-labelledby="profile-title">
+    <p id="localized-profile-hero-eyebrow" class="eyebrow">{copy.eyebrow}</p>
     <HeroWheel
       titleId="profile-title"
       stem={copy.heroStem}
       lines={[copy.heroTitle]}
       words={copy.heroWords}
     />
-    <p class="lede">{copy.heroLede}</p>
-    <div class="actions">
-      <a class="btn" href="#proyectos">{copy.ctaProjects}</a>
-      <a class="btn btn--ghost" href="#cv">{copy.ctaCv}</a>
-      <a class="btn btn--link" href="#contacto">{copy.ctaContact}</a>
+    <p id="localized-profile-hero-lede" class="lede">{copy.heroLede}</p>
+    <div id="localized-profile-hero-actions" class="actions">
+      <a id="localized-profile-actions-btn" class="btn" href="#proyectos">{copy.ctaProjects}</a>
+      <a id="localized-profile-actions-btn-2" class="btn btn--ghost" href="#cv">{copy.ctaCv}</a>
+      <a id="localized-profile-actions-btn-3" class="btn btn--link" href="#contacto">{copy.ctaContact}</a>
     </div>
-    <div class="meta-row">
-      <span class="is-available">{copy.availability}</span>
-      <span>{copy.location}</span>
-      <span>{PROJECTS.length} {copy.metaProjects}</span>
-      <span>{copy.metaSince}</span>
+    <div id="localized-profile-hero-meta-row" class="meta-row">
+      <span id="localized-profile-meta-row-is-available" class="is-available">{copy.availability}</span>
+      <span id="localized-profile-meta-row-span">{copy.location}</span>
+      <span id="localized-profile-meta-row-span-2">{PROJECTS.length} {copy.metaProjects}</span>
+      <span id="localized-profile-meta-row-span-3">{copy.metaSince}</span>
     </div>
   </header>
 
   <section class="section" id="sobre" aria-labelledby="sobre-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head" class="section-head">
       <h2 class="section-title" id="sobre-title">{copy.about.title}</h2>
-      <span class="section-meta">{copy.about.lede}</span>
+      <span id="localized-profile-section-head-meta" class="section-meta">{copy.about.lede}</span>
     </div>
-    <div class="profile-about">
-      {copy.about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+    <div id="localized-profile-section-about" class="profile-about">
+      {
+        copy.about.paragraphs.map((paragraph, i) => (
+          <p id={`localized-profile-about-p-${i}`}>
+            <AutoPreviews inline id={`localized-profile-about-${i}-prose`} text={paragraph} />
+          </p>
+        ))
+      }
     </div>
   </section>
 
   <section class="section" id="especialidades" aria-labelledby="especialidades-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-2" class="section-head">
       <h2 class="section-title" id="especialidades-title">{copy.expertise.title}</h2>
-      <span class="section-meta">{copy.expertise.meta}</span>
+      <span id="localized-profile-section-head-meta-2" class="section-meta">{copy.expertise.meta}</span>
     </div>
-    <div class="grid grid--4">
+    <div id="localized-profile-section-grid" class="grid grid--4">
       {
-        copy.expertise.items.map((item) => (
-          <div class="card">
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
+        copy.expertise.items.map((item, i2) => (
+          <div id={`localized-profile-grid-card-${i2}`} class="card">
+            <h3 id={`localized-profile-card-h3-${i2}`}>{item.title}</h3>
+            <p id={`localized-profile-card-p-${i2}`}>
+              <AutoPreviews inline id={`localized-profile-expertise-${i2}-prose`} text={item.body} />
+            </p>
           </div>
         ))
       }
@@ -119,51 +128,53 @@ const formatDate = (iso: string) =>
   </section>
 
   <section class="section" id="proyectos" aria-labelledby="proyectos-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-3" class="section-head">
       <h2 class="section-title" id="proyectos-title">{copy.selected.title}</h2>
-      <span class="section-meta">{copy.selected.meta}</span>
+      <span id="localized-profile-section-head-meta-3" class="section-meta">{copy.selected.meta}</span>
     </div>
-    <div class="profile-projects">
+    <div id="localized-profile-section-projects" class="profile-projects">
       {
         selected.map((project, index) => {
           const projectCopy = copy.projects[project.id];
           if (!projectCopy) return null;
           return (
-            <article class:list={["project", { "is-featured": index === 0 }]}>
-              <div class="project-head">
-                <p class="eyebrow">{projectCopy.area}</p>
-                <h3>
+            <article id={`localized-profile-projects-article-${index}`} class:list={["project", { "is-featured": index === 0 }]}>
+              <div id={`localized-profile-projects-project-head-${index}`} class="project-head">
+                <p id={`localized-profile-project-head-eyebrow-${index}`} class="eyebrow">{projectCopy.area}</p>
+                <h3 id={`localized-profile-project-head-h3-${index}`}>
                   {project.caseStudyHref ? (
-                    <a href={caseHref(project.caseStudyHref)}>
+                    <a id={`localized-profile-project-head-a-${index}`} href={caseHref(project.caseStudyHref)}>
                       {project.name}
                     </a>
                   ) : (
                     project.name
                   )}
                 </h3>
-                <p class="project-meta">
+                <p id={`localized-profile-project-head-meta-${index}`} class="project-meta">
                   {project.company} · {projectCopy.role}
                 </p>
               </div>
-              <p class="project-problem">{projectCopy.problem}</p>
-              <dl class="facts">
-                <dt>{copy.selected.role}</dt>
-                <dd>{projectCopy.role}</dd>
-                <dt>{copy.selected.decision}</dt>
-                <dd>{projectCopy.decision}</dd>
-                <dt>{copy.selected.outcome}</dt>
-                <dd>{projectCopy.outcome}</dd>
+              <p id={`localized-profile-projects-project-problem-${index}`} class="project-problem">
+                <AutoPreviews inline id={`localized-profile-problem-${index}-prose`} text={projectCopy.problem} />
+              </p>
+              <dl id={`localized-profile-projects-facts-${index}`} class="facts">
+                <dt id={`localized-profile-facts-dt-${index}`}>{copy.selected.role}</dt>
+                <dd id={`localized-profile-facts-dd-${index}`}>{projectCopy.role}</dd>
+                <dt id={`localized-profile-facts-dt-2-${index}`}>{copy.selected.decision}</dt>
+                <dd id={`localized-profile-facts-dd-2-${index}`}>{projectCopy.decision}</dd>
+                <dt id={`localized-profile-facts-dt-3-${index}`}>{copy.selected.outcome}</dt>
+                <dd id={`localized-profile-facts-dd-3-${index}`}>{projectCopy.outcome}</dd>
               </dl>
               {project.stack && project.stack.length > 0 && (
-                <div class="tag-row">
-                  {project.stack.slice(0, 6).map((item) => (
-                    <span class="pill">{item}</span>
+                <div id={`localized-profile-projects-tag-row-${index}`} class="tag-row">
+                  {project.stack.slice(0, 6).map((item, i3) => (
+                    <span id={`localized-profile-tag-row-pill-${index}-${index}-${index}-${i3}`} class="pill">{item}</span>
                   ))}
                 </div>
               )}
               {project.caseStudyHref && (
-                <a class="project-link" href={caseHref(project.caseStudyHref)}>
-                  {copy.selected.readCase} <span aria-hidden="true">→</span>
+                <a id={`localized-profile-projects-project-link-${index}`} class="project-link" href={caseHref(project.caseStudyHref)}>
+                  {copy.selected.readCase} <span id={`localized-profile-project-link-span-${index}`} aria-hidden="true">→</span>
                 </a>
               )}
             </article>
@@ -171,124 +182,130 @@ const formatDate = (iso: string) =>
         })
       }
     </div>
-    <p class="profile-note">{copy.selected.note}</p>
-    <div class="actions">
-      <a class="btn btn--ghost" href={`/${lang}/projects/`}>{copy.selected.allProjects}</a>
+    <p id="localized-profile-section-note" class="profile-note">
+      <AutoPreviews inline id="localized-profile-selected-note-prose" text={copy.selected.note} />
+    </p>
+    <div id="localized-profile-section-actions" class="actions">
+      <a id="localized-profile-actions-btn-4" class="btn btn--ghost" href={`/${lang}/projects/`}>{copy.selected.allProjects}</a>
     </div>
   </section>
 
   <section class="section" id="experiencia" aria-labelledby="experiencia-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-4" class="section-head">
       <h2 class="section-title" id="experiencia-title">{copy.experience.title}</h2>
-      <span class="section-meta">{copy.experience.meta}</span>
+      <span id="localized-profile-section-head-meta-4" class="section-meta">{copy.experience.meta}</span>
     </div>
-    <ol class="profile-stages">
+    <ol id="localized-profile-section-stages" class="profile-stages">
       {
-        stages.map((stage) => (
-          <li class:list={["profile-stage", `accent-${stage.company.accent}`]}>
-            <div class="profile-stage-head">
-              <h3>{stage.company.name}</h3>
-              <span>{stage.period}</span>
+        stages.map((stage, i4) => (
+          <li id={`localized-profile-stages-li-${i4}`} class:list={["profile-stage", `accent-${stage.company.accent}`]}>
+            <div id={`localized-profile-stages-stage-head-${i4}`} class="profile-stage-head">
+              <h3 id={`localized-profile-stage-head-h3-${i4}`}>{stage.company.name}</h3>
+              <span id={`localized-profile-stage-head-span-${i4}`}>{stage.period}</span>
             </div>
-            <p class="profile-stage-roles">{stage.copy?.roles}</p>
-            <p class="profile-stage-focus">{stage.copy?.focus}</p>
+            <p id={`localized-profile-stages-stage-roles-${i4}`} class="profile-stage-roles">{stage.copy?.roles}</p>
+            <p id={`localized-profile-stages-stage-focus-${i4}`} class="profile-stage-focus">
+              <AutoPreviews inline id={`localized-profile-stage-${i4}-prose`} text={stage.copy?.focus ?? ""} />
+            </p>
           </li>
         ))
       }
     </ol>
-    <p class="profile-note">{copy.experience.note}</p>
-    <div class="actions">
-      <a class="btn btn--ghost" href="/experience/">{copy.experience.fullCareer}</a>
+    <p id="localized-profile-section-note-2" class="profile-note">
+      <AutoPreviews inline id="localized-profile-experience-note-prose" text={copy.experience.note} />
+    </p>
+    <div id="localized-profile-section-actions-2" class="actions">
+      <a id="localized-profile-actions-btn-5" class="btn btn--ghost" href="/experience/">{copy.experience.fullCareer}</a>
     </div>
   </section>
 
   <section class="section" id="blog" aria-labelledby="blog-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-5" class="section-head">
       <h2 class="section-title" id="blog-title">{copy.writing.title}</h2>
-      <span class="section-meta">{copy.writing.meta}</span>
+      <span id="localized-profile-section-head-meta-5" class="section-meta">{copy.writing.meta}</span>
     </div>
-    <div class="profile-posts">
+    <div id="localized-profile-section-posts" class="profile-posts">
       {
-        SORTED_POSTS.map((post) => {
+        SORTED_POSTS.map((post, i5) => {
           const postCopy = copy.posts[post.slug];
           if (!postCopy) return null;
           return (
-            <article class="profile-post">
-              <p class="profile-post-kicker">
-                <span>{postCopy.category}</span>
-                <span aria-hidden="true">·</span>
-                <time datetime={post.date}>{formatDate(post.date)}</time>
+            <article id={`localized-profile-posts-post-${i5}`} class="profile-post">
+              <p id={`localized-profile-post-kicker-${i5}`} class="profile-post-kicker">
+                <span id={`localized-profile-post-kicker-span-${i5}`}>{postCopy.category}</span>
+                <span id={`localized-profile-post-kicker-span-2-${i5}`} aria-hidden="true">·</span>
+                <time id={`localized-profile-post-kicker-time-${i5}`} datetime={post.date}>{formatDate(post.date)}</time>
               </p>
-              <h3>
-                <a href={postHref(post.slug)}>{postCopy.title}</a>
+              <h3 id={`localized-profile-post-h3-${i5}`}>
+                <a id={`localized-profile-post-a-${i5}`} href={postHref(post.slug)}>{postCopy.title}</a>
               </h3>
-              <p>{postCopy.description}</p>
-              <a class="project-link" href={postHref(post.slug)}>
-                {copy.writing.read} <span aria-hidden="true">→</span>
+              <p id={`localized-profile-post-p-${i5}`}>{postCopy.description}</p>
+              <a id={`localized-profile-post-project-link-${i5}`} class="project-link" href={postHref(post.slug)}>
+                {copy.writing.read} <span id={`localized-profile-project-link-span-2-${i5}`} aria-hidden="true">→</span>
               </a>
             </article>
           );
         })
       }
     </div>
-    <p class="profile-note">{copy.writing.note}</p>
+    <p id="localized-profile-section-note-3" class="profile-note">{copy.writing.note}</p>
   </section>
 
   <section class="section" id="servicios" aria-labelledby="servicios-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-6" class="section-head">
       <h2 class="section-title" id="servicios-title">{copy.services.title}</h2>
-      <span class="section-meta">{copy.services.meta}</span>
+      <span id="localized-profile-section-head-meta-6" class="section-meta">{copy.services.meta}</span>
     </div>
-    <div class="grid grid--2">
+    <div id="localized-profile-section-grid-2" class="grid grid--2">
       {
-        copy.services.items.map((item) => (
-          <div class="card">
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
+        copy.services.items.map((item, i6) => (
+          <div id={`localized-profile-grid-card-2-${i6}`} class="card">
+            <h3 id={`localized-profile-card-h3-2-${i6}`}>{item.title}</h3>
+            <p id={`localized-profile-card-p-2-${i6}`}>{item.body}</p>
           </div>
         ))
       }
     </div>
-    <p class="profile-note">{copy.services.note}</p>
+    <p id="localized-profile-section-note-4" class="profile-note">{copy.services.note}</p>
   </section>
 
   <section class="section" id="cv" aria-labelledby="cv-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-7" class="section-head">
       <h2 class="section-title" id="cv-title">{copy.cv.title}</h2>
-      <span class="section-meta">{copy.cv.meta}</span>
+      <span id="localized-profile-section-head-meta-7" class="section-meta">{copy.cv.meta}</span>
     </div>
-    <div class="profile-cv">
-      <p class="lede">{copy.cv.lede}</p>
-      <ul>
-        {copy.cv.points.map((point) => <li>{point}</li>)}
+    <div id="localized-profile-section-cv" class="profile-cv">
+      <p id="localized-profile-cv-lede" class="lede">{copy.cv.lede}</p>
+      <ul id="localized-profile-cv-ul">
+        {copy.cv.points.map((point, i7) => <li id={`localized-profile-cv-li-${i7}`}>{point}</li>)}
       </ul>
-      <p class="profile-note">{copy.cv.note}</p>
-      <div class="actions">
-        <a class="btn" href="/cv/" hreflang="es">{copy.cv.cta}</a>
+      <p id="localized-profile-cv-note" class="profile-note">{copy.cv.note}</p>
+      <div id="localized-profile-cv-actions" class="actions">
+        <a id="localized-profile-actions-btn-6" class="btn" href="/cv/" hreflang="es">{copy.cv.cta}</a>
       </div>
     </div>
   </section>
 
   <section class="section" id="contacto" aria-labelledby="contacto-title">
-    <div class="section-head">
+    <div id="localized-profile-section-head-8" class="section-head">
       <h2 class="section-title" id="contacto-title">{copy.contact.title}</h2>
-      <span class="section-meta">{copy.contact.meta}</span>
+      <span id="localized-profile-section-head-meta-8" class="section-meta">{copy.contact.meta}</span>
     </div>
-    <p class="profile-lede">{copy.contact.lede}</p>
-    <div class="profile-channels">
-      <a class="profile-channel profile-channel--primary" href={`mailto:${SITE.email}`}>
-        <span class="profile-channel-label">{copy.contact.emailLabel}</span>
-        <span class="profile-channel-value">{SITE.email}</span>
-        <span class="profile-channel-note">{copy.contact.emailNote}</span>
+    <p id="localized-profile-section-lede" class="profile-lede">{copy.contact.lede}</p>
+    <div id="localized-profile-section-channels" class="profile-channels">
+      <a id="localized-profile-channels-channel" class="profile-channel profile-channel--primary" href={`mailto:${SITE.email}`}>
+        <span id="localized-profile-channel-label" class="profile-channel-label">{copy.contact.emailLabel}</span>
+        <span id="localized-profile-channel-value" class="profile-channel-value">{SITE.email}</span>
+        <span id="localized-profile-channel-note" class="profile-channel-note">{copy.contact.emailNote}</span>
       </a>
       {
-        SITE.socials.map((social) => (
-          <a class="profile-channel" href={social.href} rel="me">
-            <span class="profile-channel-label">{social.label}</span>
-            <span class="profile-channel-value">
+        SITE.socials.map((social, i8) => (
+          <a id={`localized-profile-channels-channel-2-item-${i8}`} class="profile-channel" href={social.href} rel="me">
+            <span id={`localized-profile-channel-label-2-item-${i8}`} class="profile-channel-label">{social.label}</span>
+            <span id={`localized-profile-channel-value-2-item-${i8}`} class="profile-channel-value">
               {social.href.replace("https://", "")}
             </span>
-            <span class="profile-channel-note">
+            <span id={`localized-profile-channel-note-2-item-${i8}`} class="profile-channel-note">
               {social.label === "GitHub"
                 ? copy.contact.githubNote
                 : copy.contact.socialNote}
@@ -296,17 +313,17 @@ const formatDate = (iso: string) =>
           </a>
         ))
       }
-      <a class="profile-channel" href="/cv/" hreflang="es">
-        <span class="profile-channel-label">{copy.contact.cvLabel}</span>
-        <span class="profile-channel-value">{copy.contact.cvValue}</span>
-        <span class="profile-channel-note">{copy.contact.cvNote}</span>
+      <a id="localized-profile-channels-channel-2" class="profile-channel" href="/cv/" hreflang="es">
+        <span id="localized-profile-channel-label-2" class="profile-channel-label">{copy.contact.cvLabel}</span>
+        <span id="localized-profile-channel-value-2" class="profile-channel-value">{copy.contact.cvValue}</span>
+        <span id="localized-profile-channel-note-2" class="profile-channel-note">{copy.contact.cvNote}</span>
       </a>
     </div>
-    <div class="profile-closing">
-      <h3>{copy.contact.closingTitle}</h3>
-      <p>{copy.contact.closingBody}</p>
-      <div class="actions">
-        <a class="btn" href={`mailto:${SITE.email}`}>{copy.contact.emailLabel}</a>
+    <div id="localized-profile-section-closing" class="profile-closing">
+      <h3 id="localized-profile-closing-h3">{copy.contact.closingTitle}</h3>
+      <p id="localized-profile-closing-p">{copy.contact.closingBody}</p>
+      <div id="localized-profile-closing-actions" class="actions">
+        <a id="localized-profile-actions-btn-7" class="btn" href={`mailto:${SITE.email}`}>{copy.contact.emailLabel}</a>
       </div>
     </div>
   </section>

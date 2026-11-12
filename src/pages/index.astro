@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import AutoPreviews from "../components/AutoPreviews.astro";
 import HeroWheel from "../components/HeroWheel.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import PostCard from "../components/PostCard.astro";
@@ -67,35 +68,39 @@ const jsonLd = [
   jsonLd={jsonLd}
 >
   <section class="hero" id="sobre" aria-labelledby="hero-title">
-    <p class="hero-eyebrow">Software Engineer - Solutions Architect</p>
+    <p id="home-hero-eyebrow" class="hero-eyebrow">Software Engineer - Solutions Architect</p>
     <HeroWheel lines={SITE.headlineLines} words={SITE.headlineWords} />
-    <p class="lede">{SITE.description}</p>
-    <p class="lede">{SITE.statement}</p>
-    <div class="actions">
-      <a class="btn" href="/projects/">Ver proyectos</a>
-      <a class="btn btn--ghost" href="/cv/">Descargar CV</a>
-      <a class="btn btn--link" href="/contact/">Contactar conmigo</a>
-      <a class="btn btn--link" href="/about/">Ver el perfil completo</a>
+    <p id="home-hero-lede" class="lede">{SITE.description}</p>
+    <p id="home-hero-lede-2" class="lede">
+      <AutoPreviews inline id="home-statement-prose" text={SITE.statement} />
+    </p>
+    <div id="home-hero-actions" class="actions">
+      <a id="home-actions-btn" class="btn" href="/projects/">Ver proyectos</a>
+      <a id="home-actions-btn-2" class="btn btn--ghost" href="/cv/">Descargar CV</a>
+      <a id="home-actions-btn-3" class="btn btn--link" href="/contact/">Contactar conmigo</a>
+      <a id="home-actions-btn-4" class="btn btn--link" href="/about/">Ver el perfil completo</a>
     </div>
-    <div class="meta-row">
-      <span class="is-available">{SITE.availability}</span>
-      <span>{SITE.location}</span>
-      <span>{PROJECTS.length} proyectos en la trayectoria</span>
-      <span>desde {SITE.careerStart}</span>
+    <div id="home-hero-meta-row" class="meta-row">
+      <span id="home-meta-row-is-available" class="is-available">{SITE.availability}</span>
+      <span id="home-meta-row-span">{SITE.location}</span>
+      <span id="home-meta-row-span-2">{PROJECTS.length} proyectos en la trayectoria</span>
+      <span id="home-meta-row-span-3">desde {SITE.careerStart}</span>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="especialidades-title">
-    <div class="section-head">
+  <section id="home-section" class="section" aria-labelledby="especialidades-title">
+    <div id="home-section-head" class="section-head">
       <h2 class="section-title" id="especialidades-title">Cuatro áreas de trabajo</h2>
-      <span class="section-meta">4 frentes</span>
+      <span id="home-section-head-meta" class="section-meta">4 frentes</span>
     </div>
-    <div class="grid grid--4">
+    <div id="home-section-grid" class="grid grid--4">
       {
-        SPECIALTIES.map((specialty) => (
-          <div class="card">
-            <h3>{specialty.title}</h3>
-            <p>{specialty.body}</p>
+        SPECIALTIES.map((specialty, i) => (
+          <div id={`home-grid-card-${i}`} class="card">
+            <h3 id={`home-card-h3-${i}`}>{specialty.title}</h3>
+            <p id={`home-card-p-${i}`}>
+              <AutoPreviews inline id={`home-card-${i}-prose`} text={specialty.body} />
+            </p>
           </div>
         ))
       }
@@ -103,126 +108,136 @@ const jsonLd = [
   </section>
 
   <section class="section featured" id="proyectos" aria-labelledby="destacado-title">
-    <div class="section-head">
+    <div id="home-section-head-2" class="section-head">
       <h2 class="section-title" id="destacado-title">Proyecto destacado</h2>
-      <span class="section-meta">{FEATURED_CASE.company}</span>
+      <span id="home-section-head-meta-2" class="section-meta">{FEATURED_CASE.company}</span>
     </div>
-    <div class="featured-grid">
-      <div class="featured-body">
-        <p class="eyebrow">Sistemas Distribuidos en almacenes industriales robotizados</p>
-        <h3 class="featured-name">
-          <a href={FEATURED_CASE.caseStudyHref}>{FEATURED_CASE.name}</a>
+    <div id="home-section-featured-grid" class="featured-grid">
+      <div id="home-featured-grid-body" class="featured-body">
+        <p id="home-featured-body-eyebrow" class="eyebrow">Sistemas Distribuidos en almacenes industriales robotizados</p>
+        <h3 id="home-featured-body-name" class="featured-name">
+          <a id="home-featured-name-a" href={FEATURED_CASE.caseStudyHref}>{FEATURED_CASE.name}</a>
         </h3>
-        <p class="featured-text">{FEATURED_CASE.problem}</p>
-        <p class="featured-text">{FEATURED_CASE.outcome}</p>
-        <div class="actions">
-          <a class="btn" href={FEATURED_CASE.caseStudyHref}>Ver el caso de estudio</a>
-          <a class="btn btn--ghost" href="/projects/">Todos los proyectos</a>
+        <p id="home-featured-body-text" class="featured-text">
+          <AutoPreviews inline id="home-featured-problem-prose" text={FEATURED_CASE.problem} />
+        </p>
+        <p id="home-featured-body-text-2" class="featured-text">
+          <AutoPreviews inline id="home-featured-outcome-prose" text={FEATURED_CASE.outcome} />
+        </p>
+        <div id="home-featured-body-actions" class="actions">
+          <a id="home-actions-btn-5" class="btn" href={FEATURED_CASE.caseStudyHref}>Ver el caso de estudio</a>
+          <a id="home-actions-btn-6" class="btn btn--ghost" href="/projects/">Todos los proyectos</a>
         </div>
       </div>
-      <dl class="facts featured-facts">
-        <dt>Rol</dt>
-        <dd>{FEATURED_CASE.role}</dd>
-        <dt>Periodo</dt>
-        <dd>
+      <dl id="home-featured-grid-facts" class="facts featured-facts">
+        <dt id="home-facts-dt">Rol</dt>
+        <dd id="home-facts-dd">{FEATURED_CASE.role}</dd>
+        <dt id="home-facts-dt-2">Periodo</dt>
+        <dd id="home-facts-dd-2">
           {spanLabel(FEATURED_CASE.startMonth, FEATURED_CASE.endMonth)} ·{" "}
           {FEATURED_CASE.position}
         </dd>
-        <dt>Decisión</dt>
-        <dd>{FEATURED_CASE.decision}</dd>
-        <dt>Tecnologías</dt>
-        <dd>
-          <span class="tag-row">
-            {FEATURED_CASE.stack?.map((item) => <span class="pill">{item}</span>)}
+        <dt id="home-facts-dt-3">Decisión</dt>
+        <dd id="home-facts-dd-3">{FEATURED_CASE.decision}</dd>
+        <dt id="home-facts-dt-4">Tecnologías</dt>
+        <dd id="home-facts-dd-4">
+          <span id="home-facts-tag-row" class="tag-row">
+            {FEATURED_CASE.stack?.map((item, i2) => <span id={`home-tag-row-pill-${i2}`} class="pill">{item}</span>)}
           </span>
         </dd>
       </dl>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="proyectos-title">
-    <div class="section-head">
+  <section id="home-section-2" class="section" aria-labelledby="proyectos-title">
+    <div id="home-section-head-3" class="section-head">
       <h2 class="section-title" id="proyectos-title">Proyectos seleccionados</h2>
-      <span class="section-meta">{selected.length} casos en portada</span>
+      <span id="home-section-head-meta-3" class="section-meta">{selected.length} casos en portada</span>
     </div>
-    <div class="grid grid--3 is-aligned">
+    <div id="home-section-grid-2" class="grid grid--3 is-aligned">
       {selected.map((project) => <ProjectCard project={project} brief />)}
     </div>
   </section>
 
   <section class="section" id="experiencia" aria-labelledby="experiencia-title">
-    <div class="section-head">
+    <div id="home-section-head-4" class="section-head">
       <h2 class="section-title" id="experiencia-title">
         Experiencia: producto, consultoría y arquitectura desde 2011
       </h2>
-      <span class="section-meta">{POSITION_VIEWS.length} puestos · {COMPANIES.length} etapas</span>
+      <span id="home-section-head-meta-4" class="section-meta">{POSITION_VIEWS.length} puestos · {COMPANIES.length} etapas</span>
     </div>
-    <p class="section-lede">
-      He trabajado en producto digital, plataformas empresariales y sistemas
-      industriales, liderando las decisiones técnicas y definiendo la implementación,
-      las buenas prácticas y el agent-harness.
+    <p id="home-section-lede" class="section-lede">
+      <AutoPreviews inline id="home-experience-lede-prose">
+        He trabajado en producto digital, plataformas empresariales y sistemas
+        industriales, liderando las decisiones técnicas y definiendo la implementación,
+        las buenas prácticas y el agent-harness.
+      </AutoPreviews>
     </p>
-    <ol class="career">
+    <ol id="home-section-career" class="career">
       {
-        companies.map((company) => (
-          <li class={`career-item accent-${company.accent}`}>
-            <div class="career-head">
-              <span class="career-name">{company.name}</span>
-              <span class="career-span">
+        companies.map((company, i3) => (
+          <li id={`home-career-li-${i3}`} class={`career-item accent-${company.accent}`}>
+            <div id={`home-career-head-${i3}`} class="career-head">
+              <span id={`home-career-head-name-${i3}`} class="career-name">{company.name}</span>
+              <span id={`home-career-head-span-${i3}`} class="career-span">
                 {spanLabel(company.from, company.to)}
               </span>
             </div>
-            <p class="career-roles">{rolesOf(company.positions)}</p>
-            <p class="career-focus">{company.latest.focus}</p>
+            <p id={`home-career-roles-${i3}`} class="career-roles">{rolesOf(company.positions)}</p>
+            <p id={`home-career-focus-${i3}`} class="career-focus">
+              <AutoPreviews inline id={`home-career-${i3}-prose`} text={company.latest.focus} />
+            </p>
           </li>
         ))
       }
     </ol>
-    <div class="actions">
-      <a class="btn btn--ghost" href="/experience/">Ver la trayectoria completa</a>
-      <a class="btn btn--link" href="/cv/">CV en HTML</a>
+    <div id="home-section-actions" class="actions">
+      <a id="home-actions-btn-7" class="btn btn--ghost" href="/experience/">Ver la trayectoria completa</a>
+      <a id="home-actions-btn-8" class="btn btn--link" href="/cv/">CV en HTML</a>
     </div>
   </section>
 
   <section class="section" id="blog" aria-labelledby="blog-title">
-    <div class="section-head">
+    <div id="home-section-head-5" class="section-head">
       <h2 class="section-title" id="blog-title">Artículos escritos desde proyectos</h2>
-      <span class="section-meta">
-        <a href="/blog/">Todos los artículos</a>
+      <span id="home-section-head-meta-5" class="section-meta">
+        <a id="home-section-meta-a" href="/blog/">Todos los artículos</a>
       </span>
     </div>
-    <div class="blog-grid">
-      <div class="blog-featured">
-        <p class="eyebrow">Artículo destacado</p>
-        <h3 class="blog-featured-title">
-          <a href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
+    <div id="home-section-blog-grid" class="blog-grid">
+      <div id="home-blog-grid-featured" class="blog-featured">
+        <p id="home-blog-featured-eyebrow" class="eyebrow">Artículo destacado</p>
+        <h3 id="home-blog-featured-title" class="blog-featured-title">
+          <a id="home-blog-featured-title-a" href={postHref(FEATURED_POST.slug)}>{FEATURED_POST.title}</a>
         </h3>
-        <p class="blog-featured-text">{FEATURED_POST.description}</p>
-        <a class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
+        <p id="home-blog-featured-text" class="blog-featured-text">
+          <AutoPreviews inline id="home-blog-featured-prose" text={FEATURED_POST.description} />
+        </p>
+        <a id="home-blog-featured-btn" class="btn btn--link" href={postHref(FEATURED_POST.slug)}>Leer el artículo</a>
       </div>
-      <div class="blog-list">
+      <div id="home-blog-grid-list" class="blog-list">
         {posts.map((post) => <PostCard post={post} compact />)}
       </div>
     </div>
   </section>
 
   <section class="section" id="servicios" aria-labelledby="servicios-title">
-    <div class="section-head">
+    <div id="home-section-head-6" class="section-head">
       <h2 class="section-title" id="servicios-title">Cómo puedo ayudar</h2>
-      <span class="section-meta">Colaboración técnica</span>
+      <span id="home-section-head-meta-6" class="section-meta">Colaboración técnica</span>
     </div>
-    <div class="grid grid--4">
+    <div id="home-section-grid-3" class="grid grid--4">
       {
-        SERVICES.map((service) => (
-          <div class="card">
-            <h3>{service.title}</h3>
-            <p>{service.body}</p>
+        SERVICES.map((service, i4) => (
+          <div id={`home-grid-card-2-${i4}`} class="card">
+            <h3 id={`home-card-h3-2-${i4}`}>{service.title}</h3>
+            <p id={`home-card-p-2-${i4}`}>{service.body}</p>
           </div>
         ))
       }
     </div>
-    <div class="actions">
-      <a class="btn btn--ghost" href="/services/">Ver todos los servicios</a>
+    <div id="home-section-actions-2" class="actions">
+      <a id="home-actions-btn-9" class="btn btn--ghost" href="/services/">Ver todos los servicios</a>
     </div>
   </section>
 
@@ -230,13 +245,13 @@ const jsonLd = [
     <h2 class="closing-title" id="cierre-title">
       ¿Hablamos de arquitectura, sistemas distribuidos o evolución técnica?
     </h2>
-    <p>
+    <p id="home-closing-p">
       Si estás trabajando en un problema complejo o necesitas una segunda perspectiva
       técnica, puedes escribirme.
     </p>
-    <div class="actions">
-      <a class="btn" href="/contact/">Contactar</a>
-      <a class="btn btn--ghost" href="/services/">Ver cómo puedo ayudar</a>
+    <div id="home-closing-actions" class="actions">
+      <a id="home-actions-btn-10" class="btn" href="/contact/">Contactar</a>
+      <a id="home-actions-btn-11" class="btn btn--ghost" href="/services/">Ver cómo puedo ayudar</a>
     </div>
   </section>
 </Layout>

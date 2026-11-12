@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import AutoPreviews from "../components/AutoPreviews.astro";
 import { COLLABORATION, SERVICES, SITE } from "../data/site";
 import { FAQ } from "../data/faq";
 
@@ -42,83 +43,93 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "Servicios" }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Servicios</p>
-    <h1 class="display">Ayuda técnica en sistemas complejos: revisión, diseño y acompañamiento.</h1>
-    <p class="lede">
+  <header id="services-page-head" class="page-head">
+    <p id="services-page-head-eyebrow" class="eyebrow">Servicios</p>
+    <h1 id="services-page-head-display" class="display">Ayuda técnica en sistemas complejos: revisión, diseño y acompañamiento.</h1>
+    <p id="services-page-head-lede" class="lede">
       Puedo colaborar con equipos que necesiten revisar una arquitectura, evolucionar una
       plataforma o convertir un problema técnico complejo en pasos concretos.
     </p>
-    <div class="actions">
-      <a class="btn" href="/contact/">Comentar un reto técnico</a>
-      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+    <div id="services-page-head-actions" class="actions">
+      <a id="services-actions-btn" class="btn" href="/contact/">Comentar un reto técnico</a>
+      <a id="services-actions-btn-2" class="btn btn--ghost" href="/projects/">Ver proyectos</a>
     </div>
   </header>
 
-  <section class="section" aria-labelledby="servicios-title">
-    <div class="section-head">
+  <section id="services-section" class="section" aria-labelledby="servicios-title">
+    <div id="services-section-head" class="section-head">
       <h2 class="section-title" id="servicios-title">Tipos de colaboración</h2>
-      <span class="section-meta">{SERVICES.length} frentes</span>
+      <span id="services-section-head-meta" class="section-meta">{SERVICES.length} frentes</span>
     </div>
-    <div class="grid grid--2">
+    <div id="services-section-grid" class="grid grid--2">
       {
-        SERVICES.map((service) => (
-          <div class="card">
-            <h3>{service.title}</h3>
-            <p>{service.body}</p>
+        SERVICES.map((service, i) => (
+          <div id={`services-grid-card-${i}`} class="card">
+            <h3 id={`services-card-h3-${i}`}>{service.title}</h3>
+            <p id={`services-card-p-${i}`}>
+              <AutoPreviews inline id={`services-card-${i}-prose`} text={service.body} />
+            </p>
           </div>
         ))
       }
     </div>
   </section>
 
-  <section class="section" aria-labelledby="como-title">
-    <div class="section-head">
+  <section id="services-section-2" class="section" aria-labelledby="como-title">
+    <div id="services-section-head-2" class="section-head">
       <h2 class="section-title" id="como-title">Cómo trabajo</h2>
-      <span class="section-meta">contexto antes que solución</span>
+      <span id="services-section-head-meta-2" class="section-meta">contexto antes que solución</span>
     </div>
-    <ol class="steps">
+    <ol id="services-section-steps" class="steps">
       {
         COLLABORATION.map((step, index) => (
-          <li class="step">
-            <span class="step-number">{String(index + 1).padStart(2, "0")}</span>
-            <p>{step}</p>
+          <li id={`services-steps-step-${index}`} class="step">
+            <span id={`services-step-number-${index}`} class="step-number">{String(index + 1).padStart(2, "0")}</span>
+            <p id={`services-step-p-${index}`}>
+              <AutoPreviews inline id={`services-step-${index}-prose`} text={step} />
+            </p>
           </li>
         ))
       }
     </ol>
-    <p class="scope-note">
-      No trabajo como una agencia: prefiero pocas colaboraciones donde pueda implicarme
-      en las decisiones y en su ejecución. Si el problema encaja, te lo digo; si no, también.
+    <p id="services-section-scope-note" class="scope-note">
+      <AutoPreviews inline id="services-scope-note-prose">
+        No trabajo como una agencia: prefiero pocas colaboraciones donde pueda implicarme
+        en las decisiones y en su ejecución. Si el problema encaja, te lo digo; si no, también.
+      </AutoPreviews>
     </p>
   </section>
 
-  <section class="section" aria-labelledby="faq-title">
-    <div class="section-head">
+  <section id="services-section-3" class="section" aria-labelledby="faq-title">
+    <div id="services-section-head-3" class="section-head">
       <h2 class="section-title" id="faq-title">Preguntas frecuentes</h2>
-      <span class="section-meta">{FAQ.length} respuestas</span>
+      <span id="services-section-head-meta-3" class="section-meta">{FAQ.length} respuestas</span>
     </div>
-    <dl class="faq">
+    <dl id="services-section-faq" class="faq">
       {
-        FAQ.map((entry) => (
-          <div class="faq-item">
-            <dt>{entry.question}</dt>
-            <dd>{entry.answer}</dd>
+        FAQ.map((entry, i2) => (
+          <div id={`services-faq-item-${i2}`} class="faq-item">
+            <dt id={`services-faq-item-dt-${i2}`}>{entry.question}</dt>
+            <dd id={`services-faq-item-dd-${i2}`}>
+              <AutoPreviews inline id={`services-faq-${i2}-prose`} text={entry.answer} />
+            </dd>
           </div>
         ))
       }
     </dl>
   </section>
 
-  <section class="closing" aria-labelledby="servicios-cierre">
+  <section id="services-closing" class="closing" aria-labelledby="servicios-cierre">
     <h2 class="section-title" id="servicios-cierre">¿Empezamos por el problema?</h2>
-    <p>
-      Cuéntame qué está pasando, en qué fase está el proyecto y qué tipo de ayuda
-      necesitas. Con eso puedo decirte si encaja y cómo lo abordaría.
+    <p id="services-closing-p">
+      <AutoPreviews inline id="services-closing-prose">
+        Cuéntame qué está pasando, en qué fase está el proyecto y qué tipo de ayuda
+        necesitas. Con eso puedo decirte si encaja y cómo lo abordaría.
+      </AutoPreviews>
     </p>
-    <div class="actions">
-      <a class="btn" href="/contact/">Contactar</a>
-      <a class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escribir un email</a>
+    <div id="services-closing-actions" class="actions">
+      <a id="services-actions-btn-3" class="btn" href="/contact/">Contactar</a>
+      <a id="services-actions-btn-4" class="btn btn--ghost" href={`mailto:${SITE.email}`}>Escribir un email</a>
     </div>
   </section>
 </Layout>

@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PreviewTerm from "../components/PreviewTerm.astro";
 import {
 	COMPANIES,
 	EDUCATION,
@@ -8,6 +9,7 @@ import {
 	YEAR_LABEL,
 } from "../data/cv";
 import { PROJECT_CASES } from "../data/projects";
+import { PREVIEW_BY_STACK_LABEL } from "../data/previews";
 import { SITE } from "../data/site";
 import { durationLabel, spanLabel } from "../lib/period";
 
@@ -37,86 +39,100 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "CV" }]}
 >
-  <article class="cv">
-    <header class="cv-head">
-      <div class="cv-identity">
-        <p class="eyebrow">Currículum · actualizado {currentYear}</p>
-        <h1 class="cv-name">Gabriel Alcántara</h1>
-        <p class="cv-role">Arquitecto de software · Software Engineer</p>
-        <p class="cv-lede">
+  <article id="cv" class="cv">
+    <header id="cv-head" class="cv-head">
+      <div id="cv-head-identity" class="cv-identity">
+        <p id="cv-identity-eyebrow" class="eyebrow">Currículum · actualizado {currentYear}</p>
+        <h1 id="cv-identity-name" class="cv-name">Gabriel Alcántara</h1>
+        <p id="cv-identity-role" class="cv-role">Arquitecto de software · Software Engineer</p>
+        <p id="cv-identity-lede" class="cv-lede">
           Arquitecto de software y Software Engineer con experiencia en sistemas
           distribuidos, arquitectura orientada a eventos, backend, frontend, móvil,
           automatización industrial y liderazgo técnico.
         </p>
       </div>
-      <div class="cv-contact">
-        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        <span>{SITE.location}</span>
-        {SITE.socials.map((social) => (
-          <a href={social.href} rel="me">{social.label}</a>
+      <div id="cv-head-contact" class="cv-contact">
+        <a id="cv-contact-a" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <span id="cv-contact-span">{SITE.location}</span>
+        {SITE.socials.map((social, i) => (
+          <a id={`cv-contact-a-2-${i}`} href={social.href} rel="me">{social.label}</a>
         ))}
-        <span class="cv-range">{YEAR_LABEL}</span>
+        <span id="cv-contact-range" class="cv-range">{YEAR_LABEL}</span>
       </div>
-      <div class="actions no-print">
+      <div id="cv-head-actions" class="actions no-print">
         <button class="btn" type="button" id="cv-print">Descargar CV en PDF</button>
-        <a class="btn btn--ghost" href="/experience/">Ver trayectoria con proyectos</a>
-        <a class="btn btn--link" href="/contact/">Contactar</a>
+        <a id="cv-actions-btn" class="btn btn--ghost" href="/experience/">Ver trayectoria con proyectos</a>
+        <a id="cv-actions-btn-2" class="btn btn--link" href="/contact/">Contactar</a>
       </div>
-      <p class="print-note no-print">
+      <p id="cv-head-print-note" class="print-note no-print">
         El botón abre el diálogo de impresión del navegador: elige «Guardar como PDF».
         Esta página es la versión completa; el PDF es una alternativa.
       </p>
     </header>
 
-    <section class="print-section" aria-labelledby="cv-especialidades">
+    <section id="cv-print-section" class="print-section" aria-labelledby="cv-especialidades">
       <h2 class="section-title" id="cv-especialidades">Especialidades</h2>
-      <ul class="specialty-list">
-        <li>Solutions Architecture</li>
-        <li>Distributed systems</li>
-        <li>Event-driven architecture</li>
-        <li>Domain-driven design</li>
-        <li>Backend engineering</li>
-        <li>Industrial automation</li>
-        <li>Technical leadership</li>
-        <li>CI/CD and engineering practices</li>
+      <ul id="cv-print-section-specialty-list" class="specialty-list">
+        <li id="cv-specialty-list-li">Solutions Architecture</li>
+        <li id="cv-specialty-list-li-2">Distributed systems</li>
+        <li id="cv-specialty-list-li-3">Event-driven architecture</li>
+        <li id="cv-specialty-list-li-4">Domain-driven design</li>
+        <li id="cv-specialty-list-li-5">Backend engineering</li>
+        <li id="cv-specialty-list-li-6">Industrial automation</li>
+        <li id="cv-specialty-list-li-7">Technical leadership</li>
+        <li id="cv-specialty-list-li-8">CI/CD and engineering practices</li>
       </ul>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-experiencia">
-      <div class="section-head">
+    <section id="cv-print-section-2" class="print-section" aria-labelledby="cv-experiencia">
+      <div id="cv-print-section-head" class="section-head">
         <h2 class="section-title" id="cv-experiencia">Experiencia</h2>
-        <span class="section-meta">{positions.length} puestos · {COMPANIES.length} etapas</span>
+        <span id="cv-section-head-meta" class="section-meta">{positions.length} puestos · {COMPANIES.length} etapas</span>
       </div>
-      <ol class="cv-positions">
+      <ol id="cv-print-section-positions" class="cv-positions">
         {
-          positions.map((position) => (
-            <li class={`cv-position accent-${position.accent}`}>
-              <div class="cv-position-head">
-                <h3 class="cv-position-title">
+          positions.map((position, i2) => (
+            <li id={`cv-positions-li-${i2}`} class={`cv-position accent-${position.accent}`}>
+              <div id={`cv-positions-position-head-${i2}`} class="cv-position-head">
+                <h3 id={`cv-position-head-title-${i2}`} class="cv-position-title">
                   {position.title}
-                  <span class="cv-position-company"> · {position.company}</span>
+                  <span id={`cv-position-title-company-${i2}`} class="cv-position-company">
+                    · <PreviewTerm
+                      slug={position.companyId}
+                      idSuffix={`position-${position.id}`}
+                      >{position.company}</PreviewTerm
+                    >
+                    >
+                  </span>
                 </h3>
-                <span class="cv-position-dates">
+                <span id={`cv-positions-position-dates-${i2}`} class="cv-position-dates">
                   {spanLabel(position.startMonth, position.endMonth)} ·{" "}
                   {durationLabel(position.months)}
                 </span>
               </div>
-              <p class="cv-position-place">
+              <p id={`cv-positions-position-place-${i2}`} class="cv-position-place">
                 {[position.place, position.mode].filter(Boolean).join(" · ")}
               </p>
-              <p class="cv-position-summary">{position.summary}</p>
+              <p id={`cv-positions-position-summary-${i2}`} class="cv-position-summary">{position.summary}</p>
               {position.achievements.length > 0 && (
-                <ul class="cv-position-list">
-                  {position.achievements.map((achievement) => (
-                    <li>{achievement}</li>
+                <ul id={`cv-positions-position-list-${i2}`} class="cv-position-list">
+                  {position.achievements.map((achievement, i3) => (
+                    <li id={`cv-position-list-li-${i2}-${i2}-${i2}-${i3}`}>{achievement}</li>
                   ))}
                 </ul>
               )}
               {position.stack.length > 0 && (
-                <p class="cv-position-stack">
-                  {position.stack.map((item) => (
-                    <span class="pill">{item}</span>
-                  ))}
+                <p id={`cv-positions-position-stack-${i2}`} class="cv-position-stack">
+                  {position.stack.map((item, i4) => {
+                    const slug = PREVIEW_BY_STACK_LABEL[item];
+                    return slug ? (
+                      <PreviewTerm slug={slug} idSuffix={`stack-${i2}-${i4}`} class="pill">
+                        {item}
+                      </PreviewTerm>
+                    ) : (
+                      <span id={`cv-position-stack-pill-${i2}-${i2}-${i2}-${i4}`} class="pill">{item}</span>
+                    );
+                  })}
                 </p>
               )}
             </li>
@@ -125,56 +141,77 @@ const jsonLd = [
       </ol>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-proyectos">
-      <div class="section-head">
+    <section id="cv-print-section-3" class="print-section" aria-labelledby="cv-proyectos">
+      <div id="cv-print-section-head-2" class="section-head">
         <h2 class="section-title" id="cv-proyectos">Proyectos destacados</h2>
-        <span class="section-meta">selección</span>
+        <span id="cv-section-head-meta-2" class="section-meta">selección</span>
       </div>
-      <ul class="cv-projects">
+      <ul id="cv-print-section-projects" class="cv-projects">
         {
-          highlights.map((project) => (
-            <li>
-              <div class="cv-project-head">
-                <h3>{project.name}</h3>
-                <span>{project.company}</span>
+          highlights.map((project, i5) => (
+            <li id={`cv-projects-li-${i5}`}>
+              <div id={`cv-projects-project-head-${i5}`} class="cv-project-head">
+                <h3 id={`cv-project-head-h3-${i5}`}>{project.name}</h3>
+                <span id={`cv-project-head-span-${i5}`}
+                  ><PreviewTerm
+                    slug={project.companyId}
+                    idSuffix={`case-${project.id}`}
+                    >{project.company}</PreviewTerm
+                  >
+                  ></span
+                >
               </div>
-              <p>{project.problem}</p>
-              <p class="cv-project-decision">
-                <strong>Decisión técnica:</strong> {project.decision}
+              <p id={`cv-projects-p-${i5}`}>{project.problem}</p>
+              <p id={`cv-projects-project-decision-${i5}`} class="cv-project-decision">
+                <strong id={`cv-project-decision-strong-${i5}`}>Decisión técnica:</strong> {project.decision}
               </p>
             </li>
           ))
         }
       </ul>
-      <p class="cv-projects-link no-print">
-        <a href="/projects/">Ver el portfolio completo</a>
+      <p id="cv-projects-link" class="cv-projects-link no-print">
+        <a id="cv-projects-link-a" href="/projects/">Ver el portfolio completo</a>
       </p>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-tecnologias">
+    <section id="cv-print-section-4" class="print-section" aria-labelledby="cv-tecnologias">
       <h2 class="section-title" id="cv-tecnologias">Tecnologías</h2>
-      <dl class="cv-stack">
+      <dl id="cv-print-section-stack" class="cv-stack">
         {
-          STACK_GROUPS.map((group) => (
-            <div class="cv-stack-group">
-              <dt>{group.label}</dt>
-              <dd>{group.items.join(" · ")}</dd>
+          STACK_GROUPS.map((group, i6) => (
+            <div id={`cv-stack-group-${i6}`} class="cv-stack-group">
+              <dt id={`cv-stack-group-dt-${i6}`}>{group.label}</dt>
+              <dd id={`cv-stack-group-dd-${i6}`}>
+                {group.items.map((item, k) => {
+                  const slug = PREVIEW_BY_STACK_LABEL[item];
+                  return (
+                    <>
+                      {k > 0 && " · "}
+                      {slug ? (
+                        <PreviewTerm slug={slug} idSuffix={`group-${i6}-${k}`}>{item}</PreviewTerm>
+                      ) : (
+                        <span id={`cv-stack-group-item-${i6}-${k}`}>{item}</span>
+                      )}
+                    </>
+                  );
+                })}
+              </dd>
             </div>
           ))
         }
       </dl>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-formacion">
+    <section id="cv-print-section-5" class="print-section" aria-labelledby="cv-formacion">
       <h2 class="section-title" id="cv-formacion">Formación y certificaciones</h2>
-      <ul class="cv-education">
+      <ul id="cv-print-section-education" class="cv-education">
         {
-          EDUCATION.map((item) => (
-            <li>
-              <span class="cv-education-year">{item.year}</span>
-              <span>
-                <strong>{item.title}</strong>
-                <span class="cv-education-org"> — {item.org}</span>
+          EDUCATION.map((item, i7) => (
+            <li id={`cv-education-li-${i7}`}>
+              <span id={`cv-education-year-${i7}`} class="cv-education-year">{item.year}</span>
+              <span id={`cv-education-span-${i7}`}>
+                <strong id={`cv-education-strong-${i7}`}>{item.title}</strong>
+                <span id={`cv-education-org-${i7}`} class="cv-education-org"> — {item.org}</span>
               </span>
             </li>
           ))
@@ -182,27 +219,27 @@ const jsonLd = [
       </ul>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-idiomas">
+    <section id="cv-print-section-6" class="print-section" aria-labelledby="cv-idiomas">
       <h2 class="section-title" id="cv-idiomas">Idiomas</h2>
-      <dl class="cv-languages">
-        <div><dt>Español</dt><dd>Nativo</dd></div>
-        <div>
-          <dt>Inglés</dt>
-          <dd>Profesional · documentación y comunicación técnica con fabricantes</dd>
+      <dl id="cv-print-section-languages" class="cv-languages">
+        <div id="cv-languages-div"><dt id="cv-languages-dt">Español</dt><dd id="cv-languages-dd">Nativo</dd></div>
+        <div id="cv-languages-div-2">
+          <dt id="cv-languages-dt-2">Inglés</dt>
+          <dd id="cv-languages-dd-2">Profesional · documentación y comunicación técnica con fabricantes</dd>
         </div>
       </dl>
     </section>
 
-    <section class="print-section" aria-labelledby="cv-enlaces">
+    <section id="cv-print-section-7" class="print-section" aria-labelledby="cv-enlaces">
       <h2 class="section-title" id="cv-enlaces">Enlaces</h2>
-      <ul class="cv-links">
-        <li><a href={SITE.url}>{SITE.url.replace("https://", "")}</a></li>
-        <li><a href="/experience/">Experiencia detallada</a></li>
-        <li><a href="/projects/">Proyectos y casos de estudio</a></li>
-        {SITE.socials.map((social) => (
-          <li><a href={social.href} rel="me">{social.href.replace("https://", "")}</a></li>
+      <ul id="cv-print-section-links" class="cv-links">
+        <li id="cv-links-li"><a id="cv-links-a" href={SITE.url}>{SITE.url.replace("https://", "")}</a></li>
+        <li id="cv-links-li-2"><a id="cv-links-a-2" href="/experience/">Experiencia detallada</a></li>
+        <li id="cv-links-li-3"><a id="cv-links-a-3" href="/projects/">Proyectos y casos de estudio</a></li>
+        {SITE.socials.map((social, i8) => (
+          <li id={`cv-links-li-4-item-${i8}`}><a id={`cv-links-a-4-item-${i8}`} href={social.href} rel="me">{social.href.replace("https://", "")}</a></li>
         ))}
-        <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+        <li id="cv-links-li-4"><a id="cv-links-a-4" href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
       </ul>
     </section>
   </article>

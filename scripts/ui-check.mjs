@@ -1301,6 +1301,543 @@ async function checkLocaleContinuity(browser, base) {
 	console.log(`locale transition → ${join(OUT, "locale-continuity.json")}`);
 }
 
+/**
+ * Hover cards for terms, libraries and companies.
+ *
+ * The desktop card opens on hover, the phone one on tap. Both widths have to
+ * keep the card inside the viewport without covering the word it explains, and
+ * both frames are kept in ui-artifacts/ as the evidence.
+ *
+ * The same card is also captured under the dark palette and with motion
+ * reduced: the first frame proves the card takes its colours from the theme
+ * tokens instead of hard-coded ones, the second that it appears without
+ * animating when the reader asked for that.
+ */
+async function checkPreviewCards(browser, base) {
+	const cases = [
+		{ name: "desktop", viewport: { width: 1440, height: 900 }, touch: false },
+		{ name: "mobile", viewport: { width: 390, height: 844 }, touch: true },
+	];
+
+	// The two conditions a frame has to prove. Both keep everything else as it
+	// is, so only what the mode changes is asserted.
+	const modes = [
+		{
+			name: "dark",
+			theme: "dark",
+			colorScheme: "dark",
+			reducedMotion: "no-preference",
+		},
+		{
+			name: "reduced",
+			theme: "light",
+			colorScheme: "light",
+			reducedMotion: "reduce",
+		},
+	];
+	const evidence = [];
+
+	// Everything the card has to be: open, painted, whole and clear of the word.
+	const readCard = (page) =>
+		page.evaluate(() => {
+			const card = document.querySelector("[data-preview-card]:not([hidden])");
+			if (!card) return null;
+			// The card may be pooled away from the word it explains (the prose
+			// wraps its terms and pools one card per slug), so the word is the
+			// one the client marked as open, not the card's own neighbour.
+			const trigger = document.querySelector(
+				'[data-preview][aria-expanded="true"]',
+			);
+			if (!trigger) return null;
+			const box = card.getBoundingClientRect();
+			const word = trigger.getBoundingClientRect();
+			const style = getComputedStyle(card);
+			const image = card.querySelector("img");
+			const below = box.top >= word.bottom;
+			return {
+				viewport: { width: innerWidth, height: innerHeight },
+				trigger: { top: +word.top.toFixed(1), bottom: +word.bottom.toFixed(1) },
+				card: {
+					top: +box.top.toFixed(1),
+					right: +box.right.toFixed(1),
+					bottom: +box.bottom.toFixed(1),
+					left: +box.left.toFixed(1),
+					width: +box.width.toFixed(1),
+					height: +box.height.toFixed(1),
+				},
+				side: below ? "below" : "above",
+				gap: +(below ? box.top - word.bottom : word.top - box.bottom).toFixed(1),
+				overlapsWord: box.top < word.bottom && box.bottom > word.top,
+				insideViewport:
+					box.top >= -0.5 &&
+					box.left >= -0.5 &&
+					box.right <= innerWidth + 0.5 &&
+					box.bottom <= innerHeight + 0.5,
+				opacity: Number(style.opacity),
+				position: style.position,
+				zIndex: style.zIndex,
+				painted:
+					style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+					style.borderTopColor !== "rgba(0, 0, 0, 0)",
+									expanded: trigger.getAttribute("aria-expanded"),
+				// A card that links to a website reads as an unfurl: domain, title
+				// and the link itself, instead of the term's eyebrow and name.
+				unfurl: {
+					domain: card
+						.querySelector("[id^='preview-domain']")
+						?.textContent.trim() ??
+						null,
+					title: card
+						.querySelector("[id^='preview-title']")
+						?.textContent.trim() ??
+						null,
+					link: card.querySelector("a[href]")?.getAttribute("href") ?? null,
+					target: card.querySelector("a[href]")?.getAttribute("target") ?? null,
+					rel: card.querySelector("a[href]")?.getAttribute("rel") ?? null,
+				},
+				body:
+					card.querySelector("[id^='preview-body']")?.textContent.trim() ?? "",
+				image: image
+					? {
+							src: image.getAttribute("src"),
+							loaded: image.complete && image.naturalWidth > 0,
+						}
+					: null,
+			};
+		});
+
+	const openCard = async (page, word, touch, onLine) => {
+		if (touch) await word.tap();
+		else await word.hover();
+		if (onLine) await onLine(page);
+		// The card grows out of a line once the word's fill lands: wait for the
+		// end of the morph, or the box measured below would be the line.
+		await page.waitForSelector(
+			'[data-preview-card][data-preview-state="open"]',
+			{ timeout: 4000 },
+		);
+		await page.waitForFunction(
+			() => {
+				const card = document.querySelector("[data-preview-card]:not([hidden])");
+				return card ? getComputedStyle(card).opacity === "1" : false;
+			},
+			{ timeout: 2000 },
+		);
+	};
+
+	// Park the word at 35% of the viewport, so the card has room underneath.
+	const scrollWordTo = (page, slug, ratio) =>
+		page.evaluate(
+			([id, at]) => {
+				const trigger = document.querySelector(`[data-preview="${id}"]`);
+				const top = trigger.getBoundingClientRect().top + window.scrollY;
+				window.scrollTo({ top: top - innerHeight * at, behavior: "instant" });
+			},
+			[slug, ratio],
+		);
+
+	/**
+	 * The opening's first beat: the fill lands on the word and, out of it, a line
+	 * as wide as the paint appears. Freezing the morph at frame zero makes the
+	 * measurement exact instead of a race against a 460ms animation.
+	 */
+	const captureLine = async (page, viewportName) => {
+		await page.waitForFunction(
+			() => {
+				const card = document.querySelector(
+					"[data-preview-card][data-preview-state='opening']",
+				);
+				return Boolean(card && card.getAnimations().length > 0);
+			},
+			{ timeout: 3000 },
+		);
+		const line = await page.evaluate(() => {
+			const card = document.querySelector(
+				"[data-preview-card][data-preview-state='opening']",
+			);
+			const trigger = document.querySelector(
+				'[data-preview][aria-expanded="true"]',
+			);
+			const animation = card.getAnimations()[0];
+			animation.pause();
+			animation.currentTime = 0;
+			const box = card.getBoundingClientRect();
+			const word = trigger.getBoundingClientRect();
+			return {
+				height: +box.height.toFixed(1),
+				width: +box.width.toFixed(1),
+				top: +box.top.toFixed(1),
+				bottom: +box.bottom.toFixed(1),
+				word: {
+					top: +word.top.toFixed(1),
+					bottom: +word.bottom.toFixed(1),
+					width: +word.width.toFixed(1),
+				},
+				background: getComputedStyle(card).backgroundColor,
+			};
+		});
+		await page.screenshot({
+			path: join(OUT, `preview-card-${viewportName}-line.png`),
+		});
+		await page.evaluate(() => {
+			document
+				.querySelector("[data-preview-card][data-preview-state='opening']")
+				.getAnimations()[0]
+				.play();
+		});
+		return line;
+	};
+
+	for (const testCase of cases) {
+		const label = `preview cards · ${testCase.name}`;
+		const context = await browser.newContext({
+			viewport: testCase.viewport,
+			reducedMotion: "no-preference",
+			isMobile: testCase.touch,
+			hasTouch: testCase.touch,
+		});
+		const page = await context.newPage();
+		const errors = [];
+		page.on("pageerror", (error) => errors.push(error.message));
+		page.on("console", (message) => {
+			if (message.type() === "error") errors.push(message.text());
+		});
+
+		await page.goto(`${base}projects/pachanga-community/`, {
+			waitUntil: "load",
+		});
+		// A slug may be explained more than once per page (the prose wraps the
+		// first mentions itself), so the check drives the first one.
+		const word = page.locator('[data-preview="zod"]').first();
+		await scrollWordTo(page, "zod", 0.28);
+		let line = null;
+		await openCard(page, word, testCase.touch, async (openPage) => {
+			line = await captureLine(openPage, testCase.name);
+		});
+		check(
+			`${label} · el pintado deja una línea del ancho de la palabra`,
+			line !== null &&
+				line.height <= 3 &&
+				Math.abs(line.width - line.word.width) <= 2 &&
+				line.top >= line.word.bottom - 0.5 &&
+				line.top <= line.word.bottom + 12,
+			JSON.stringify(line),
+		);
+
+		const card = await readCard(page);
+		check(
+			`${label} · tarjeta abierta`,
+			card !== null &&
+				card.opacity === 1 &&
+				card.position === "fixed" &&
+				card.expanded === "true",
+			JSON.stringify(card && { opacity: card.opacity, position: card.position, zIndex: card.zIndex, expanded: card.expanded }),
+		);
+		check(
+			`${label} · tarjeta pintada`,
+			card !== null && card.painted,
+			JSON.stringify(card && { border: card.painted }),
+		);
+		check(
+			`${label} · abre bajo la palabra`,
+			card !== null && card.side === "below",
+			JSON.stringify(card && { side: card.side, gap: card.gap }),
+		);
+		check(
+			`${label} · no tapa la palabra`,
+			card !== null && card.overlapsWord === false,
+			JSON.stringify(card && { trigger: card.trigger, card: card.card }),
+		);
+		check(
+			`${label} · separación de 8 px`,
+			card !== null && card.gap >= 6 && card.gap <= 10,
+			String(card?.gap),
+		);
+		check(
+			`${label} · dentro del viewport`,
+			card !== null && card.insideViewport,
+			JSON.stringify(card && { card: card.card, viewport: card.viewport }),
+		);
+		// Zod's card links nowhere: only the companies where he worked link out,
+		// so a technology reads as its image plus the definition written for it.
+		// The image is part of this check instead of its own: it is the same
+		// card, and a written card without its image is not the shape asserted.
+		check(
+			`${label} · la ficha escrita: imagen y definición, sin enlace`,
+			card !== null &&
+				card.image !== null &&
+				card.image.loaded &&
+				card.image.src.endsWith("/previews/zod-og.png") &&
+				card.body.length > 80 &&
+				card.unfurl.link === null,
+			JSON.stringify(card && { image: card.image, body: card.body.slice(0, 40), unfurl: card.unfurl }),
+		);
+		await page.screenshot({
+			path: join(OUT, `preview-card-${testCase.name}.png`),
+		});
+
+		let flipped = null;
+		let closed = null;
+		if (!testCase.touch) {
+			// No room underneath: the card has to flip above the word.
+			await scrollWordTo(page, "zod", 0.88);
+			await openCard(page, word, false);
+			flipped = await readCard(page);
+			check(
+				`${label} · gira sobre la palabra junto al borde inferior`,
+				flipped !== null &&
+					flipped.side === "above" &&
+					flipped.overlapsWord === false &&
+					flipped.insideViewport,
+				JSON.stringify(flipped && { side: flipped.side, gap: flipped.gap, card: flipped.card }),
+			);
+			await page.screenshot({
+				path: join(OUT, `preview-card-${testCase.name}-flip.png`),
+			});
+
+			await page.keyboard.press("Escape");
+			await page.waitForTimeout(300);
+			closed = await page.evaluate(() => {
+				const trigger = document.querySelector('[data-preview="zod"]');
+				return {
+					open: Boolean(
+						document.querySelector("[data-preview-card]:not([hidden])"),
+					),
+					expanded: trigger.getAttribute("aria-expanded"),
+					focused: document.activeElement === trigger,
+				};
+			});
+			check(
+				`${label} · Esc cierra sin reabrir`,
+				closed.open === false && closed.expanded === "false",
+				JSON.stringify(closed),
+			);
+			check(
+				`${label} · Esc devuelve el foco a la palabra`,
+				closed.focused === true,
+				JSON.stringify(closed),
+			);
+
+			// Keyboard: tabbing onto the word opens the card. Only keyboard focus
+			// does — a pointer focuses the button on its way to the click, and the
+			// two would cancel each other (that is the mobile tap above).
+			// Keyboard modality first (a Tab press), then the focus a keyboard
+			// reader lands on. The tab order itself is not driven here: what has
+			// to hold is that keyboard focus opens the card.
+			await page.keyboard.press("Tab");
+			await page.evaluate(() =>
+				document.querySelector('[data-preview="zod"]').focus(),
+			);
+			await page.waitForTimeout(200);
+			const byKeyboard = await page.evaluate(() => {
+				const trigger = document.querySelector('[data-preview="zod"]');
+				const card = document.querySelector(
+					"[data-preview-card]:not([hidden])",
+				);
+				const active = document.activeElement;
+				return {
+					focused: active === trigger,
+					active: active ? `${active.tagName}.${active.className}`.slice(0, 50) : null,
+					open: Boolean(card),
+					focusVisible: trigger.matches(":focus-visible"),
+				};
+			});
+			check(
+				`${label} · el teclado abre la tarjeta`,
+				byKeyboard.focused && byKeyboard.open && byKeyboard.focusVisible,
+				JSON.stringify(byKeyboard),
+			);
+			await page.keyboard.press("Escape");
+			await page.waitForTimeout(120);
+		} else {
+			// A tap outside closes it; the card is pinned until then. The wait
+			// covers the copy's exit before the card is hidden.
+			await page.mouse.click(2, 2);
+			await page.waitForTimeout(260);
+			closed = await page.evaluate(() => ({
+				open: Boolean(
+					document.querySelector("[data-preview-card]:not([hidden])"),
+				),
+				expanded: document
+					.querySelector('[data-preview="zod"]')
+					.getAttribute("aria-expanded"),
+			}));
+			check(
+				`${label} · un toque fuera cierra`,
+				closed.open === false && closed.expanded === "false",
+				JSON.stringify(closed),
+			);
+		}
+
+		// The companies are the ones that link out, so the unfurl shape is read
+		// where it still lives: the site's image, its domain, its title and one
+		// outbound link over them.
+		await page.goto(`${base}about/`, { waitUntil: "load" });
+		await scrollWordTo(page, "basetis", 0.28);
+		await openCard(page, page.locator('[data-preview="basetis"]').first(), testCase.touch);
+		const company = await readCard(page);
+		check(
+			`${label} · la empresa: imagen, dominio, título y enlace saliente`,
+			company !== null &&
+				company.image !== null &&
+				company.image.loaded &&
+				company.unfurl.domain === "basetis.com" &&
+				Boolean(company.unfurl.title) &&
+				company.unfurl.link === "https://www.basetis.com/es/" &&
+				company.unfurl.target === "_blank" &&
+				(company.unfurl.rel ?? "").includes("noopener"),
+			JSON.stringify(company && { image: company.image, unfurl: company.unfurl }),
+		);
+
+		check(
+			`${label} · sin errores de consola`,
+			errors.length === 0,
+			errors.join(" | "),
+		);
+		evidence.push({ viewport: testCase.name, card, flipped, closed });
+		await context.close();
+	}
+
+	for (const testCase of cases) {
+		for (const mode of modes) {
+			const label = `preview cards · ${testCase.name} · ${mode.name}`;
+			const context = await browser.newContext({
+				viewport: testCase.viewport,
+				colorScheme: mode.colorScheme,
+				reducedMotion: mode.reducedMotion,
+				isMobile: testCase.touch,
+				hasTouch: testCase.touch,
+			});
+			// The site reads the theme from storage before its first paint, which is
+			// how the chrome and the locale frames get into dark mode too.
+			await context.addInitScript((theme) => {
+				try {
+					localStorage.setItem("theme", theme);
+				} catch {
+					// Ignore non-web origins while the init script is evaluated.
+				}
+			}, mode.theme);
+			const page = await context.newPage();
+			const errors = [];
+			page.on("pageerror", (error) => errors.push(error.message));
+			page.on("console", (message) => {
+				if (message.type() === "error") errors.push(message.text());
+			});
+
+			await page.goto(`${base}projects/pachanga-community/`, {
+				waitUntil: "load",
+			});
+			const word = page.locator('[data-preview="zod"]').first();
+			await scrollWordTo(page, "zod", 0.28);
+			await openCard(page, word, testCase.touch);
+
+			const card = await readCard(page);
+			// Colours are compared against the tokens resolved in the page, so the
+			// frame fails when the card stops reading them.
+			const paint = await page.evaluate(() => {
+				const open = document.querySelector(
+					"[data-preview-card]:not([hidden])",
+				);
+				const probe = document.createElement("div");
+				// The reduced-motion rule gives every element a 0.01ms transition, and
+				// a probe that transitions its own background reads the start colour
+				// (transparent) instead of the token's.
+				probe.style.transition = "none";
+				document.body.append(probe);
+				const resolved = (token) => {
+					probe.style.backgroundColor = `var(${token})`;
+					return getComputedStyle(probe).backgroundColor;
+				};
+				const style = getComputedStyle(open);
+				const value = {
+					theme: document.documentElement.dataset.theme ?? null,
+					reduced: matchMedia("(prefers-reduced-motion: reduce)").matches,
+					background: style.backgroundColor,
+					expectedBackground: resolved("--color-card"),
+					text: style.color,
+					expectedText: resolved("--color-ink-muted"),
+					border: style.borderTopColor,
+					expectedBorder: resolved("--color-border"),
+					// The eyebrow is the term card's accent; an unfurl has none, and
+					// takes its accent from the site's title instead.
+					accent: getComputedStyle(
+						open.querySelector("[id^='preview-kind']") ??
+							open.querySelector("[id^='preview-title']"),
+					).color,
+					expectedAccent: open.querySelector("[id^='preview-kind']")
+						? resolved("--color-terracotta")
+						: resolved("--color-ink"),
+					transitionSeconds:
+						Number.parseFloat(style.transitionDuration) || 0,
+				};
+				probe.remove();
+				return value;
+			});
+
+			check(
+				`${label} · tarjeta abierta y colocada`,
+				card !== null &&
+					card.opacity === 1 &&
+					card.expanded === "true" &&
+					card.side === "below" &&
+					card.overlapsWord === false &&
+					card.insideViewport,
+				JSON.stringify(
+					card && { opacity: card.opacity, side: card.side, gap: card.gap },
+				),
+			);
+
+			check(
+				`${label} · la tarjeta pinta con los tokens del tema`,
+				paint.background === paint.expectedBackground &&
+					paint.text === paint.expectedText &&
+					paint.border === paint.expectedBorder &&
+					paint.accent === paint.expectedAccent,
+				JSON.stringify(paint),
+			);
+
+			if (mode.name === "dark") {
+				check(
+					`${label} · el tema oscuro llega a la página`,
+					paint.theme === "dark",
+					String(paint.theme),
+				);
+			} else {
+				check(
+					`${label} · movimiento reducido activo`,
+					paint.reduced === true,
+					String(paint.reduced),
+				);
+				check(
+					`${label} · la tarjeta aparece sin transición`,
+					paint.transitionSeconds < 0.001,
+					`${paint.transitionSeconds}s`,
+				);
+			}
+
+			await page.screenshot({
+				path: join(
+					OUT,
+					`preview-card-${testCase.name}-${mode.name}.png`,
+				),
+			});
+			check(
+				`${label} · sin errores de consola`,
+				errors.length === 0,
+				errors.join(" | "),
+			);
+			evidence.push({ viewport: testCase.name, mode: mode.name, card, paint });
+			await context.close();
+		}
+	}
+
+	await writeFile(
+		join(OUT, "preview-cards.json"),
+		`${JSON.stringify(evidence, null, 2)}\n`,
+	);
+	console.log(`preview cards → ${join(OUT, "preview-cards.json")}`);
+}
+
 const { server, port } = await serve();
 const base = `http://127.0.0.1:${port}/`;
 await mkdir(OUT, { recursive: true });
@@ -1397,6 +1934,7 @@ await checkLocaleTransition(browser, base);
 await checkLocaleFrames(browser, base);
 await checkLocaleContinuity(browser, base);
 await checkMobileMenu(browser, base);
+await checkPreviewCards(browser, base);
 
 await browser.close();
 server.close();

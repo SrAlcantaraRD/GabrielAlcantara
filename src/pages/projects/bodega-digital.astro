@@ -5,6 +5,7 @@ import { caseStudyOf } from "../../data/projects";
 import { postOf } from "../../data/blog";
 import { SITE } from "../../data/site";
 import { durationLabel, spanLabel } from "../../lib/period";
+import AutoPreviews from "../../components/AutoPreviews.astro";
 
 const project = caseStudyOf("bodega-digital");
 const relatedPosts = [postOf("ddd-dominios-complejos")];
@@ -43,40 +44,40 @@ const jsonLd = [
     { label: "Bodega Digital" },
   ]}
 >
-  <article class="case">
-    <header class="case-head">
-      <p class="eyebrow">Caso de estudio · {project.company}</p>
-      <h1 class="display">Bodega Digital: inventario de vino en tiempo real.</h1>
-      <p class="lede">
+  <article id="bodega-digital-case" class="case">
+    <header id="bodega-digital-case-head" class="case-head">
+      <p id="bodega-digital-case-head-eyebrow" class="eyebrow">Caso de estudio · {project.company}</p>
+      <h1 id="bodega-digital-case-head-display" class="display">Bodega Digital: inventario de vino en tiempo real.</h1>
+      <p id="bodega-digital-case-head-lede" class="lede">
         Una herramienta para bodegas y empresas vinícolas: identificación de botellas por
         RFID, predicción de demanda con machine learning y trazabilidad. Construida como
         monolito monorepo, con DDD y TDD.
       </p>
-      <div class="meta-row">
-        <span>{spanLabel(project.startMonth, project.endMonth)}</span>
-        <span>{durationLabel(project.endMonth - project.startMonth)}</span>
-        <span>{project.position}</span>
+      <div id="bodega-digital-case-head-meta-row" class="meta-row">
+        <span id="bodega-digital-meta-row-span">{spanLabel(project.startMonth, project.endMonth)}</span>
+        <span id="bodega-digital-meta-row-span-2">{durationLabel(project.endMonth - project.startMonth)}</span>
+        <span id="bodega-digital-meta-row-span-3">{project.position}</span>
       </div>
     </header>
 
-    <dl class="facts case-facts">
-      <dt>Rol</dt>
-      <dd>{project.role}</dd>
-      <dt>Contexto</dt>
-      <dd>{project.company} · {project.position}</dd>
-      <dt>Dominio</dt>
-      <dd>Vino y agroalimentación</dd>
-      <dt>Tecnologías</dt>
-      <dd>
-        <span class="tag-row">
-          {project.stack?.map((item) => <span class="pill">{item}</span>)}
+    <dl id="bodega-digital-case-facts" class="facts case-facts">
+      <dt id="bodega-digital-facts-dt">Rol</dt>
+      <dd id="bodega-digital-facts-dd">{project.role}</dd>
+      <dt id="bodega-digital-facts-dt-2">Contexto</dt>
+      <dd id="bodega-digital-facts-dd-2">{project.company} · {project.position}</dd>
+      <dt id="bodega-digital-facts-dt-3">Dominio</dt>
+      <dd id="bodega-digital-facts-dd-3">Vino y agroalimentación</dd>
+      <dt id="bodega-digital-facts-dt-4">Tecnologías</dt>
+      <dd id="bodega-digital-facts-dd-4">
+        <span id="bodega-digital-facts-tag-row" class="tag-row">
+          {project.stack?.map((item, i) => <span id={`bodega-digital-tag-row-pill-${i}`} class="pill">{item}</span>)}
         </span>
       </dd>
     </dl>
 
-    <div class="prose">
+    <AutoPreviews id="bodega-digital-case-prose" class="prose">
       <h2 id="resumen">Resumen ejecutivo</h2>
-      <p>
+      <p id="bodega-digital-prose-p">
         Bodega Digital es una herramienta inteligente para gestionar el inventario de vino
         en bodegas y empresas que manejan grandes cantidades de botellas. El proyecto,
         financiado por el Ministerio de Industria, Comercio y Turismo y por el fondo
@@ -84,26 +85,26 @@ const jsonLd = [
         radiofrecuencia (RFID) con predicción de demanda, y refinamiento del inventario
         mediante visión por computadora.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-2">
         Quabu Solutions participó como socio tecnológico del consorcio, aportando
         desarrollo de software e integración. Mi trabajo fue la arquitectura y el modelo de
         dominio, sobre un monolito monorepo con frontend, backend y base de datos en un
         mismo repositorio, con DDD para los límites y TDD para la lógica de negocio.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-3">
         Se construyó en dos fases —de marzo a julio de 2024 y de octubre de 2024 a febrero
         de 2025—, separadas por el desarrollo de los Atlassian Addons de Quabu. Un solo
         despliegue y un solo ciclo de integración para las dos fases.
       </p>
 
       <h2 id="contexto">Contexto: una bodega no es un almacén cualquiera</h2>
-      <p>
+      <p id="bodega-digital-prose-p-4">
         En una bodega, las botellas pueden pasar hasta quince años en crianza, con
         operaciones distintas durante ese tiempo. Y las referencias se parecen mucho entre
         sí: cambian el año, la variedad, la parcela. Saber cuántas botellas hay, de cuál y
         dónde están es un problema real de negocio, no un detalle de inventario.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-5">
         El proyecto nació para el sector vitivinícola, con la idea de poder extenderse
         después a otros ámbitos —manufactura, aeropuertos, industria agroalimentaria o
         medicina— donde identificar unidades individuales dentro de un stock también
@@ -111,97 +112,97 @@ const jsonLd = [
       </p>
 
       <h2 id="problema">El problema</h2>
-      <ul>
-        <li>
+      <ul id="bodega-digital-prose-ul">
+        <li id="bodega-digital-prose-li">
           Identificar cada botella de forma individual, no por referencia: la añada, la
           variedad y la parcela convierten cada unidad en un caso distinto.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-2">
           Leer esas etiquetas en un entorno hostil para la radiofrecuencia: el líquido de
           la botella altera las lecturas, y una estantería llena concentra cientos de
           tags.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-3">
           Anticipar la demanda para evitar roturas de stock y mejorar la disponibilidad
           para el cliente final.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-4">
           Mantener la trazabilidad a lo largo de toda la cadena de valor del vino.
         </li>
       </ul>
 
       <h2 id="restricciones">Restricciones</h2>
-      <ul>
-        <li>
-          <strong>RFID sobre líquido.</strong> Había que evaluar tags UHF que pudieran ir
+      <ul id="bodega-digital-prose-ul-2">
+        <li id="bodega-digital-prose-li-5">
+          <strong id="bodega-digital-prose-strong">RFID sobre líquido.</strong> Había que evaluar tags UHF que pudieran ir
           en el cuello de la botella minimizando los errores de lectura.
         </li>
-        <li>
-          <strong>Alta densidad.</strong> Las antenas debían funcionar con muchas botellas
+        <li id="bodega-digital-prose-li-6">
+          <strong id="bodega-digital-prose-strong-2">Alta densidad.</strong> Las antenas debían funcionar con muchas botellas
           juntas, no con una etiqueta aislada.
         </li>
-        <li>
-          <strong>Proyecto en consorcio.</strong> Seis socios —Clúster Digital de Cataluña,
+        <li id="bodega-digital-prose-li-7">
+          <strong id="bodega-digital-prose-strong-3">Proyecto en consorcio.</strong> Seis socios —Clúster Digital de Cataluña,
           INNOVI, Grupo ICA, Raw Data, DO5 Hispanobodegas y Quabu Solutions— con
           financiación pública y fases comprometidas.
         </li>
-        <li>
-          <strong>Dos fases.</strong> La primera con RFID y predicción de demanda; la
+        <li id="bodega-digital-prose-li-8">
+          <strong id="bodega-digital-prose-strong-4">Dos fases.</strong> La primera con RFID y predicción de demanda; la
           segunda con visión por computadora para refinar el inventario.
         </li>
       </ul>
 
       <h2 id="rol">Mi rol</h2>
-      <p>
+      <p id="bodega-digital-prose-p-6">
         Mi trabajo se centró en la arquitectura y el modelo de dominio: qué piezas existían,
         dónde estaban los límites y cómo se probaba la lógica de negocio. Formé parte de un
         equipo y de un consorcio: lo que sigue distingue lo que diseñé de lo que fue trabajo
         colectivo.
       </p>
-      <ul>
-        <li>
+      <ul id="bodega-digital-prose-ul-3">
+        <li id="bodega-digital-prose-li-9">
           Diseñé el monolito monorepo: frontend, backend y base de datos en un mismo
           repositorio, con un único despliegue.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-10">
           Modelé el dominio con DDD: botella, referencia, añada, lote y posición como
           vocabulario compartido con negocio.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-11">
           Sostuve la lógica con TDD, de forma que las reglas de inventario se pudieran
           cambiar sin romper las que ya funcionaban.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-12">
           Dejé cada integración —lectores RFID, visión por computadora, modelo de
           predicción— detrás de su propio adaptador.
         </li>
       </ul>
 
       <h2 id="arquitectura">Arquitectura: un monolito monorepo</h2>
-      <p>
+      <p id="bodega-digital-prose-p-7">
         Tres piezas en un mismo repositorio: frontend, backend y base de datos. Un único
         despliegue, un único ciclo de integración y el contrato entre cliente y servidor
         versionado junto, de modo que un cambio de API se veía en el mismo sitio que su
         consumidor.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-8">
         Monolito no significa un bloque sin estructura. La separación se hacía por dentro:
         casos de uso, capas y límites de dominio. La infraestructura era una sola, pero el
         código no era un único montón.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-9">
         Aquí fue donde llevé por primera vez la arquitectura de backend al frontend: la misma
         capa de lógica de DDD que usaba el servidor, combinada con Atomic Design en la
         interfaz.
       </p>
 
       <h2 id="ddd-tdd">DDD y TDD dentro del monolito</h2>
-      <p>
+      <p id="bodega-digital-prose-p-10">
         DDD aportó el lenguaje y los límites. El código usaba el vocabulario de la bodega
         —botellas, referencias, añadas, lotes, posiciones— en lugar de hablar de tablas y
         formularios, y cada contexto podía cambiar sin arrastrar a los demás.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-11">
         TDD aportó la red. Las reglas de inventario se escribían con pruebas antes que con
         implementación, así que el modelo podía cambiar sin miedo a romper una regla que
         nadie recordaba. En un monolito esa red es especialmente rentable: todo el dominio
@@ -210,14 +211,14 @@ const jsonLd = [
       </p>
 
       <h2 id="integraciones">RFID, visión y predicción</h2>
-      <p>
+      <p id="bodega-digital-prose-p-12">
         La primera fase unió identificación por radiofrecuencia y predicción de demanda con
         machine learning. La segunda añadió visión por computadora para recoger información
         adicional y ganar precisión en el inventario. En fases avanzadas, el proyecto
         planteaba integrar Blockchain junto al RFID para dar trazabilidad completa a lo
         largo de la cadena de valor.
       </p>
-      <p>
+      <p id="bodega-digital-prose-p-13">
         Cada una de esas piezas entra por un adaptador. El dominio expresa qué necesita
         —identificar una botella, conocer su posición, anticipar una rotura de stock— y el
         adaptador se encarga de cómo lo resuelve un lector, una cámara o un modelo. Cambiar
@@ -225,94 +226,94 @@ const jsonLd = [
       </p>
 
       <h2 id="evolucion">Lo que quedó del monolito</h2>
-      <p>
+      <p id="bodega-digital-prose-p-14">
         El monolito aguantó las dos fases del producto: un despliegue, un ciclo de
         integración y el dominio en un mismo repositorio. Del proyecto sobrevivieron el
         modelo de dominio, el lenguaje compartido con la operación y la forma de probar.
       </p>
-      <p>
-        <a href="/projects/nakire-tps/">Nakire TPS</a> es un desarrollo propio, con
+      <p id="bodega-digital-prose-p-15">
+        <a id="bodega-digital-prose-a" href="/projects/nakire-tps/">Nakire TPS</a> es un desarrollo propio, con
         servicios y eventos. Lo que trae de aquí es la forma de trabajar: el monolito no
         fue un atajo que hubo que deshacer, fue el sitio donde el dominio se entendió lo
         bastante bien como para que el modelo sirviera después en otro sistema.
       </p>
 
       <h2 id="decisiones">Decisiones técnicas</h2>
-      <ul>
-        <li>
-          <strong>Monolito monorepo en vez de servicios.</strong> Un solo despliegue y un
+      <ul id="bodega-digital-prose-ul-4">
+        <li id="bodega-digital-prose-li-13">
+          <strong id="bodega-digital-prose-strong-5">Monolito monorepo en vez de servicios.</strong> Un solo despliegue y un
           solo ciclo de integración, a cambio de asumir un único ritmo de escalado.
         </li>
-        <li>
-          <strong>DDD dentro del monolito.</strong> Límites de dominio en el código, a
+        <li id="bodega-digital-prose-li-14">
+          <strong id="bodega-digital-prose-strong-6">DDD dentro del monolito.</strong> Límites de dominio en el código, a
           cambio de un esfuerzo de modelado que solo se recupera si el dominio se respeta.
         </li>
-        <li>
-          <strong>TDD sobre la lógica de negocio.</strong> Pruebas primero en el dominio, a
+        <li id="bodega-digital-prose-li-15">
+          <strong id="bodega-digital-prose-strong-7">TDD sobre la lógica de negocio.</strong> Pruebas primero en el dominio, a
           cambio de escribir más código del estrictamente necesario para arrancar.
         </li>
-        <li>
-          <strong>Un adaptador por integración.</strong> RFID, visión y predicción cambian a
+        <li id="bodega-digital-prose-li-16">
+          <strong id="bodega-digital-prose-strong-8">Un adaptador por integración.</strong> RFID, visión y predicción cambian a
           su ritmo, a cambio de mantener el contrato del puerto estable.
         </li>
       </ul>
 
       <h2 id="resultados">Resultados</h2>
-      <p>
+      <p id="bodega-digital-prose-p-16">
         Los resultados que puedo afirmar son los que el proyecto declara, no métricas
         inventadas:
       </p>
-      <ul>
-        <li>
+      <ul id="bodega-digital-prose-ul-5">
+        <li id="bodega-digital-prose-li-17">
           Cada botella se identifica de forma individual, con su añada, variedad y parcela.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-18">
           La disponibilidad de género se consulta de forma rápida y detallada, en lugar de
           por estimación.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-19">
           La predicción de demanda permite anticipar roturas de stock.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-20">
           La trazabilidad acompaña a la botella a lo largo de la cadena de valor.
         </li>
       </ul>
 
       <h2 id="aprendizajes">Aprendizajes</h2>
-      <ul>
-        <li>
+      <ul id="bodega-digital-prose-ul-6">
+        <li id="bodega-digital-prose-li-21">
           La separación se decide dentro del código antes que en la infraestructura: un
           monolito con límites claros se puede repartir después; uno sin ellos, no.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-22">
           DDD y TDD no son ceremonia de arquitectura distribuida: sostienen igual de bien
           un producto que todavía cabe en un despliegue.
         </li>
-        <li>
+        <li id="bodega-digital-prose-li-23">
           En proyectos con financiación pública y varios socios, el vocabulario compartido
           forma parte de la entrega.
         </li>
       </ul>
-    </div>
+    </AutoPreviews>
 
-    <section class="case-next" aria-labelledby="case-next-title">
+    <section id="bodega-digital-case-next" class="case-next" aria-labelledby="case-next-title">
       <h2 class="section-title" id="case-next-title">Artículos relacionados</h2>
-      <div class="next-list">
+      <div id="bodega-digital-case-next-list" class="next-list">
         {relatedPosts.map((post) => <PostCard post={post} compact />)}
       </div>
     </section>
 
-    <section class="closing" aria-labelledby="case-cierre">
+    <section id="bodega-digital-case-closing" class="closing" aria-labelledby="case-cierre">
       <h2 class="section-title" id="case-cierre">Siguiente paso</h2>
-      <p>
+      <p id="bodega-digital-closing-p">
         Si estás digitalizando una operación con hardware físico —etiquetas, cámaras,
         sensores—, puedo ayudarte a decidir dónde poner los límites entre dominio y
         dispositivo.
       </p>
-      <div class="actions">
-        <a class="btn" href="/contact/">Contactar</a>
-        <a class="btn btn--ghost" href="/projects/">Ver más proyectos</a>
-        <a class="btn btn--ghost" href="/cv/">Ver el CV</a>
+      <div id="bodega-digital-closing-actions" class="actions">
+        <a id="bodega-digital-actions-btn" class="btn" href="/contact/">Contactar</a>
+        <a id="bodega-digital-actions-btn-2" class="btn btn--ghost" href="/projects/">Ver más proyectos</a>
+        <a id="bodega-digital-actions-btn-3" class="btn btn--ghost" href="/cv/">Ver el CV</a>
       </div>
     </section>
   </article>
@@ -336,7 +337,7 @@ const jsonLd = [
     max-inline-size: 46rem;
   }
 
-  .case .prose {
+  .case :global(.prose) {
     max-inline-size: 48rem;
   }
 

@@ -6,9 +6,13 @@ import {
 	PROJECTS,
 	type PositionView,
 } from "../data/cv";
+import { PREVIEW_BY_STACK_LABEL } from "../data/previews";
+import PreviewTerm from "./PreviewTerm.astro";
+import AutoPreviews from "./AutoPreviews.astro";
 import { durationLabel, spanLabel } from "../lib/period";
 
 interface Group {
+	id: string;
 	company: string;
 	short: string;
 	accent: string;
@@ -28,6 +32,7 @@ const groups: Group[] = COMPANIES.map((company) => {
 	const from = Math.min(...own.map((position) => position.startMonth));
 	const to = Math.max(...own.map((position) => position.endMonth));
 	return {
+		id: company.id,
 		company: company.name,
 		short: company.short,
 		accent: company.accent,
@@ -44,59 +49,71 @@ const groups: Group[] = COMPANIES.map((company) => {
 }).sort((a, b) => b.to - a.to);
 ---
 
-<div class="trajectory">
+<div id="role-trajectory" class="trajectory">
   {
-    groups.map((group) => (
-      <section class:list={["company", `accent-${group.accent}`]}>
-        <header class="company-head">
-          <div class="company-id">
-            <span class="company-dot" aria-hidden="true" />
-            <h3 class="company-name">{group.company}</h3>
-            <span class="company-short">{group.short}</span>
+    groups.map((group, i) => (
+      <section id={`role-trajectory-section-${i}`} class:list={["company", `accent-${group.accent}`]}>
+        <header id={`role-trajectory-company-head-${i}`} class="company-head">
+          <div id={`role-trajectory-company-head-id-${i}`} class="company-id">
+            <span id={`role-trajectory-company-id-dot-${i}`} class="company-dot" aria-hidden="true" />
+            <h3 id={`role-trajectory-company-id-name-${i}`} class="company-name">
+              <PreviewTerm slug={group.id} idSuffix="roles"
+                >{group.company}</PreviewTerm
+              >
+            </h3>
+            <span id={`role-trajectory-company-head-short-${i}`} class="company-short">{group.short}</span>
           </div>
-          <p class="company-meta">
+          <p id={`role-trajectory-company-meta-${i}`} class="company-meta">
             {group.positions.length}
             {group.positions.length === 1 ? " puesto" : " puestos"} ·{" "}
             {spanLabel(group.from, group.to)} · {durationLabel(group.months)}
           </p>
         </header>
 
-        <ol class="positions">
-          {group.positions.map(({ position, projects }) => (
-            <li class:list={["position", `accent-${position.accent}`]}>
-              <div class="position-top">
-                <h4 class="position-title">{position.title}</h4>
-                <span class="position-dates">
+        <ol id={`role-trajectory-positions-${i}`} class="positions">
+          {group.positions.map(({ position, projects }, i2) => (
+            <li id={`role-trajectory-positions-li-${i}-${i}-${i}-${i2}`} class:list={["position", `accent-${position.accent}`]}>
+              <div id={`role-trajectory-positions-position-top-${i}-${i}-${i}-${i2}`} class="position-top">
+                <h4 id={`role-trajectory-position-top-title-${i}-${i}-${i}-${i2}`} class="position-title">{position.title}</h4>
+                <span id={`role-trajectory-position-top-dates-${i}-${i}-${i}-${i2}`} class="position-dates">
                   {spanLabel(position.startMonth, position.endMonth)}
-                  <span class="position-duration">
+                  <span id={`role-trajectory-position-dates-duration-${i}-${i}-${i}-${i2}`} class="position-duration">
                     {durationLabel(position.months)}
                   </span>
                 </span>
               </div>
 
               {(position.place || position.mode) && (
-                <p class="position-place">
+                <p id={`role-trajectory-positions-position-place-${i}-${i}-${i}-${i2}`} class="position-place">
                   {[position.place, position.mode].filter(Boolean).join(" · ")}
                 </p>
               )}
 
-              <p class="position-focus">{position.focus}</p>
-              <p class="position-summary">{position.summary}</p>
+              <p id={`role-trajectory-positions-position-focus-${i}-${i}-${i}-${i2}`} class="position-focus">
+                <span id={`role-trajectory-position-focus-text-${i}-${i2}`}>
+                  <AutoPreviews inline id={`role-trajectory-focus-${i}-${i2}-prose`} text={position.focus} />
+                </span>
+              </p>
+              <p id={`role-trajectory-positions-position-summary-${i}-${i}-${i}-${i2}`} class="position-summary">
+                <AutoPreviews inline id={`role-trajectory-summary-${i}-${i2}-prose`} text={position.summary} />
+              </p>
 
               {position.achievements.length > 0 && (
-                <ul class="position-hitos">
-                  {position.achievements.map((achievement) => (
-                    <li>{achievement}</li>
+                <ul id={`role-trajectory-positions-position-hitos-${i}-${i}-${i}-${i2}`} class="position-hitos">
+                  {position.achievements.map((achievement, i3) => (
+                    <li id={`role-trajectory-position-hitos-li-${i}-${i2}-${i}-${i2}-${i}-${i2}-${i3}`}>
+                      <AutoPreviews inline id={`role-trajectory-hito-${i}-${i2}-${i3}-prose`} text={achievement} />
+                    </li>
                   ))}
                 </ul>
               )}
 
-              <div class="position-foot">
-                <div class="position-group">
-                  <span class="eyebrow">proyectos</span>
-                  <div class="position-chips">
-                    {projects.map((project) => (
-                      <button
+              <div id={`role-trajectory-positions-position-foot-${i}-${i}-${i}-${i2}`} class="position-foot">
+                <div id={`role-trajectory-position-foot-group-${i}-${i}-${i}-${i2}`} class="position-group">
+                  <span id={`role-trajectory-position-group-eyebrow-${i}-${i}-${i}-${i2}`} class="eyebrow">proyectos</span>
+                  <div id={`role-trajectory-position-group-chips-${i}-${i}-${i}-${i2}`} class="position-chips">
+                    {projects.map((project, i4) => (
+                      <button id={`role-trajectory-position-chips-chip-project-${i}-${i2}-${i}-${i2}-${i}-${i2}-${i4}`}
                         type="button"
                         class="chip-project"
                         data-project={project.id}
@@ -109,12 +126,19 @@ const groups: Group[] = COMPANIES.map((company) => {
                 </div>
 
                 {position.stack.length > 0 && (
-                  <div class="position-group">
-                    <span class="eyebrow">stack</span>
-                    <div class="position-chips">
-                      {position.stack.map((item) => (
-                        <span class="pill">{item}</span>
-                      ))}
+                  <div id={`role-trajectory-position-foot-group-2-${i}-${i}-${i}-${i2}`} class="position-group">
+                    <span id={`role-trajectory-position-group-eyebrow-2-${i}-${i}-${i}-${i2}`} class="eyebrow">stack</span>
+                    <div id={`role-trajectory-position-group-chips-2-${i}-${i}-${i}-${i2}`} class="position-chips">
+                      {position.stack.map((item, i5) => {
+                        const slug = PREVIEW_BY_STACK_LABEL[item];
+                        return slug ? (
+                          <PreviewTerm slug={slug} idSuffix={`stack-${i}-${i2}-${i5}`} class="pill">
+                            {item}
+                          </PreviewTerm>
+                        ) : (
+                          <span id={`role-trajectory-position-chips-pill-${i}-${i2}-${i}-${i2}-${i}-${i2}-${i5}`} class="pill">{item}</span>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -130,6 +154,60 @@ const groups: Group[] = COMPANIES.map((company) => {
 <script>
   import { openDrawer } from "../lib/open-drawer";
 
+  // The row docks under the section title, whatever height the title takes at
+  // this width, so it is measured instead of guessed.
+  function placeHeads() {
+    const headerHeight = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 0;
+    for (const head of document.querySelectorAll<HTMLElement>(".company-head")) {
+      const title = head.closest(".section")?.querySelector(".section-head");
+      const titleHeight = title?.getBoundingClientRect().height ?? 0;
+      // The row's own padding sits above its text, so the box starts that much
+      // higher and the text lands where it did: flush against the title, whose
+      // painted box ends at the title's height.
+      const padding = Number.parseFloat(getComputedStyle(head).paddingTop) || 0;
+      // Kept on the element: the hand-over below reads it on every scroll frame.
+      head.dataset.base = String(Math.round(headerHeight - 1 + titleHeight + 6 - padding));
+      head.style.top = `${head.dataset.base}px`;
+    }
+    queueDock();
+  }
+
+  // Docking: a row holds the slot under the title, and the row that takes the
+  // slot pushes it out. Its offset follows the next row's top, so the two hand
+  // over flush and stay flush while the one above leaves — the cards never show
+  // through a band between them.
+  let dockFrame = 0;
+  function dockHeads() {
+    dockFrame = 0;
+    const heads = [...document.querySelectorAll<HTMLElement>(".company-head")];
+    // Bottom-up: a row only knows where to sit once the one below is placed.
+    for (let index = heads.length - 1; index >= 0; index -= 1) {
+      const head = heads[index];
+      const base = Number(head.dataset.base) || 0;
+      const next = heads[index + 1];
+      // Never above the row below: that is the row pushing this one out.
+      const pushed = next
+        ? Math.min(base, next.getBoundingClientRect().top - head.offsetHeight)
+        : base;
+      head.style.top = `${pushed}px`;
+      const stuck = head.getBoundingClientRect().top <= base + 1;
+      head.classList.toggle("is-stuck", stuck);
+    }
+  }
+
+  function queueDock() {
+    if (dockFrame) return;
+    dockFrame = requestAnimationFrame(dockHeads);
+  }
+
+  window.addEventListener("scroll", queueDock, { passive: true });
+  window.addEventListener("resize", placeHeads);
+  document.addEventListener("astro:page-load", placeHeads);
+  placeHeads();
+  // The title can wrap taller once the webfonts land, which would leave the
+  // docked row a few pixels inside it; measure again when they do.
+  document.fonts?.ready.then(placeHeads);
+
   // Delegated so it keeps working after a ClientRouter swap replaces the list.
   document.addEventListener("click", (event) => {
     if (!(event.target instanceof Element)) return;
@@ -143,18 +221,54 @@ const groups: Group[] = COMPANIES.map((company) => {
 <style is:global>
   .trajectory {
     display: grid;
-    gap: 2.25rem;
+    /* No gap and no air between companies: the slot only hands over flush when
+       one section ends exactly where the next row's box begins. Anything here
+       —a grid gap, a margin, the next section's padding— lengthens the stretch
+       the row above can travel while it hands over, and the cards slide
+       through the band that opens between the two rows. */
+    gap: 0;
   }
 
+  /* The company row docks under the section title while its stints scroll, and
+     the arriving row takes the slot by pushing it out, flush. */
   .company-head {
+    position: sticky;
+    top: calc(var(--header-h, 6.375rem) + 2.6rem);
+    z-index: 8;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
     gap: 0.35rem 1.5rem;
-    margin-bottom: 0.9rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--color-border-subtle);
+    /* The air above the row and below its rule lives inside the box, so the
+       row that arrives can butt against it: a margin or a border would hold
+       the box's edge away and reopen the band. */
+    padding-block: 1.25rem 1.5rem;
+    background: var(--color-paper);
+    transition: box-shadow 260ms ease;
+  }
+
+  /* The rule the row sits on, painted instead of a border, so the air under it
+     stays inside the box. */
+  .company-head::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.9rem;
+    height: 1px;
+    background: var(--color-border-subtle);
+  }
+
+  /* Docked: it carries a shadow, so the slot reads as taken. It never lifts:
+     a transform would open the same band the box is sized to close. */
+  .company-head.is-stuck {
+    box-shadow: 0 10px 18px -16px color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .company-head {
+      transition: none;
+    }
   }
 
   .company-id {

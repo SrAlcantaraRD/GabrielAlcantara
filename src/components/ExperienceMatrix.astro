@@ -1,4 +1,6 @@
 ---
+import PreviewCard from "./PreviewCard.astro";
+import PreviewTerm from "./PreviewTerm.astro";
 import { AXIS_LABEL, AXIS_ORDER, type AxisId } from "../lib/matrix";
 import {
 	COMPANIES,
@@ -29,35 +31,35 @@ const payload = {
 ---
 
 <div class="matrix" id="matriz">
-  <div class="matrix-panel">
-    <div class="panel-head">
-      <div class="group-grid" role="group" aria-label="agrupar las filas por">
+  <div id="experience-matrix-panel" class="matrix-panel">
+    <div id="experience-matrix-panel-head" class="panel-head">
+      <div id="experience-matrix-panel-head-group-grid" class="group-grid" role="group" aria-label="agrupar las filas por">
         {
           AXIS_ORDER.filter(
             (axisId) => axisId !== "time" && axisId !== "project",
-          ).map((axisId) => (
-            <button
+          ).map((axisId, i) => (
+            <button id={`experience-matrix-group-grid-chip-${i}`}
               type="button"
               class="chip"
               data-axis="y"
               data-value={axisId}
-              aria-pressed={String(axisId === defaultY)}
+              aria-pressed={axisId === defaultY ? "true" : "false"}
             >
               {AXIS_LABEL[axisId]}
             </button>
           ))
         }
       </div>
-      <span class="panel-range">
+      <span id="experience-matrix-panel-head-range" class="panel-range">
         <span id="matrix-range">{YEAR_LABEL}</span>
         <span class="panel-note" id="matrix-note" hidden>
           cada celda recorre la línea temporal completa
         </span>
       </span>
-      <div class="window" role="group" aria-label="ventana temporal">
+      <div id="experience-matrix-panel-head-window" class="window" role="group" aria-label="ventana temporal">
         {
-          COMPANIES.map((company) => (
-            <button
+          COMPANIES.map((company, i2) => (
+            <button id={`experience-matrix-window-wchip-${i2}`}
               type="button"
               class="wchip"
               data-window={company.id}
@@ -71,30 +73,40 @@ const payload = {
       </div>
     </div>
 
-    <div class="matrix-surface">
+    <div id="experience-matrix-panel-surface" class="matrix-surface">
       <div class="matrix-grid" id="matrix-grid" data-mode="timeline"></div>
     </div>
   </div>
 
-  <div class="matrix-foot">
-    <ul class="legend" aria-label="etapas">
+  <div id="experience-matrix-foot" class="matrix-foot">
+    <ul id="experience-matrix-foot-legend" class="legend" aria-label="etapas">
       {
-        COMPANIES.map((company) => (
-          <li>
-            <span
+        COMPANIES.map((company, i3) => (
+          <li id={`experience-matrix-legend-li-${i3}`}>
+            <span id={`experience-matrix-legend-dot-${i3}`}
               class="legend-dot"
               data-accent={company.accent}
               aria-hidden="true"
             />
-            {company.name}
+            <PreviewTerm slug={company.id} card={false} idSuffix="matrix">
+              {company.name}
+            </PreviewTerm>
           </li>
         ))
       }
     </ul>
+
+    {/*
+      One card per company, hidden: the row and column labels are built in the
+      browser, so each label is a trigger pointing at the card rendered here.
+    */}
+    {COMPANIES.map((company) => (
+      <PreviewCard slug={company.id} idSuffix="matrix" />
+    ))}
   </div>
 
-  <noscript>
-    <p class="matrix-hint">
+  <noscript id="experience-matrix-noscript">
+    <p id="experience-matrix-hint" class="matrix-hint">
       activa javascript para recorrer la matriz; las fichas de abajo cuentan la
       misma trayectoria en texto.
     </p>
@@ -548,9 +560,8 @@ const payload = {
         if (accent) row.dataset.accent = accent;
 
         const label = element("div", "row-label");
-        const name = element("span", "row-name", yValue.label);
         label.title = yValue.label;
-        label.append(name);
+        label.append(nameNode(state.y, yValue, "row-name"));
 
         const run = runs[index];
         const from = (index - run.start) / run.length;
@@ -602,9 +613,8 @@ const payload = {
         const head = element("div", "col-head");
         const accent = accentFor(state.x, xValue.id);
         if (accent) head.style.setProperty("--head-accent", `var(--${accent})`);
-        const label = element("span", "col-name", xValue.label);
         head.title = xValue.label;
-        head.append(label);
+        head.append(nameNode(state.x, xValue, "col-name"));
         fragment.append(head);
       }
 
@@ -612,7 +622,7 @@ const payload = {
         const label = element("div", "row-label");
         const accent = accentFor(state.y, yValue.id);
         if (accent) label.dataset.accent = accent;
-        label.append(element("span", "row-name", yValue.label));
+        label.append(nameNode(state.y, yValue, "row-name"));
         label.title = yValue.label;
         fragment.append(label);
         for (const xValue of xValues) {
@@ -899,6 +909,27 @@ const payload = {
     if (className) node.className = className;
     if (text !== undefined) node.textContent = text;
     return node;
+  }
+
+  /**
+   * A row or column name. On the company axis the name is a preview trigger:
+   * its card is the one rendered once per company in the legend's foot.
+   */
+  function nameNode(
+    axis: string,
+    value: { id: string; label: string },
+    className: string,
+  ): HTMLElement {
+    const name = element("span", className, value.label);
+    if (axis !== "company") return name;
+    const trigger = element("button", "preview-term", value.label);
+    trigger.type = "button";
+    // The same company can head a row and a column: the direction names them.
+    trigger.id = `${className === "col-name" ? "preview-col" : "preview-row"}-${value.id}`;
+    trigger.dataset.preview = value.id;
+    trigger.setAttribute("aria-expanded", "false");
+    name.replaceChildren(trigger);
+    return name;
   }
 
   function must<T extends Element>(selector: string, parent: ParentNode): T {

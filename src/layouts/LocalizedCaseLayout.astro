@@ -11,6 +11,7 @@ import {
   alternateEditorialPaths,
   type TranslatedLocale,
 } from "../i18n/routing";
+import AutoPreviews from "../components/AutoPreviews.astro";
 
 interface Props {
   lang: TranslatedLocale;
@@ -65,51 +66,51 @@ const jsonLd = [
     { label: project.name },
   ]}
 >
-  <article class="case">
-    <header class="case-head">
-      <p class="eyebrow">{caseCopy.eyebrow}</p>
-      <h1 class="display">{caseCopy.headline}.</h1>
-      <p class="lede">{caseCopy.lede}</p>
-      <div class="meta-row">
-        <span>{spanLabelIn(project.startMonth, project.endMonth, lang)}</span>
-        <span>{durationLabelIn(project.endMonth - project.startMonth, lang)}</span>
-        <span>{project.position}</span>
+  <article id="localized-case-layout" class="case">
+    <header id="localized-case-layout-head" class="case-head">
+      <p id="localized-case-layout-head-eyebrow" class="eyebrow">{caseCopy.eyebrow}</p>
+      <h1 id="localized-case-layout-head-display" class="display">{caseCopy.headline}.</h1>
+      <p id="localized-case-layout-head-lede" class="lede">{caseCopy.lede}</p>
+      <div id="localized-case-layout-head-meta-row" class="meta-row">
+        <span id="localized-case-layout-meta-row-span">{spanLabelIn(project.startMonth, project.endMonth, lang)}</span>
+        <span id="localized-case-layout-meta-row-span-2">{durationLabelIn(project.endMonth - project.startMonth, lang)}</span>
+        <span id="localized-case-layout-meta-row-span-3">{project.position}</span>
       </div>
     </header>
 
-    <dl class="facts case-facts">
-      <dt>{labels.role}</dt>
-      <dd>{copy.role}</dd>
-      <dt>{labels.context}</dt>
-      <dd>{project.company} · {project.position}</dd>
-      <dt>{labels.domain}</dt>
-      <dd>{caseCopy.domain}</dd>
-      <dt>{labels.technologies}</dt>
-      <dd>
-        <span class="tag-row">
-          {project.stack?.map((item) => <span class="pill">{item}</span>)}
+    <dl id="localized-case-layout-facts" class="facts case-facts">
+      <dt id="localized-case-layout-facts-dt">{labels.role}</dt>
+      <dd id="localized-case-layout-facts-dd">{copy.role}</dd>
+      <dt id="localized-case-layout-facts-dt-2">{labels.context}</dt>
+      <dd id="localized-case-layout-facts-dd-2">{project.company} · {project.position}</dd>
+      <dt id="localized-case-layout-facts-dt-3">{labels.domain}</dt>
+      <dd id="localized-case-layout-facts-dd-3">{caseCopy.domain}</dd>
+      <dt id="localized-case-layout-facts-dt-4">{labels.technologies}</dt>
+      <dd id="localized-case-layout-facts-dd-4">
+        <span id="localized-case-layout-facts-tag-row" class="tag-row">
+          {project.stack?.map((item, i) => <span id={`localized-case-layout-tag-row-pill-${i}`} class="pill">{item}</span>)}
         </span>
       </dd>
     </dl>
 
-    <div class="prose">
+    <AutoPreviews id="localized-case-layout-prose" class="prose">
       <slot />
-    </div>
+    </AutoPreviews>
 
-    <section class="case-next" aria-labelledby="case-next-title">
+    <section id="localized-case-layout-next" class="case-next" aria-labelledby="case-next-title">
       <h2 class="section-title" id="case-next-title">{labels.relatedArticles}</h2>
-      <div class="next-list">
+      <div id="localized-case-layout-next-list" class="next-list">
         {relatedPosts.map((post) => <PostCard post={post} compact lang={lang} />)}
       </div>
     </section>
 
-    <section class="closing" aria-labelledby="case-cierre">
+    <section id="localized-case-layout-closing" class="closing" aria-labelledby="case-cierre">
       <h2 class="section-title" id="case-cierre">{caseCopy.closingTitle}</h2>
-      <p>{caseCopy.closingBody}</p>
-      <div class="actions">
-        <a class="btn" href={`/${lang}/#contacto`}>{labels.contactCta}</a>
-        <a class="btn btn--ghost" href={projectsHref}>{labels.projectsCta}</a>
-        <a class="btn btn--ghost" href="/cv/" hreflang="es">{labels.cvCta}</a>
+      <p id="localized-case-layout-closing-p">{caseCopy.closingBody}</p>
+      <div id="localized-case-layout-closing-actions" class="actions">
+        <a id="localized-case-layout-actions-btn" class="btn" href={`/${lang}/#contacto`}>{labels.contactCta}</a>
+        <a id="localized-case-layout-actions-btn-2" class="btn btn--ghost" href={projectsHref}>{labels.projectsCta}</a>
+        <a id="localized-case-layout-actions-btn-3" class="btn btn--ghost" href="/cv/" hreflang="es">{labels.cvCta}</a>
       </div>
     </section>
   </article>
@@ -133,7 +134,7 @@ const jsonLd = [
     max-inline-size: 46rem;
   }
 
-  .case .prose {
+  .case :global(.prose) {
     max-inline-size: 48rem;
   }
 

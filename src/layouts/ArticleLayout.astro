@@ -14,6 +14,7 @@ import {
 import { EDITORIAL } from "../i18n/editorial";
 import { PROFILE } from "../i18n/profile";
 import type { Locale } from "../i18n/routing";
+import AutoPreviews from "../components/AutoPreviews.astro";
 
 interface Props extends PostMeta {
 	lang?: Locale;
@@ -94,49 +95,49 @@ const jsonLd = [
     { label: title },
   ]}
 >
-  <article class="article">
-    <header class="article-head">
-      <p class="kicker">
+  <article id="article-layout" class="article">
+    <header id="article-layout-head" class="article-head">
+      <p id="article-layout-head-kicker" class="kicker">
         {lang === "es" ? (
-          <a href={`/blog/categoria/${category.slug}/`}>{categoryLabel}</a>
+          <a id="article-layout-kicker-a" href={`/blog/categoria/${category.slug}/`}>{categoryLabel}</a>
         ) : (
-          <span>{categoryLabel}</span>
+          <span id="article-layout-kicker-span">{categoryLabel}</span>
         )}
-        <span aria-hidden="true">·</span>
-        <time datetime={post.date}>{formatDateIn(post.date, lang)}</time>
-        <span aria-hidden="true">·</span>
-        <span>{post.readingMinutes} {readingLabel}</span>
+        <span id="article-layout-kicker-span-2" aria-hidden="true">·</span>
+        <time id="article-layout-kicker-time" datetime={post.date}>{formatDateIn(post.date, lang)}</time>
+        <span id="article-layout-kicker-span-3" aria-hidden="true">·</span>
+        <span id="article-layout-kicker-span-4">{post.readingMinutes} {readingLabel}</span>
       </p>
-      <h1 class="display">{title}</h1>
-      <p class="lede">{description}</p>
-      <div class="tag-row">
-        {tags.map((tag) => <span class="pill">{tag}</span>)}
+      <h1 id="article-layout-head-display" class="display">{title}</h1>
+      <p id="article-layout-head-lede" class="lede">{description}</p>
+      <div id="article-layout-head-tag-row" class="tag-row">
+        {tags.map((tag, i) => <span id={`article-layout-tag-row-pill-${i}`} class="pill">{tag}</span>)}
       </div>
       {post.updated && (
-        <p class="updated">
+        <p id="article-layout-head-updated" class="updated">
           {editorial?.article.updated ?? "Actualizado el"}{" "}
           {formatDateIn(post.updated, lang)}
         </p>
       )}
     </header>
 
-    <div class="prose">
+    <AutoPreviews id="article-layout-prose" class="prose">
       <slot />
-    </div>
+    </AutoPreviews>
 
-    <footer class="article-foot">
+    <footer id="article-layout-foot" class="article-foot">
       {
         projects.length > 0 && (
-          <section class="related-projects" aria-labelledby="proyectos-relacionados">
+          <section id="article-layout-foot-related-projects" class="related-projects" aria-labelledby="proyectos-relacionados">
             <h2 class="section-title" id="proyectos-relacionados">
               {editorial?.article.relatedProject ?? "Proyecto relacionado"}
             </h2>
-            <ul>
-              {projects.map((project) => (
-                <li>
-                  <a href={caseHref.get(project.id) ?? projectsHref}>
-                    <strong>{project.name}</strong>
-                    <span>
+            <ul id="article-layout-related-projects-ul">
+              {projects.map((project, i2) => (
+                <li id={`article-layout-related-projects-li-${i2}`}>
+                  <a id={`article-layout-related-projects-a-${i2}`} href={caseHref.get(project.id) ?? projectsHref}>
+                    <strong id={`article-layout-related-projects-strong-${i2}`}>{project.name}</strong>
+                    <span id={`article-layout-related-projects-span-${i2}`}>
                       {project.company} ·{" "}
                       {lang === "es"
                         ? project.summary
@@ -153,33 +154,33 @@ const jsonLd = [
 
       {
         related.length > 0 && (
-          <section class="related-posts" aria-labelledby="articulos-relacionados">
+          <section id="article-layout-foot-related-posts" class="related-posts" aria-labelledby="articulos-relacionados">
             <h2 class="section-title" id="articulos-relacionados">
               {editorial?.article.relatedArticles ?? "Artículos relacionados"}
             </h2>
-            <div class="related-list">
+            <div id="article-layout-related-posts-list" class="related-list">
               {related.map((item) => <PostCard post={item} compact lang={lang} />)}
             </div>
           </section>
         )
       }
 
-      <section class="cta" aria-labelledby="cta-articulo">
+      <section id="article-layout-foot-cta" class="cta" aria-labelledby="cta-articulo">
         <h2 class="section-title" id="cta-articulo">
           {editorial?.article.nextTitle ?? "Siguiente paso"}
         </h2>
-        <p>
+        <p id="article-layout-cta-p">
           {editorial?.article.nextBody ??
             "Si estás trabajando en un problema parecido y quieres contrastarlo, puedes escribirme. También puedes ver el resto de proyectos o descargar el CV."}
         </p>
-        <div class="actions">
-          <a class="btn" href={`mailto:${SITE.email}`}>
+        <div id="article-layout-cta-actions" class="actions">
+          <a id="article-layout-actions-btn" class="btn" href={`mailto:${SITE.email}`}>
             {editorial?.article.writeCta ?? "Escríbeme"}
           </a>
-          <a class="btn btn--ghost" href={projectsHref}>
+          <a id="article-layout-actions-btn-2" class="btn btn--ghost" href={projectsHref}>
             {editorial?.article.projectsCta ?? "Ver proyectos"}
           </a>
-          <a class="btn btn--ghost" href="/cv/">
+          <a id="article-layout-actions-btn-3" class="btn btn--ghost" href="/cv/">
             {editorial?.article.cvCta ?? "Ver CV"}
           </a>
         </div>
