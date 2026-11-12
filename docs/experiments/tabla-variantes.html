@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabla · siete versiones</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+
+  :root {
+    --paper: #faf8f5;
+    --warm: #f5f1ea;
+    --ink: #1a1a1a;
+    --muted: #4f4b47;
+    --faint: #6f6960;
+    --border: #e6e0d6;
+    --border-soft: #eeeae3;
+    --terra: #9e4e36;
+    --sage: #3e5c49;
+    --cobalt: #294c60;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* The preview server does not expose node_modules, so this page leans on the
+       system faces; the geometry is what is being judged here, not the type. */
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Newsreader", Georgia, serif;
+    --label: 172px;
+  }
+
+  body {
+    padding: 40px 44px 64px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-inline-size: 1180px; margin-inline: auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  h1 {
+    margin-top: 0.55rem;
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 2rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    margin-top: 0.7rem;
+    max-inline-size: 54rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .bar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+    margin-top: 1.1rem;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .copy {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .copy.ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .copy:hover { background: #333; }
+  .copy.ghost:hover { border-color: var(--faint); color: var(--ink); background: transparent; }
+
+  .copy-state {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    color: var(--faint);
+  }
+
+  .dump {
+    margin-top: 0.7rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    user-select: all;
+  }
+
+  .dump[hidden] { display: none; }
+
+  .variant {
+    margin-top: 2.2rem;
+    padding: 1.15rem 1.25rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--paper);
+  }
+
+  .variant-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+    padding-top: 0.1rem;
+  }
+
+  .variant h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+
+  .variant-note {
+    margin-top: 0.25rem;
+    max-inline-size: 60rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--faint);
+  }
+
+  .variant.is-reference { background: var(--warm); }
+
+  /* A narrow panel scrolls the chart instead of squashing every bar. */
+  @media (max-width: 900px) {
+    .variant { overflow-x: auto; }
+    .chart { min-inline-size: 720px; }
+  }
+
+  /* ---------- chart scaffolding ---------- */
+
+  .chart { --lane-h: 20px; }
+
+  .ruler-row {
+    display: grid;
+    grid-template-columns: var(--label) minmax(0, 1fr);
+    align-items: end;
+    margin-bottom: 4px;
+  }
+
+  .ruler {
+    position: relative;
+    block-size: 15px;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .year {
+    position: absolute;
+    inset-block-end: 3px;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .year:first-child { transform: none; }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--label) minmax(0, 1fr);
+    align-items: center;
+    border-block-start: 1px solid var(--border-soft);
+  }
+
+  .label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.6rem 0.45rem 0;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .dot {
+    flex: none;
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 999px;
+    background: var(--c);
+  }
+
+  .track {
+    position: relative;
+    min-block-size: calc(var(--lanes, 1) * var(--lane-h) + 14px);
+    overflow: hidden;
+    background-image: repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--border) 85%, transparent) 0 1px,
+      transparent 1px var(--year)
+    );
+  }
+
+  .bar {
+    position: absolute;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  :where(.k-ref, .k-1, .k-2, .k-3, .k-5, .k-6) .bar {
+    inset-inline-start: calc(var(--l) * 1%);
+    inline-size: calc(var(--w) * 1%);
+  }
+
+  [data-accent="terracotta"] { --c: var(--terra); }
+  [data-accent="sage"] { --c: var(--sage); }
+  [data-accent="cobalt"] { --c: var(--cobalt); }
+
+  /* ---------- reference: today ---------- */
+  .k-ref { --lane-h: 21px; }
+  .bar-label {
+    display: block;
+    padding-inline: 0.35rem;
+  }
+
+  .bar-label[hidden] { display: none; }
+
+  .k-ref .bar {
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
+    block-size: 16px;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--c) 86%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 92%, #000);
+    color: #fdfbf8;
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    line-height: 1;
+  }
+
+  /* ---------- 01 capsules ---------- */
+  .k-1 { --lane-h: 23px; }
+  .k-1 .bar {
+    inset-inline-start: calc(var(--l) * 1% + 2px);
+    inline-size: calc(var(--w) * 1% - 4px);
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
+    block-size: 14px;
+    display: flex;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--c);
+    color: #fdfbf8;
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    line-height: 1;
+  }
+
+  /* ---------- 02 line with endpoints ---------- */
+  .k-2 { --lane-h: 19px; }
+  .k-2 .bar {
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 8px);
+    block-size: 2px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+  .k-2 .bar::before,
+  .k-2 .bar::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inline-size: 5px;
+    block-size: 5px;
+    border-radius: 999px;
+    background: var(--c);
+    transform: translateY(-50%);
+  }
+  .k-2 .bar::before { inset-inline-start: -2px; }
+  .k-2 .bar::after { inset-inline-end: -2px; }
+
+  /* ---------- 03 soft bands ---------- */
+  .k-3 { --lane-h: 27px; }
+  .k-3 .bar {
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 3px);
+    block-size: 22px;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+    color: var(--c);
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    line-height: 1;
+  }
+
+  /* ---------- 04 year blocks ---------- */
+  .k-4 { --lane-h: 20px; }
+  .k-4 .seg {
+    position: absolute;
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
+    block-size: 13px;
+    border-radius: 2px;
+    background: var(--c);
+    inset-inline-start: calc(var(--l) * 1%);
+    inline-size: calc(var(--w) * 1% - 2px);
+  }
+
+  /* ---------- 05 stage with lines inside ---------- */
+  .k-5 { --lane-h: 15px; }
+  .k-5 .stage,
+  .k-6 .stage {
+    position: absolute;
+    inset-block: 4px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--c) 7%, transparent);
+  }
+  .k-5 .bar {
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 12px);
+    block-size: 3px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+
+  /* ---------- 06 thin bar, label outside ---------- */
+  .k-6 { --lane-h: 25px; }
+  .k-6 .bar {
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 8px);
+    block-size: 6px;
+    border-radius: 3px;
+    background: var(--c);
+  }
+  .k-6 .tag {
+    position: absolute;
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 1px);
+    inset-inline-start: calc((var(--l) + var(--w)) * 1% + 6px);
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    line-height: 1.2;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---------- 07 compact chips ---------- */
+  .k-7 { --lane-h: 21px; }
+  .k-7 .bar {
+    inset-inline-start: calc(var(--l) * 1%);
+    inline-size: 22px;
+    inset-block-start: calc(var(--lane) * var(--lane-h) + 4px);
+    block-size: 15px;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    background: var(--c);
+    color: #fdfbf8;
+    font-family: var(--mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- notes ---------- */
+
+  .notes {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-block-start: 1px dashed var(--border);
+  }
+
+  .notes span {
+    flex: none;
+    padding-top: 0.35rem;
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  textarea {
+    flex: 1;
+    min-block-size: 2.1rem;
+    resize: vertical;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  textarea:focus {
+    outline: 2px solid color-mix(in srgb, var(--ink) 20%, transparent);
+    outline-offset: 1px;
+  }
+
+  footer {
+    margin-top: 2.4rem;
+    padding-top: 0.9rem;
+    border-block-start: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--faint);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="eyebrow">experimento · tabla de experiencia</p>
+  <h1>Siete formas de dibujar la misma trayectoria</h1>
+  <p class="lede">
+    Mismo rango, mismas etapas, mismos proyectos: solo cambia cómo se dibuja cada barra.
+    La queja es que hoy se leen como cajas pegadas, así que cada propuesta ataca una cosa
+    distinta — separación, peso, agrupación o etiqueta. Arriba tienes la actual como
+    referencia. Escribe lo que quieras en las notas y pulsa «copiar notas» para pegármelas.
+  </p>
+  <div class="bar-actions">
+    <button type="button" class="copy" id="copy-all">copiar notas</button>
+    <button type="button" class="copy ghost" id="clear-all">vaciar</button>
+    <span class="copy-state" id="copy-state"></span>
+  </div>
+  <pre class="dump" id="dump" hidden></pre>
+
+  <section class="variant is-reference" data-variant="0">
+    <header class="variant-head">
+      <span class="num">00</span>
+      <div>
+        <h2>Hoy · referencia</h2>
+        <p class="variant-note">La versión actual: barra rellena, borde interior y etiqueta dentro. Los proyectos seguidos se tocan.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="ref"></div>
+    <label class="notes"><span>notas</span><textarea data-note="0" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="1">
+    <header class="variant-head">
+      <span class="num">01</span>
+      <div>
+        <h2>Cápsulas separadas</h2>
+        <p class="variant-note">Lo mismo que hoy, pero cada proyecto se separa 4 px por lado y las filas respiran: la caja deja de leerse como un bloque continuo.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="1"></div>
+    <label class="notes"><span>notas</span><textarea data-note="1" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="2">
+    <header class="variant-head">
+      <span class="num">02</span>
+      <div>
+        <h2>Línea con extremos</h2>
+        <p class="variant-note">Sin caja: una línea de 2 px con un punto en cada extremo. La duración sigue siendo el ancho, pero el peso visual desaparece.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="2"></div>
+    <label class="notes"><span>notas</span><textarea data-note="2" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="3">
+    <header class="variant-head">
+      <span class="num">03</span>
+      <div>
+        <h2>Bandas suaves</h2>
+        <p class="variant-note">Mancha de color al 12 % y el nombre en tinta: se ve la duración sin que el relleno compita con el texto.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="3"></div>
+    <label class="notes"><span>notas</span><textarea data-note="3" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="4">
+    <header class="variant-head">
+      <span class="num">04</span>
+      <div>
+        <h2>Bloques por año</h2>
+        <p class="variant-note">Cada año es un bloque con su hueco: se lee el calendario, no una barra larga que engulle varios años.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="4"></div>
+    <label class="notes"><span>notas</span><textarea data-note="4" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="5">
+    <header class="variant-head">
+      <span class="num">05</span>
+      <div>
+        <h2>Etapa agrupada</h2>
+        <p class="variant-note">Una sola pieza por empresa, del primer al último proyecto, con los proyectos dentro como líneas finas: primero la etapa, luego el detalle.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="5"></div>
+    <label class="notes"><span>notas</span><textarea data-note="5" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="6">
+    <header class="variant-head">
+      <span class="num">06</span>
+      <div>
+        <h2>Etiqueta fuera · con velo</h2>
+        <p class="variant-note">Barra fina de 6 px y el nombre fuera, a su derecha, con un proyecto por línea: nada se solapa y todos los nombres se leen, a costa de una tabla más alta. Debajo, el velo de 05 agrupa todo lo de una misma empresa.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="6"></div>
+    <label class="notes"><span>notas</span><textarea data-note="6" rows="2"></textarea></label>
+  </section>
+
+  <section class="variant" data-variant="7">
+    <header class="variant-head">
+      <span class="num">07</span>
+      <div>
+        <h2>Compacto</h2>
+        <p class="variant-note">Cada proyecto es una píldora con sus iniciales y el nombre completo en el tooltip: la tabla se lee de un vistazo y el detalle se pide.</p>
+      </div>
+    </header>
+    <div class="canvas" data-kind="7"></div>
+    <label class="notes"><span>notas</span><textarea data-note="7" rows="2"></textarea></label>
+  </section>
+
+  <footer>
+    <span>datos reales · 2012 — 2026 · 4 etapas · 26 proyectos</span>
+    <span>docs/experiments · sin publicar</span>
+  </footer>
+</div>
+
+<script>
+  const DATA = {"range":{"from":24143,"to":24323},"companies":[{"id":"acd","name":"ACD Sistemes SL","short":"acd","accent":"terracotta"},{"id":"basetis","name":"Basetis","short":"basetis","accent":"sage"},{"id":"quabu","name":"Quabu Solutions","short":"quabu","accent":"cobalt"},{"id":"pachanga","name":"Pachanga Community","short":"pachanga","accent":"sage"}],"projects":[{"id":"fazenda-sao-paulo","name":"Fazenda do São Paulo","short":"fazenda","companyId":"acd","accent":"terracotta","start":24143,"end":24149},{"id":"acd-importador","name":"ACDImportador","short":"importador","companyId":"acd","accent":"terracotta","start":24149,"end":24155},{"id":"acd-auditor-delphi","name":"ACDAuditor · Velasquez","short":"auditor","companyId":"acd","accent":"terracotta","start":24155,"end":24160},{"id":"acd-auditor-charts","name":"ACDAuditor · gráficas Velneo","short":"gráficas","companyId":"acd","accent":"terracotta","start":24160,"end":24165},{"id":"acd-concursal-web","name":"ACDConcursal Web","short":"concursal","companyId":"acd","accent":"terracotta","start":24164,"end":24173},{"id":"acd-circularizacion","name":"ACDCircularización Web","short":"circularización","companyId":"acd","accent":"terracotta","start":24173,"end":24181},{"id":"acd-commercial-web","name":"Web comercial","short":"comercial","companyId":"acd","accent":"terracotta","start":24181,"end":24189},{"id":"acd-concursal-modulo","name":"ACD Concursal · validación","short":"validación","companyId":"acd","accent":"terracotta","start":24188,"end":24196},{"id":"angola-igf","name":"Angola · IGF","short":"angola","companyId":"acd","accent":"terracotta","start":24195,"end":24197},{"id":"acd-web-grids","name":"ACDWebGrids","short":"webgrids","companyId":"acd","accent":"terracotta","start":24197,"end":24199},{"id":"acd-charts","name":"ACDCharts","short":"charts","companyId":"acd","accent":"terracotta","start":24198,"end":24201},{"id":"acd-importador-v2","name":"ACDImportador · nueva versión","short":"importador v2","companyId":"acd","accent":"terracotta","start":24200,"end":24208},{"id":"shelter-gencat","name":"ShelterGencat","short":"shelter","companyId":"basetis","accent":"sage","start":24211,"end":24216},{"id":"aca-csv","name":"ACA CSV","short":"aca csv","companyId":"basetis","accent":"sage","start":24215,"end":24222},{"id":"msupply","name":"MSyupply","short":"msyupply","companyId":"basetis","accent":"sage","start":24221,"end":24238},{"id":"ema","name":"EMA · mantenimiento de aplicaciones","short":"ema","companyId":"basetis","accent":"sage","start":24237,"end":24249},{"id":"love-isdin-pro","name":"LoveISDIN Proyect","short":"loveisdin pro","companyId":"basetis","accent":"sage","start":24248,"end":24255},{"id":"love-isdin","name":"LoveISDIN","short":"loveisdin","companyId":"basetis","accent":"sage","start":24254,"end":24292},{"id":"coleo","name":"Coleo","short":"coleo","companyId":"quabu","accent":"cobalt","start":24288,"end":24291},{"id":"bodega-digital","name":"Bodega Digital","short":"bodega digital","companyId":"quabu","accent":"cobalt","start":24290,"end":24302},{"id":"jira-addons","name":"Quabu Atlassian Addons","short":"atlassian addons","companyId":"quabu","accent":"cobalt","start":24294,"end":24298},{"id":"ondunova","name":"Ondunova","short":"ondunova","companyId":"quabu","accent":"cobalt","start":24301,"end":24304},{"id":"nakire-tps","name":"Nakire TPS","short":"nakire tps","companyId":"quabu","accent":"cobalt","start":24303,"end":24318},{"id":"essentialist","name":"Essentialist","short":"essentialist","companyId":"quabu","accent":"cobalt","start":24306,"end":24309},{"id":"pachanga-community","name":"Pachanga Community","short":"pachanga","companyId":"pachanga","accent":"sage","start":24312,"end":24323},{"id":"pachanga-engine","name":"Pachanga Engine","short":"engine","companyId":"pachanga","accent":"sage","start":24318,"end":24323}]};
+
+  const FROM = DATA.range.from;
+  const TO = DATA.range.to;
+  const SPAN = TO - FROM;
+  const FIRST_YEAR = Math.floor(FROM / 12);
+  const LAST_YEAR = Math.floor((TO - 1) / 12);
+  const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+  const pct = (month) => ((month - FROM) / SPAN) * 100;
+  const label = (month) => `${MONTHS[(month - 1) % 12]} ${Math.floor((month - 1) / 12)}`;
+  const initials = (name) =>
+    name
+      .split(/[\s·]+/)
+      .filter((word) => /[a-záéíóú]/i.test(word[0] ?? ""))
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join("");
+
+  const rows = DATA.companies.map((company) => ({
+    company,
+    items: DATA.projects
+      .filter((project) => project.companyId === company.id)
+      .sort((a, b) => a.start - b.start),
+  }));
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  /** Greedy lanes; `minSpan` reserves room for a chip wider than its months. */
+  function pack(items, minSpan = 0) {
+    const ends = [];
+    return items.map((project) => {
+      const end = Math.max(project.end, project.start + minSpan);
+      let lane = ends.findIndex((value) => value <= project.start);
+      if (lane === -1) {
+        lane = ends.length;
+        ends.push(end);
+      } else {
+        ends[lane] = end;
+      }
+      return { project, lane };
+    });
+  }
+
+  function bar(kind, project, lane) {
+    const node = el("span", "bar");
+    node.dataset.accent = project.accent;
+    node.style.setProperty("--l", pct(project.start).toFixed(3));
+    node.style.setProperty("--w", (pct(project.end) - pct(project.start)).toFixed(3));
+    node.style.setProperty("--lane", String(lane));
+    node.dataset.start = String(project.start);
+    node.dataset.end = String(project.end);
+    node.title = `${project.name} · ${label(project.start)} — ${label(project.end)}`;
+    if (kind === "ref" || kind === "1" || kind === "3") {
+      node.append(el("span", "bar-label", project.short));
+      node.dataset.label = project.short;
+    }
+    if (kind === "7") node.textContent = initials(project.name);
+    return node;
+  }
+
+  function chart(kind) {
+    const root = el("div", `chart k-${kind}`);
+
+    const rulerRow = el("div", "ruler-row");
+    rulerRow.append(el("span"));
+    const ruler = el("div", "ruler");
+    for (let year = FIRST_YEAR; year <= LAST_YEAR; year += 1) {
+      const mark = el("span", "year", String(year));
+      mark.style.left = `${pct(year * 12)}%`;
+      ruler.append(mark);
+    }
+    rulerRow.append(ruler);
+    root.append(rulerRow);
+
+    for (const { company, items } of rows) {
+      // 07 pads its chip so a two-month project still has room for one; 06 gives each
+      // project its own line, so an outside name never runs into the next bar.
+      const laid =
+        kind === "6"
+          ? items.map((project, index) => ({ project, lane: index }))
+          : pack(items, kind === "7" ? 5 : 0);
+      const lanes = Math.max(1, ...laid.map((entry) => entry.lane + 1));
+
+      const row = el("div", "row");
+      row.style.setProperty("--lanes", String(lanes));
+
+      const labelNode = el("div", "label");
+      labelNode.dataset.accent = company.accent;
+      labelNode.append(el("i", "dot"));
+      labelNode.append(el("span", "", company.name));
+
+      const track = el("div", "track");
+      track.style.setProperty("--lanes", String(lanes));
+      track.style.setProperty("--year", `${((12 / SPAN) * 100).toFixed(4)}%`);
+
+      // 05 and 06 both veil the whole stage, so the projects read as one company.
+      if (kind === "5" || kind === "6") {
+        const stage = el("div", "stage");
+        stage.dataset.accent = company.accent;
+        stage.style.left = `${pct(items[0].start)}%`;
+        stage.style.width = `${pct(items[items.length - 1].end) - pct(items[0].start)}%`;
+        track.append(stage);
+      }
+
+      for (const { project, lane } of laid) {
+        if (kind === "4") {
+          const first = Math.floor(project.start / 12);
+          const last = Math.floor((project.end - 1) / 12);
+          for (let year = first; year <= last; year += 1) {
+            const from = Math.max(year * 12, project.start);
+            const to = Math.min((year + 1) * 12, project.end);
+            const seg = el("span", "seg");
+            seg.dataset.accent = project.accent;
+            seg.style.setProperty("--l", pct(from).toFixed(3));
+            seg.style.setProperty("--w", (pct(to) - pct(from)).toFixed(3));
+            seg.style.setProperty("--lane", String(lane));
+            seg.title = `${project.name} · ${year}`;
+            track.append(seg);
+          }
+          continue;
+        }
+
+        track.append(bar(kind, project, lane));
+
+        if (kind === "6") {
+          const tag = el("span", "tag", project.short);
+          tag.dataset.accent = project.accent;
+          tag.style.setProperty("--l", pct(project.start).toFixed(3));
+          tag.style.setProperty("--w", (pct(project.end) - pct(project.start)).toFixed(3));
+          tag.style.setProperty("--lane", String(lane));
+          track.append(tag);
+        }
+      }
+
+      row.append(labelNode, track);
+      root.append(row);
+    }
+
+    return root;
+  }
+
+  const canvases = document.querySelectorAll(".canvas");
+  for (const canvas of canvases) {
+    canvas.append(chart(canvas.dataset.kind));
+  }
+
+  // A label only stays inside a bar when the bar can hold it, and it is refitted
+  // whenever the panel changes width instead of trusting one animation frame.
+  function fitLabels() {
+    for (const node of document.querySelectorAll(".bar[data-label] .bar-label")) {
+      node.hidden = false;
+      const bar = node.parentElement;
+      if (bar.scrollWidth > bar.clientWidth + 1) node.hidden = true;
+    }
+  }
+
+  /** Names sit after their bar; near the right edge they hop to its left. */
+  function placeTags() {
+    for (const track of document.querySelectorAll(".k-6 .track")) {
+      const bounds = track.getBoundingClientRect();
+      for (const tag of track.querySelectorAll(".tag")) {
+        tag.hidden = false;
+        tag.style.insetInlineStart = "";
+        let box = tag.getBoundingClientRect();
+        if (box.right > bounds.right) {
+          const width = tag.offsetWidth + 6;
+          tag.style.insetInlineStart = `calc(${tag.style.getPropertyValue("--l")} * 1% - ${width}px)`;
+          box = tag.getBoundingClientRect();
+        }
+        const clash = [...track.querySelectorAll(".bar")].some((bar) => {
+          const other = bar.getBoundingClientRect();
+          return (
+            Math.min(box.right, other.right) - Math.max(box.left, other.left) > 2 &&
+            Math.min(box.bottom, other.bottom) - Math.max(box.top, other.top) > 2
+          );
+        });
+        if (clash || box.left < bounds.left) tag.hidden = true;
+      }
+    }
+  }
+
+  /**
+   * 07 chips are fixed 22px, so how many months they cover depends on the track
+   * width: re-lane them against the measured width instead of a guessed span.
+   */
+  function staggerChips() {
+    for (const track of document.querySelectorAll(".k-7 .track")) {
+      const pxPerMonth = track.getBoundingClientRect().width / SPAN;
+      const minSpan = pxPerMonth > 0 ? 26 / pxPerMonth : 5;
+      const ends = [];
+      let lanes = 1;
+      for (const chip of track.querySelectorAll(".bar")) {
+        const start = Number(chip.dataset.start);
+        const end = Math.max(Number(chip.dataset.end), start + minSpan);
+        let lane = ends.findIndex((value) => value <= start);
+        if (lane === -1) {
+          lane = ends.length;
+          ends.push(end);
+        } else {
+          ends[lane] = end;
+        }
+        chip.style.setProperty("--lane", String(lane));
+        lanes = Math.max(lanes, lane + 1);
+      }
+      track.style.setProperty("--lanes", String(lanes));
+      track.parentElement?.style.setProperty("--lanes", String(lanes));
+    }
+  }
+
+  function fitAll() {
+    fitLabels();
+    placeTags();
+    staggerChips();
+  }
+
+  fitAll();
+  window.addEventListener("load", fitAll);
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(fitAll, 120);
+  });
+
+  const copyAll = document.getElementById("copy-all");
+  const clearAll = document.getElementById("clear-all");
+  const state = document.getElementById("copy-state");
+
+  const sections = [...document.querySelectorAll(".variant")].map((section) => ({
+    name:
+      section.dataset.variant === "0"
+        ? "00 · hoy (referencia)"
+        : `${section.dataset.variant.padStart(2, "0")} · ${section.querySelector("h2").textContent}`,
+    note: section.querySelector("textarea"),
+  }));
+
+  function collect() {
+    return sections
+      .map(({ name, note }) => `## ${name}\n${note.value.trim() || "—"}`)
+      .join("\n\n");
+  }
+
+  const dump = document.getElementById("dump");
+
+  copyAll.addEventListener("click", async () => {
+    const text = collect();
+    dump.textContent = text;
+    dump.hidden = false;
+    try {
+      await navigator.clipboard.writeText(text);
+      state.textContent = "notas copiadas · pégalas en el chat";
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(dump);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      state.textContent = "copia el bloque de abajo (ya seleccionado)";
+    }
+  });
+
+  clearAll.addEventListener("click", () => {
+    for (const { note } of sections) note.value = "";
+    state.textContent = "notas vaciadas";
+  });
+
+  // Placeholders keep the page self-explanatory without a manual.
+  for (const { note } of sections) {
+    note.placeholder = "qué te gusta, qué no, qué cambiarías…";
+  }
+</script>
+</body>
+</html>
