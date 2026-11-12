@@ -816,6 +816,91 @@ svg {
 	color: var(--color-ink-muted);
 }
 
+/*
+ * Preview term triggers. Global rather than component-scoped because the
+ * experience matrix builds its company labels in the browser: a trigger
+ * created there has to paint exactly like the one written in the prose.
+ *
+ * The reference site's text paint, on this site's colours: the fill is a
+ * gradient layer whose height grows from the baseline, over a dotted line that
+ * stays put. Colour knocks out to paper while the ink covers the word.
+ */
+.preview {
+	display: inline;
+}
+
+.preview-term {
+	display: inline;
+	margin: 0;
+	padding: 0 0.12em 0.08em;
+	border: 0;
+	border-radius: 3px;
+	background-color: transparent;
+	background-image:
+		linear-gradient(var(--color-terracotta), var(--color-terracotta)),
+		radial-gradient(circle, var(--color-terracotta) 1px, transparent 1.1px);
+	background-position: left bottom, left bottom;
+	background-repeat: no-repeat, repeat-x;
+	background-size: 100% 0, 5px 3px;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+	text-align: inherit;
+	text-decoration: none;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+	cursor: help;
+	transition:
+		color 140ms ease,
+		background-size 170ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.preview-term:hover,
+.preview-term:focus-visible,
+.preview-term[aria-expanded="true"] {
+	color: var(--color-paper);
+	background-size: 100% 100%, 5px 3px;
+}
+
+/*
+ * A stack chip that opens a card: the button is the chip itself, so the fill
+ * still grows from the line and the chip reads like any other term in prose.
+ */
+.preview-term.pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.1rem 0.45rem;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	background-color: var(--color-paper-warm);
+	color: var(--color-ink-muted);
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	letter-spacing: 0;
+	line-height: 1.5;
+}
+
+.preview-term.pill:hover,
+.preview-term.pill:focus-visible,
+.preview-term.pill[aria-expanded="true"] {
+	border-color: var(--color-terracotta);
+}
+
+@media print {
+	.preview-term {
+		padding: 0;
+		background-image: none;
+		color: inherit;
+	}
+
+	/* In print the chip is a chip again, not a trigger. */
+	.preview-term.pill {
+		padding: 0.1rem 0.45rem;
+		background-color: var(--color-paper-warm);
+		color: var(--color-ink-muted);
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;

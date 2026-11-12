@@ -50,6 +50,12 @@ const es = {
 	"footer.since": "desde",
 	"footer.availability": "Disponible",
 	"footer.location": "Barcelona · remoto",
+	previewConcept: "Concepto",
+	previewLibrary: "Librería",
+	previewCompany: "Empresa",
+	previewTool: "Herramienta",
+	previewNewTab: "abre en una pestaña nueva",
+	previewSeeCase: "Ver el caso",
 } as const;
 
 export type UiKey = keyof typeof es;
@@ -87,6 +93,12 @@ const en: Record<UiKey, string> = {
 	"footer.since": "since",
 	"footer.availability": "Available",
 	"footer.location": "Barcelona · remote",
+	previewConcept: "Concept",
+	previewLibrary: "Library",
+	previewCompany: "Company",
+	previewTool: "Tool",
+	previewNewTab: "opens in a new tab",
+	previewSeeCase: "See the case study",
 };
 
 const ca: Record<UiKey, string> = {
@@ -122,6 +134,12 @@ const ca: Record<UiKey, string> = {
 	"footer.since": "des del",
 	"footer.availability": "Disponible",
 	"footer.location": "Barcelona · remot",
+	previewConcept: "Concepte",
+	previewLibrary: "Llibreria",
+	previewCompany: "Empresa",
+	previewTool: "Eina",
+	previewNewTab: "obre en una pestanya nova",
+	previewSeeCase: "Veure el cas",
 };
 
 /** Flat dictionaries, so every key is a literal such as `"nav.home"`. */

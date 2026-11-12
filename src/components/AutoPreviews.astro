@@ -1,0 +1,79 @@
+---
+/**
+ * A prose block that explains itself.
+ *
+ * The page writes its copy and lets this wrap it: the slot is rendered here, the
+ * terms the registry knows become triggers, and the cards those triggers can
+ * open are pooled once, after the block. Templates stop naming terms by hand, so
+ * a new mention of Kafka reads as Kafka without anyone remembering to mark it.
+ *
+ * The registry answers two questions the copy cannot: which spellings to look
+ * for in this language (`spellings`, per locale) and where a term should not be
+ * marked at all (`PREVIEW_EXCLUSIONS`, per page). The block passes its pathname,
+ * so the language and the exclusions come from the page itself.
+ *
+ * The triggers are the same markup `<PreviewTerm>` writes, minus the local card,
+ * so `lib/client/preview-card` resolves them against the pool by `data-preview-id`
+ * and they inherit everything: the fill, the line, the morph, Esc, tap, dark
+ * theme and reduced motion.
+ *
+ * The block keeps its own element, id and classes: the prose styles are written
+ * against `.prose`, and `id` is also what keeps the generated ids unique when a
+ * page hosts more than one of these.
+ *
+ * Two shapes, because pages style their prose differently:
+ *
+ * - the default renders the block element (`div.prose` unless the page says
+ *   otherwise) and pools the cards right after it;
+ * - `inline` renders no element at all, for copy that already lives in a
+ *   styled paragraph. Its cards travel in a template, because a paragraph
+ *   cannot hold a block; `lib/client/preview-card` moves them to the end of the
+ *   body and keeps a single card per term for the whole page.
+ */
+import PreviewCard from "./PreviewCard.astro";
+import { autoPreviews } from "../lib/preview-terms";
+
+interface Props {
+	/** The block's id; it is required, and it is what keeps the ids unique. */
+	id: string;
+	/** The element's classes: `prose` unless the page says otherwise. */
+	class?: string;
+	/** The prose as data, for copy the page holds in an array. */
+	text?: string;
+	/** Keep the page's own element: no wrapper, only the triggers inside it. */
+	inline?: boolean;
+}
+
+const { id, class: className = "prose", text, inline = false } = Astro.props;
+const source = text ?? (await Astro.slots.render("default"));
+// The pathname tells the scanner which language to read and which terms this
+// page has excluded, so one block serves the three locales.
+const { html, slugs } = autoPreviews(source, id, Astro.url.pathname);
+---
+
+{
+	inline ? (
+		<>
+			<Fragment set:html={html} />
+			<template id={`preview-pool-${id}`} data-preview-pool>
+				{slugs.map((slug) => (
+					<PreviewCard slug={slug} idSuffix={`auto-${id}`} />
+				))}
+			</template>
+		</>
+	) : (
+		<>
+			<div id={id} class={className} set:html={html} />
+			{slugs.map((slug) => (
+				<PreviewCard slug={slug} idSuffix={`auto-${id}`} />
+			))}
+		</>
+	)
+}
+
+<script>
+  // The page may have no `<PreviewTerm>` left to pull the client in, and the
+  // triggers still need it: the same script, guarded against a second bind. It
+  // also empties the templates above and keeps one card per term.
+  import "../lib/client/preview-card";
+</script>

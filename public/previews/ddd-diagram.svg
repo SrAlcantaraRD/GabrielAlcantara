@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180" role="img" aria-label="Un contexto delimitado con sus capas de dominio, aplicación e infraestructura, y un evento saliendo hacia otro contexto">
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
+    <rect x="16" y="30" width="168" height="122" rx="10" fill="#fff" stroke="#e6e0d6"/>
+    <text x="28" y="47" font-size="7" letter-spacing="1.2" fill="#6f6960">CONTEXTO</text>
+
+    <rect x="28" y="55" width="144" height="30" rx="6" fill="#f8efea" stroke="#9e4e36"/>
+    <text x="38" y="75" font-size="9" fill="#9e4e36">dominio</text>
+
+    <rect x="28" y="91" width="144" height="26" rx="6" fill="#faf8f5" stroke="#e6e0d6"/>
+    <text x="38" y="108" font-size="9" fill="#1a1a1a">aplicación</text>
+
+    <rect x="28" y="123" width="144" height="20" rx="6" fill="none" stroke="#d3cab9" stroke-dasharray="3 3"/>
+    <text x="38" y="137" font-size="9" fill="#6f6960">infraestructura</text>
+
+    <path d="M186 91 H212" stroke="#9e4e36" stroke-width="1.2" marker-end="url(#ddd-arrow)"/>
+    <text x="187" y="84" font-size="7" fill="#9e4e36">evento</text>
+
+    <rect x="220" y="66" width="84" height="50" rx="8" fill="#faf8f5" stroke="#cfc6b8" stroke-dasharray="4 3"/>
+    <text x="232" y="88" font-size="8.5" fill="#4f4b47">otro</text>
+    <text x="232" y="101" font-size="8.5" fill="#4f4b47">contexto</text>
+  </g>
+  <defs>
+    <marker id="ddd-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L6 3 L0 6 z" fill="#9e4e36"/>
+    </marker>
+  </defs>
+</svg>

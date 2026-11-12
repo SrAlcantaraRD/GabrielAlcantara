@@ -1,0 +1,408 @@
+---
+/**
+ * The card itself: server-rendered, hidden, and revealed by
+ * `lib/client/preview-card`.
+ *
+ * It is split from the trigger because the experience matrix builds its row and
+ * column labels in the browser. Those labels can carry a trigger, but not the
+ * markup of a card, so the matrix renders one card per company here and the
+ * client resolves a trigger to its nearest card or, failing that, to the card
+ * with the matching `data-preview-id`.
+ *
+ * Two shapes: a term's card (kind, name, capture, definition) and, when the
+ * entry carries the site's own preview, a link unfurl —image, domain, title,
+ * description— the way Slack presents a URL.
+ *
+ * The contents sit in their own surface: the shell grows out of the line the
+ * fill leaves behind, while the copy settles after it, exactly as the project
+ * drawer on /experience does.
+ *
+ * Ids carry the slug plus `idSuffix`, because the same company is named from
+ * several places on one page and an id has to name exactly one element.
+ *
+ * Everything is a `<span>`: a term sits inside a `<p>` in the prose, where a
+ * `<div>` would be invalid HTML.
+ */
+import {
+	KIND_LABEL,
+	domainOf,
+	previewHref,
+	previewOf,
+} from "../data/previews";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+interface Props {
+	slug: string;
+	/** Keeps the ids unique when one page names the same company twice. */
+	idSuffix?: string;
+}
+
+const { slug, idSuffix } = Astro.props;
+const entry = previewOf(slug);
+const suffix = idSuffix ? `-${idSuffix}` : "";
+const id = (part: string) => `${part}-${entry.id}${suffix}`;
+const locale = getLangFromUrl(Astro.url);
+const t = useTranslations(locale);
+const copy = entry.copy[locale];
+const href = previewHref(entry.link, locale);
+const isExternal = entry.link?.kind === "external";
+const linkLabel = entry.linkLabelKey
+	? t(entry.linkLabelKey)
+	: entry.link?.kind === "external"
+		? domainOf(entry.link.href)
+		: undefined;
+const site = entry.site;
+const unfurl = Boolean(site && href && isExternal);
+---
+
+<span
+  class="preview-card"
+  id={id("preview-card")}
+  data-preview-card
+  data-preview-id={entry.id}
+  hidden
+>
+  <span class="preview-card-surface" id={id("preview-surface")}>
+    {
+      unfurl ? (
+        <span class="preview-card-unfurl" id={id("preview-unfurl")}>
+          {entry.media && (
+            <span
+              class="preview-card-media"
+              id={id("preview-media")}
+              data-fit={entry.media.fit}
+            >
+              {entry.media.type === "image" ? (
+                <img
+                  id={id("preview-image")}
+                  src={entry.media.src}
+                  alt={copy.mediaAlt ?? entry.name}
+                  width="960"
+                  height="504"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <video
+                  id={id("preview-video")}
+                  src={entry.media.src}
+                  poster={entry.media.poster}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                />
+              )}
+            </span>
+          )}
+          <a
+            class="preview-card-unfurl-link"
+            id={id("preview-link")}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="preview-card-domain" id={id("preview-domain")}>
+              {domainOf(entry.link?.kind === "external" ? entry.link.href : "")}
+            </span>
+            <span class="preview-card-site-title" id={id("preview-title")}>
+              {site?.title}
+            </span>
+            <span class="preview-card-site-text" id={id("preview-text")}>
+              {site?.description ?? copy.definition}
+            </span>
+            <span class="preview-sr" id={id("preview-newtab")}>
+              ({t("previewNewTab")})
+            </span>
+          </a>
+        </span>
+      ) : (
+        <>
+          <span class="preview-card-kind" id={id("preview-kind")}
+            >{t(KIND_LABEL[entry.kind])}</span
+          >
+          <span class="preview-card-name" id={id("preview-name")}
+            >{entry.name}</span
+          >
+          {entry.media && (
+            <span
+              class="preview-card-media"
+              id={id("preview-media")}
+              data-fit={entry.media.fit}
+            >
+              {entry.media.type === "image" ? (
+                <img
+                  id={id("preview-image")}
+                  src={entry.media.src}
+                  alt={copy.mediaAlt ?? entry.name}
+                  width="960"
+                  height="504"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                /* Decorative: the definition carries the meaning, as the reel cards do. */
+                <video
+                  id={id("preview-video")}
+                  src={entry.media.src}
+                  poster={entry.media.poster}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                />
+              )}
+            </span>
+          )}
+          <span class="preview-card-body" id={id("preview-body")}
+            >{copy.definition}</span
+          >
+          {href && linkLabel && (
+            <a
+              class="preview-card-link"
+              id={id("preview-link")}
+              href={href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
+            >
+              {linkLabel}
+              {isExternal && (
+                <span id={id("preview-arrow")} aria-hidden="true">
+                  ↗
+                </span>
+              )}
+              {isExternal && (
+                <span class="preview-sr" id={id("preview-newtab")}>
+                  ({t("previewNewTab")})
+                </span>
+              )}
+            </a>
+          )}
+        </>
+      )
+    }
+  </span>
+</span>
+
+<style>
+  /*
+   * Fixed, so the card escapes the prose column and any overflow above it.
+   * `[hidden]` wins over `display: block`, or the card would never leave.
+   *
+   * The shell carries no transition: the client morphs it out of the line the
+   * fill leaves, and fades it back out on close.
+   */
+  .preview-card {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 30;
+    display: block;
+    inline-size: min(21rem, calc(100vw - 1.6rem));
+    max-block-size: min(60vh, 24rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.9rem 1rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-card);
+    box-shadow: var(--shadow);
+    color: var(--color-ink-muted);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    text-align: start;
+    opacity: 0;
+  }
+
+  .preview-card[hidden] {
+    display: none;
+  }
+
+  /*
+   * The shell moves on its own clock; the copy settles after it: fade, blur and
+   * a touch of scale, so the card is already in place when the words arrive.
+   */
+  .preview-card-surface {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(0.984);
+    transition:
+      opacity 240ms ease 240ms,
+      filter 320ms ease 240ms,
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 220ms;
+  }
+
+  .preview-card.is-open .preview-card-surface {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  /*
+   * Closing is the entrance backwards, and the copy is not animated out: it is
+   * simply gone while the shell goes back into the line.
+   */
+  .preview-card[data-closing="true"] .preview-card-surface {
+    opacity: 0;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preview-card-surface {
+      filter: none;
+      transform: none;
+      transition: opacity 140ms ease;
+    }
+  }
+
+  .preview-card-kind {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-terracotta);
+  }
+
+  .preview-card-name {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-ink);
+  }
+
+  .preview-card-media {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 6px;
+    background: var(--color-paper-warm);
+  }
+
+  .preview-card-media img,
+  .preview-card-media video {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  /*
+   * A logo is not a photograph: it sits whole inside the box instead of filling
+   * it. The plate behind it stays light in both themes — a brand mark is drawn
+   * for white paper, and on the dark card it would simply disappear.
+   */
+  .preview-card-media[data-fit="contain"] {
+    background: #f5f1ea;
+  }
+
+  .preview-card-media[data-fit="contain"] img {
+    object-fit: contain;
+  }
+
+  /*
+   * The unfurl: the site's own card, image on top and the link carrying the
+   * domain, the title and what the site says it is.
+   */
+  .preview-card-unfurl {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .preview-card-unfurl-link {
+    display: grid;
+    gap: 0.2rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .preview-card-domain {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-faint);
+  }
+
+  .preview-card-site-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+
+  .preview-card-site-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--color-ink-muted);
+  }
+
+  .preview-card-unfurl-link:hover .preview-card-site-title,
+  .preview-card-unfurl-link:focus-visible .preview-card-site-title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  .preview-card .preview-card-body {
+    display: block;
+    color: var(--color-ink-muted);
+  }
+
+  .preview-card .preview-card-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    inline-size: fit-content;
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 140ms ease;
+  }
+
+  .preview-card .preview-card-link:hover,
+  .preview-card .preview-card-link:focus-visible {
+    text-decoration-color: var(--color-ink);
+  }
+
+  .preview-sr {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preview-card .preview-card-link {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .preview-card {
+      display: none !important;
+    }
+  }
+</style>

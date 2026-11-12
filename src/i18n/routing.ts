@@ -72,7 +72,7 @@ export function localeRoot(locale: Locale): string {
 }
 
 /** Path without a leading locale segment, so section matching is shared. */
-function pathWithoutLocale(pathname: string): string {
+export function pathWithoutLocale(pathname: string): string {
 	const withoutLocale = pathname.replace(/^\/(en|ca)(?=\/|$)/, "");
 	return withoutLocale || "/";
 }

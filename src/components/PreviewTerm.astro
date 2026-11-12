@@ -1,0 +1,60 @@
+---
+/**
+ * One explained term, a library or a company inside the copy.
+ *
+ * The trigger carries the anchor paint of the reference site — a dotted
+ * baseline that swells into a solid fill on hover/focus — and the card under it
+ * is server-rendered next to the word and revealed by `lib/client/preview-card`.
+ *
+ * `card={false}` renders the trigger alone, for a place that renders the cards
+ * once itself: the experience matrix, whose labels are built in the browser.
+ *
+ * Ids carry the slug, so the two components stay addressable; `idSuffix` keeps
+ * them unique when one page names the same company twice, as the CV does.
+ *
+ * The copy comes from `data/previews.ts`, so an unknown slug fails the build
+ * instead of rendering an empty card.
+ */
+import PreviewCard from "./PreviewCard.astro";
+import { previewOf } from "../data/previews";
+
+interface Props {
+	slug: string;
+	/** Render the card next to the word; off when the page pools its own. */
+	card?: boolean;
+	/** Appended to every id: the CV names one company from many positions. */
+	idSuffix?: string;
+	/** Extra classes for the trigger, so a chip can wear its own paint. */
+	class?: string;
+}
+
+const { slug, card = true, idSuffix, class: className } = Astro.props;
+const entry = previewOf(slug);
+const suffix = idSuffix ? `-${idSuffix}` : "";
+---
+
+<span
+  class="preview"
+  id={`preview-${entry.id}${suffix}`}
+  data-preview-root
+>
+  <button
+    class={`preview-term${className ? ` ${className}` : ""}`}
+    id={`preview-term-${entry.id}${suffix}`}
+    type="button"
+    data-preview={entry.id}
+    aria-expanded="false"
+  ><slot /></button>
+
+  {card && <PreviewCard slug={slug} idSuffix={idSuffix} />}
+</span>
+
+<script>
+  import "../lib/client/preview-card";
+</script>
+
+<style>
+  .preview {
+    display: inline;
+  }
+</style>
