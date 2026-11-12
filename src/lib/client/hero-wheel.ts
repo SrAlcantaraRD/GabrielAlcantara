@@ -13,7 +13,7 @@
  * and a slow clock advances the reel on its own.
  */
 
-import { reelSlot, wrapOffset } from "../hero-wheel";
+import { pauseBefore, reelSlot, wrapOffset } from "../hero-wheel";
 
 /** How far one row's worth of flick speed carries the wheel. */
 const PROJECT_MS = 120;
@@ -26,8 +26,11 @@ const FLICK_TTL_MS = 100;
 /** Minimum gap between clicks, so inertia cannot machine-gun the sound. */
 const TICK_MIN_MS = 40;
 const TICK_FREQUENCY = 2100;
-/** The internal clock: the word above slides into the centre every 3 s. */
-const AUTOPLAY_MS = 3000;
+/**
+ * Time one word owns the centre, the move that brings the next one included.
+ * The clock waits only what the ease leaves of it.
+ */
+const AUTOPLAY_MS = 2000;
 
 interface ClickBank {
 	context: AudioContext;
@@ -159,19 +162,25 @@ function mount(reel: HTMLElement): void {
 		frame = 0;
 	};
 
+	/** How long the ease to `goal` takes; the clock subtracts it from its pause. */
+	const easeMs = (goal: number) =>
+		prefersReducedMotion()
+			? 0
+			: Math.min(520, 180 + Math.abs(goal - position) * 120);
+
 	/** Eases to an integer, and lands exactly on it: no half rows, ever. */
-	const settle = (goal: number) => {
+	const settle = (goal: number, onLanded?: () => void) => {
 		stopAnimation();
 
 		if (prefersReducedMotion()) {
 			position = goal;
 			render();
+			onLanded?.();
 			return;
 		}
 
 		const from = position;
-		const distance = Math.abs(goal - from);
-		const duration = Math.min(520, 180 + distance * 120);
+		const duration = easeMs(goal);
 		const start = performance.now();
 
 		const step = (now: number) => {
@@ -188,23 +197,27 @@ function mount(reel: HTMLElement): void {
 			position = goal;
 			render();
 			frame = 0;
+			onLanded?.();
 		};
 
 		frame = requestAnimationFrame(step);
 	};
 
 	/**
-	 * The internal clock. It steps on its own every three seconds, and every
-	 * interaction restarts the countdown so the reel never moves away under the
-	 * hand that is turning it. The step walks back through the list, so the word
-	 * above slides down into the centre: the same sense in which a downward drag
-	 * turns the wheel. It stays still for someone who asked for less motion and
-	 * while the page is in the background.
+	 * The internal clock. A word owns the centre for two seconds, the move that
+	 * brings the next one included, so the countdown is what the ease leaves of
+	 * that budget and starts once the word lands. Every interaction restarts it,
+	 * so the reel never moves away under the hand that is turning it. The step
+	 * walks forward through the list, so the word below rises into the centre:
+	 * the same sense in which an upward drag turns the wheel. It stays still for
+	 * someone who asked for less motion and while the page is in the background.
 	 */
 	const scheduleClock = () => {
 		if (clock) clearTimeout(clock);
 		clock = 0;
 		if (disposed) return;
+
+		const pause = pauseBefore(AUTOPLAY_MS, easeMs(Math.round(position) + 1));
 
 		clock = window.setTimeout(() => {
 			clock = 0;
@@ -212,9 +225,9 @@ function mount(reel: HTMLElement): void {
 				!dragging &&
 				document.visibilityState !== "hidden" &&
 				!prefersReducedMotion();
-			if (canAdvance) settle(Math.round(position) - 1);
-			scheduleClock();
-		}, AUTOPLAY_MS);
+			if (canAdvance) settle(Math.round(position) + 1, scheduleClock);
+			else scheduleClock();
+		}, pause);
 	};
 
 	const onPointerDown = (event: PointerEvent) => {

@@ -36,6 +36,17 @@ export function wrapOffset(delta: number, length: number): number {
 	return ((((delta + half) % length) + length) % length) - half;
 }
 
+/**
+ * What is left of a word's turn on the centre once the move is accounted for.
+ *
+ * The budget covers the whole turn, the ease included: a slower move leaves a
+ * shorter pause, so the reel keeps one rhythm instead of stretching it by the
+ * length of every transition.
+ */
+export function pauseBefore(totalMs: number, easeMs: number): number {
+	return Math.max(0, totalMs - easeMs);
+}
+
 /** Visual state of a word sitting `offset` rows away from the centre. */
 export function reelSlot(offset: number): ReelSlot {
 	const distance = Math.abs(offset);
