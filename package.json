@@ -15,7 +15,10 @@
 		"ui:check": "node scripts/ui-check.mjs",
 		"hooks:install": "node scripts/install-git-hooks.mjs",
 		"social:cards": "node docs/og-image/export.mjs",
-		"social:check": "node scripts/check-social-cards.mjs"
+		"social:check": "node scripts/check-social-cards.mjs",
+		"url:baseline": "node scripts/url-baseline.mjs",
+		"url:baseline:write": "node scripts/url-baseline.mjs --write",
+		"deploy:production": "pnpm test && pnpm build && pnpm url:baseline"
 	},
 	"dependencies": {
 		"@fontsource-variable/jetbrains-mono": "^5.3.0",

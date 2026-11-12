@@ -39,9 +39,22 @@ All commands are run from the root of the project, from a terminal:
 | `pnpm social:check`    | Fails when the social card manifest or its PNGs are stale |
 | `pnpm hooks:install`   | Points git at the versioned pre-commit hook |
 | `pnpm build`           | Build your production site to `./dist/`          |
+| `pnpm url:baseline`    | Compares the built URLs, canonical and hreflang against `tests/fixtures/url-baseline.json` |
+| `pnpm url:baseline:write` | Recaptures the baseline after an intentional URL change |
+| `pnpm deploy:production` | Production gate: tests, build and URL baseline comparison |
 | `pnpm preview`         | Preview your build locally, before deploying     |
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `pnpm astro -- --help` | Get help using the Astro CLI                     |
+
+## Deploy
+
+`pnpm deploy:production` is the only command needed before publishing. It runs,
+in order, the tests, the Astro build (which checks the social cards first) and
+the URL baseline comparison, and leaves the site ready in `dist/`. A page that
+changes URL, canonical or hreflang stops the command instead of shipping.
+
+The repository has no deploy target configured: the host that serves
+`gabrielalcantara.com` publishes `dist/` after this gate passes.
 
 ## Social card and icons
 

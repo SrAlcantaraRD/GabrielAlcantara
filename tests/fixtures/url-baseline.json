@@ -1,0 +1,289 @@
+[
+  {
+    "path": "/",
+    "canonical": "https://gabrielalcantara.com/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/",
+      "en": "https://gabrielalcantara.com/en/",
+      "ca": "https://gabrielalcantara.com/ca/",
+      "x-default": "https://gabrielalcantara.com/"
+    }
+  },
+  {
+    "path": "/404.html",
+    "canonical": "https://gabrielalcantara.com/404/",
+    "noindex": true
+  },
+  {
+    "path": "/about/",
+    "canonical": "https://gabrielalcantara.com/about/"
+  },
+  {
+    "path": "/blog/",
+    "canonical": "https://gabrielalcantara.com/blog/"
+  },
+  {
+    "path": "/blog/arquitectura-orientada-a-eventos/",
+    "canonical": "https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/"
+  },
+  {
+    "path": "/blog/categoria/automatizacion-industrial/",
+    "canonical": "https://gabrielalcantara.com/blog/categoria/automatizacion-industrial/"
+  },
+  {
+    "path": "/blog/categoria/backend/",
+    "canonical": "https://gabrielalcantara.com/blog/categoria/backend/"
+  },
+  {
+    "path": "/blog/categoria/ddd/",
+    "canonical": "https://gabrielalcantara.com/blog/categoria/ddd/"
+  },
+  {
+    "path": "/blog/categoria/sistemas-distribuidos/",
+    "canonical": "https://gabrielalcantara.com/blog/categoria/sistemas-distribuidos/"
+  },
+  {
+    "path": "/blog/ddd-dominios-complejos/",
+    "canonical": "https://gabrielalcantara.com/blog/ddd-dominios-complejos/"
+  },
+  {
+    "path": "/blog/lecciones-plataforma-industrial/",
+    "canonical": "https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/"
+  },
+  {
+    "path": "/blog/websockets-operaciones-tiempo-real/",
+    "canonical": "https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/"
+  },
+  {
+    "path": "/ca/",
+    "canonical": "https://gabrielalcantara.com/ca/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/",
+      "en": "https://gabrielalcantara.com/en/",
+      "ca": "https://gabrielalcantara.com/ca/",
+      "x-default": "https://gabrielalcantara.com/"
+    }
+  },
+  {
+    "path": "/ca/blog/",
+    "canonical": "https://gabrielalcantara.com/ca/blog/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/",
+      "en": "https://gabrielalcantara.com/en/blog/",
+      "ca": "https://gabrielalcantara.com/ca/blog/",
+      "x-default": "https://gabrielalcantara.com/blog/"
+    }
+  },
+  {
+    "path": "/ca/blog/arquitectura-orientada-a-eventos/",
+    "canonical": "https://gabrielalcantara.com/ca/blog/arquitectura-orientada-a-eventos/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/",
+      "en": "https://gabrielalcantara.com/en/blog/arquitectura-orientada-a-eventos/",
+      "ca": "https://gabrielalcantara.com/ca/blog/arquitectura-orientada-a-eventos/",
+      "x-default": "https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/"
+    }
+  },
+  {
+    "path": "/ca/blog/ddd-dominios-complejos/",
+    "canonical": "https://gabrielalcantara.com/ca/blog/ddd-dominios-complejos/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/ddd-dominios-complejos/",
+      "en": "https://gabrielalcantara.com/en/blog/ddd-dominios-complejos/",
+      "ca": "https://gabrielalcantara.com/ca/blog/ddd-dominios-complejos/",
+      "x-default": "https://gabrielalcantara.com/blog/ddd-dominios-complejos/"
+    }
+  },
+  {
+    "path": "/ca/blog/lecciones-plataforma-industrial/",
+    "canonical": "https://gabrielalcantara.com/ca/blog/lecciones-plataforma-industrial/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/",
+      "en": "https://gabrielalcantara.com/en/blog/lecciones-plataforma-industrial/",
+      "ca": "https://gabrielalcantara.com/ca/blog/lecciones-plataforma-industrial/",
+      "x-default": "https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/"
+    }
+  },
+  {
+    "path": "/ca/blog/websockets-operaciones-tiempo-real/",
+    "canonical": "https://gabrielalcantara.com/ca/blog/websockets-operaciones-tiempo-real/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/",
+      "en": "https://gabrielalcantara.com/en/blog/websockets-operaciones-tiempo-real/",
+      "ca": "https://gabrielalcantara.com/ca/blog/websockets-operaciones-tiempo-real/",
+      "x-default": "https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/"
+    }
+  },
+  {
+    "path": "/ca/projects/",
+    "canonical": "https://gabrielalcantara.com/ca/projects/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/",
+      "en": "https://gabrielalcantara.com/en/projects/",
+      "ca": "https://gabrielalcantara.com/ca/projects/",
+      "x-default": "https://gabrielalcantara.com/projects/"
+    }
+  },
+  {
+    "path": "/ca/projects/bodega-digital/",
+    "canonical": "https://gabrielalcantara.com/ca/projects/bodega-digital/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/bodega-digital/",
+      "en": "https://gabrielalcantara.com/en/projects/bodega-digital/",
+      "ca": "https://gabrielalcantara.com/ca/projects/bodega-digital/",
+      "x-default": "https://gabrielalcantara.com/projects/bodega-digital/"
+    }
+  },
+  {
+    "path": "/ca/projects/nakire-tps/",
+    "canonical": "https://gabrielalcantara.com/ca/projects/nakire-tps/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/nakire-tps/",
+      "en": "https://gabrielalcantara.com/en/projects/nakire-tps/",
+      "ca": "https://gabrielalcantara.com/ca/projects/nakire-tps/",
+      "x-default": "https://gabrielalcantara.com/projects/nakire-tps/"
+    }
+  },
+  {
+    "path": "/ca/projects/pachanga-community/",
+    "canonical": "https://gabrielalcantara.com/ca/projects/pachanga-community/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/pachanga-community/",
+      "en": "https://gabrielalcantara.com/en/projects/pachanga-community/",
+      "ca": "https://gabrielalcantara.com/ca/projects/pachanga-community/",
+      "x-default": "https://gabrielalcantara.com/projects/pachanga-community/"
+    }
+  },
+  {
+    "path": "/contact/",
+    "canonical": "https://gabrielalcantara.com/contact/"
+  },
+  {
+    "path": "/cv/",
+    "canonical": "https://gabrielalcantara.com/cv/"
+  },
+  {
+    "path": "/en/",
+    "canonical": "https://gabrielalcantara.com/en/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/",
+      "en": "https://gabrielalcantara.com/en/",
+      "ca": "https://gabrielalcantara.com/ca/",
+      "x-default": "https://gabrielalcantara.com/"
+    }
+  },
+  {
+    "path": "/en/blog/",
+    "canonical": "https://gabrielalcantara.com/en/blog/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/",
+      "en": "https://gabrielalcantara.com/en/blog/",
+      "ca": "https://gabrielalcantara.com/ca/blog/",
+      "x-default": "https://gabrielalcantara.com/blog/"
+    }
+  },
+  {
+    "path": "/en/blog/arquitectura-orientada-a-eventos/",
+    "canonical": "https://gabrielalcantara.com/en/blog/arquitectura-orientada-a-eventos/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/",
+      "en": "https://gabrielalcantara.com/en/blog/arquitectura-orientada-a-eventos/",
+      "ca": "https://gabrielalcantara.com/ca/blog/arquitectura-orientada-a-eventos/",
+      "x-default": "https://gabrielalcantara.com/blog/arquitectura-orientada-a-eventos/"
+    }
+  },
+  {
+    "path": "/en/blog/ddd-dominios-complejos/",
+    "canonical": "https://gabrielalcantara.com/en/blog/ddd-dominios-complejos/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/ddd-dominios-complejos/",
+      "en": "https://gabrielalcantara.com/en/blog/ddd-dominios-complejos/",
+      "ca": "https://gabrielalcantara.com/ca/blog/ddd-dominios-complejos/",
+      "x-default": "https://gabrielalcantara.com/blog/ddd-dominios-complejos/"
+    }
+  },
+  {
+    "path": "/en/blog/lecciones-plataforma-industrial/",
+    "canonical": "https://gabrielalcantara.com/en/blog/lecciones-plataforma-industrial/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/",
+      "en": "https://gabrielalcantara.com/en/blog/lecciones-plataforma-industrial/",
+      "ca": "https://gabrielalcantara.com/ca/blog/lecciones-plataforma-industrial/",
+      "x-default": "https://gabrielalcantara.com/blog/lecciones-plataforma-industrial/"
+    }
+  },
+  {
+    "path": "/en/blog/websockets-operaciones-tiempo-real/",
+    "canonical": "https://gabrielalcantara.com/en/blog/websockets-operaciones-tiempo-real/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/",
+      "en": "https://gabrielalcantara.com/en/blog/websockets-operaciones-tiempo-real/",
+      "ca": "https://gabrielalcantara.com/ca/blog/websockets-operaciones-tiempo-real/",
+      "x-default": "https://gabrielalcantara.com/blog/websockets-operaciones-tiempo-real/"
+    }
+  },
+  {
+    "path": "/en/projects/",
+    "canonical": "https://gabrielalcantara.com/en/projects/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/",
+      "en": "https://gabrielalcantara.com/en/projects/",
+      "ca": "https://gabrielalcantara.com/ca/projects/",
+      "x-default": "https://gabrielalcantara.com/projects/"
+    }
+  },
+  {
+    "path": "/en/projects/bodega-digital/",
+    "canonical": "https://gabrielalcantara.com/en/projects/bodega-digital/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/bodega-digital/",
+      "en": "https://gabrielalcantara.com/en/projects/bodega-digital/",
+      "ca": "https://gabrielalcantara.com/ca/projects/bodega-digital/",
+      "x-default": "https://gabrielalcantara.com/projects/bodega-digital/"
+    }
+  },
+  {
+    "path": "/en/projects/nakire-tps/",
+    "canonical": "https://gabrielalcantara.com/en/projects/nakire-tps/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/nakire-tps/",
+      "en": "https://gabrielalcantara.com/en/projects/nakire-tps/",
+      "ca": "https://gabrielalcantara.com/ca/projects/nakire-tps/",
+      "x-default": "https://gabrielalcantara.com/projects/nakire-tps/"
+    }
+  },
+  {
+    "path": "/en/projects/pachanga-community/",
+    "canonical": "https://gabrielalcantara.com/en/projects/pachanga-community/",
+    "alternates": {
+      "es": "https://gabrielalcantara.com/projects/pachanga-community/",
+      "en": "https://gabrielalcantara.com/en/projects/pachanga-community/",
+      "ca": "https://gabrielalcantara.com/ca/projects/pachanga-community/",
+      "x-default": "https://gabrielalcantara.com/projects/pachanga-community/"
+    }
+  },
+  {
+    "path": "/experience/",
+    "canonical": "https://gabrielalcantara.com/experience/"
+  },
+  {
+    "path": "/projects/",
+    "canonical": "https://gabrielalcantara.com/projects/"
+  },
+  {
+    "path": "/projects/bodega-digital/",
+    "canonical": "https://gabrielalcantara.com/projects/bodega-digital/"
+  },
+  {
+    "path": "/projects/nakire-tps/",
+    "canonical": "https://gabrielalcantara.com/projects/nakire-tps/"
+  },
+  {
+    "path": "/projects/pachanga-community/",
+    "canonical": "https://gabrielalcantara.com/projects/pachanga-community/"
+  },
+  {
+    "path": "/services/",
+    "canonical": "https://gabrielalcantara.com/services/"
+  }
+]
