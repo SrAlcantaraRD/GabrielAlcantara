@@ -51,20 +51,24 @@ const payload = {
   <div class="drawer-body" id="drawer-body"></div>
 
   <footer class="drawer-foot" id="drawer-foot">
-    <div class="drawer-nav">
-      <button type="button" class="drawer-step" id="drawer-prev" aria-label="proyecto anterior">
-        <span class="drawer-arrow" aria-hidden="true">‹</span>
+    <button type="button" class="drawer-step" id="drawer-prev" aria-label="proyecto anterior">
+      <span class="drawer-arrow" aria-hidden="true">‹</span>
+      <span class="drawer-step-text">
+        <span class="drawer-step-meta" id="drawer-prev-meta"></span>
         <span class="drawer-step-name" id="drawer-prev-name">anterior</span>
-      </button>
-      <button type="button" class="drawer-step" id="drawer-next" aria-label="proyecto siguiente">
-        <span class="drawer-step-name" id="drawer-next-name">siguiente</span>
-        <span class="drawer-arrow" aria-hidden="true">›</span>
-      </button>
-    </div>
+      </span>
+    </button>
     <a class="drawer-case" id="drawer-case" hidden>
       ver el caso de estudio
       <span aria-hidden="true">↗</span>
     </a>
+    <button type="button" class="drawer-step" id="drawer-next" aria-label="proyecto siguiente">
+      <span class="drawer-step-text">
+        <span class="drawer-step-meta" id="drawer-next-meta"></span>
+        <span class="drawer-step-name" id="drawer-next-name">siguiente</span>
+      </span>
+      <span class="drawer-arrow" aria-hidden="true">›</span>
+    </button>
   </footer>
   </div>
 </aside>
@@ -120,6 +124,8 @@ const payload = {
     const nextBtn = must<HTMLButtonElement>("#drawer-next");
     const prevName = must<HTMLElement>("#drawer-prev-name");
     const nextName = must<HTMLElement>("#drawer-next-name");
+    const prevMeta = must<HTMLElement>("#drawer-prev-meta");
+    const nextMeta = must<HTMLElement>("#drawer-next-meta");
     const caseLink = must<HTMLAnchorElement>("#drawer-case");
     // Walking the card walks the career: earlier on the left, later on the right.
     const order = [...payload.projects]
@@ -156,9 +162,30 @@ const payload = {
       if (event.key === "Tab" && panel.classList.contains("is-open")) {
         trapFocus(event);
       }
+      // Keys walk the career too, unless a text field owns them.
+      if (
+        panel.classList.contains("is-open") &&
+        !(event.target instanceof Element &&
+          event.target.closest("input, textarea, select, [contenteditable='true']"))
+      ) {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          step(event.key === "ArrowLeft" ? -1 : 1);
+          return;
+        }
+        if (event.key === "Home" || event.key === "End") {
+          event.preventDefault();
+          edge(event.key === "Home" ? "first" : "last");
+        }
+      }
     }, { signal: controller.signal });
 
     function render(request: DrawerRequest) {
+      // The card is centred, so a longer body would snap both edges at once.
+      const before = panel.classList.contains("is-open")
+        ? panel.getBoundingClientRect()
+        : null;
+
       if (request.kind === "project") {
         const project = projectById.get(request.id);
         if (!project) return;
@@ -168,6 +195,7 @@ const payload = {
         body.replaceChildren(projectBody(project));
         currentId = project.id;
         syncNav(project);
+        settleSize(before);
         return;
       }
 
@@ -177,6 +205,28 @@ const payload = {
       body.replaceChildren(listBody(request.ids));
       currentId = null;
       syncNav(null);
+      settleSize(before);
+    }
+
+    /** Eased height between two projects, so the swap grows instead of jumping. */
+    function settleSize(before: DOMRect | null) {
+      // A previous run holds the height at its last frame until it is cancelled.
+      size?.cancel();
+      size = null;
+      if (!before || prefersReducedMotion() || typeof panel.animate !== "function") {
+        return;
+      }
+      const after = panel.getBoundingClientRect();
+      if (Math.abs(after.height - before.height) < 2) return;
+      size = panel.animate(
+        [{ height: `${before.height}px` }, { height: `${after.height}px` }],
+        { duration: SIZE_MS, easing: EASE_IN },
+      );
+      size.finished
+        .then(() => {
+          size = null;
+        })
+        .catch(() => {});
     }
 
     /**
@@ -194,17 +244,29 @@ const payload = {
           ? projectById.get(order[index + 1])
           : null;
 
+      // The year orients the jump: which part of the career the neighbour sits in.
+      const prevStart = prev ? Math.floor(prev.startMonth / 12) : null;
+      const nextStart = next ? Math.floor(next.startMonth / 12) : null;
+
       prevBtn.disabled = !prev;
       nextBtn.disabled = !next;
       prevName.textContent = prev?.short ?? "anterior";
       nextName.textContent = next?.short ?? "siguiente";
+      prevMeta.textContent =
+        prev && prevStart !== null ? `${prev.companyShort}, ${prevStart}:` : "";
+      nextMeta.textContent =
+        next && nextStart !== null ? `${next.companyShort}, ${nextStart}:` : "";
       prevBtn.setAttribute(
         "aria-label",
-        prev ? `proyecto anterior: ${prev.name}` : "no hay proyecto anterior",
+        prev
+          ? `proyecto anterior: ${prev.name} (${prevStart})`
+          : "no hay proyecto anterior",
       );
       nextBtn.setAttribute(
         "aria-label",
-        next ? `proyecto siguiente: ${next.name}` : "no hay proyecto siguiente",
+        next
+          ? `proyecto siguiente: ${next.name} (${nextStart})`
+          : "no hay proyecto siguiente",
       );
 
       const href = payload.cases[project.id] ?? null;
@@ -220,6 +282,15 @@ const payload = {
       if (!currentId) return;
       const target = order[order.indexOf(currentId) + direction];
       if (!target) return;
+      render({ kind: "project", id: target });
+      flash();
+    }
+
+    /** Home and End land on the ends of the career without walking every card. */
+    function edge(where: "first" | "last") {
+      if (!currentId) return;
+      const target = where === "first" ? order[0] : order[order.length - 1];
+      if (!target || target === currentId) return;
       render({ kind: "project", id: target });
       flash();
     }
@@ -307,10 +378,12 @@ const payload = {
     const EASE_OUT = "cubic-bezier(.4, 0, .2, 1)";
     const MORPH_MS = 460;
     const SHRINK_MS = 320;
+    const SIZE_MS = 340;
 
     let origin: HTMLElement | null = null;
     let originRect: DOMRect | null = null;
     let morph: Animation | null = null;
+    let size: Animation | null = null;
     let closing: (() => void) | null = null;
 
     function open(from: Element | null) {
@@ -421,6 +494,8 @@ const payload = {
       morph = null;
       closing = null;
       animation?.cancel();
+      size?.cancel();
+      size = null;
       delete panel.dataset.closing;
       panel.classList.remove("is-open");
       panel.setAttribute("aria-hidden", "true");
@@ -455,6 +530,8 @@ const payload = {
       controller.abort();
       morph?.cancel();
       morph = null;
+      size?.cancel();
+      size = null;
       closing = null;
       if (panel.classList.contains("is-open")) {
         panel.classList.remove("is-open");
@@ -509,6 +586,7 @@ const payload = {
    * box, so the dialog has to be a rectangle the bar can grow into.
    */
   .drawer {
+    --drawer-pad: 30px;
     position: fixed;
     inset: 0;
     z-index: 50;
@@ -583,7 +661,7 @@ const payload = {
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.75rem 1.9rem 1.35rem;
+    padding: var(--drawer-pad);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card);
   }
@@ -641,7 +719,7 @@ const payload = {
     flex: 1 1 auto;
     min-block-size: 0;
     overflow-y: auto;
-    padding: 1.5rem 1.9rem 1.75rem;
+    padding: var(--drawer-pad);
   }
 
   .drawer-stack {
@@ -724,31 +802,47 @@ const payload = {
     color: var(--color-ink-faint);
   }
 
+  /*
+   * Navigation sits on the edges, the case link keeps the middle. Named areas, so
+   * a project without a case collapses the centre without moving the buttons.
+   */
   .drawer-foot {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: "prev case next";
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1rem;
-    padding: 0.75rem 1.9rem;
+    gap: 0.75rem;
+    padding: var(--drawer-pad);
     border-top: 1px solid var(--color-border);
     background: var(--color-card);
+  }
+
+  .drawer-foot > .drawer-step:first-child {
+    grid-area: prev;
+    justify-self: start;
+  }
+
+  .drawer-foot > .drawer-step:last-child {
+    grid-area: next;
+    justify-self: end;
+  }
+
+  .drawer-case {
+    grid-area: case;
+    justify-self: center;
+    text-align: center;
   }
 
   .drawer-foot[hidden] {
     display: none;
   }
 
-  .drawer-nav {
-    display: flex;
-    gap: 0.3rem;
-  }
-
   .drawer-step {
     display: inline-flex;
     align-items: center;
-    gap: 0.28rem;
-    max-inline-size: 11rem;
+    gap: 0.35rem;
+    min-inline-size: 0;
+    max-inline-size: 13rem;
     padding: 0.28rem 0.5rem;
     border: 1px solid var(--color-border);
     border-radius: 5px;
@@ -774,15 +868,39 @@ const payload = {
     cursor: default;
   }
 
+  /* The glyph has to sit on the same optical line as the words beside it. */
   .drawer-arrow {
+    display: inline-flex;
+    align-items: center;
     font-size: 0.85rem;
     line-height: 1;
+  }
+
+  .drawer-step-text {
+    display: flex;
+    align-items: baseline;
+    gap: 0.28rem;
+    min-inline-size: 0;
+    line-height: 1.15;
   }
 
   .drawer-step-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-inline-size: 0;
+  }
+
+  /* "empresa, año:" leads the name, dimmed so the project still reads first. */
+  .drawer-step-meta {
+    flex: none;
+    font-size: 0.594rem;
+    letter-spacing: 0.02em;
+    color: var(--color-ink-faint);
+  }
+
+  .drawer-step:hover:not(:disabled) .drawer-step-meta {
+    color: var(--color-ink-muted);
   }
 
   .drawer-case {
@@ -814,10 +932,13 @@ const payload = {
       border-radius: 12px;
     }
 
-    .drawer-head,
-    .drawer-body,
+    /* Three columns no longer fit: the case link drops to its own line. */
     .drawer-foot {
-      padding-inline: 1.15rem;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        "prev next"
+        "case case";
+      row-gap: 0.5rem;
     }
   }
 </style>
