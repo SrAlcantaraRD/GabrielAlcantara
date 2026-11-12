@@ -30,6 +30,7 @@ import {
 	matchesValue,
 	monthPct,
 	packLanes,
+	positionKey,
 	rowBars,
 } from "../src/lib/matrix.ts";
 import { parseMonth } from "../src/lib/period.ts";
@@ -87,24 +88,40 @@ describe("axes", () => {
 		);
 	});
 
-	it("lists the fourteen positions, one per stint, oldest first", () => {
+	it("merges every stint of a role at the same company into one row", () => {
 		const values = axisValues("position", PROJECTS, config);
-		assert.equal(values.length, 14);
-		assert.equal(values[0]?.id, "acd-junior");
-		assert.equal(values.at(-1)?.id, "pachanga-own");
-		const starts = values.map((value) => positionById(value.id).startMonth);
-		assert.deepEqual(starts, [...starts].sort((a, b) => a - b));
+		const groups = new Set(PROJECTS.map((project) => positionKey(project)));
+		assert.deepEqual(
+			values.map((value) => value.id).sort(),
+			[...groups].sort(),
+		);
+		assert.equal(values.length, 9);
+		assert.equal(
+			values.filter((value) => value.id === "acd::Full Stack Developer").length,
+			1,
+		);
 	});
 
-	it("disambiguates a title that repeats across stints", () => {
+	it("orders the roles by their first month, oldest first", () => {
+		const values = axisValues("position", PROJECTS, config);
+		const starts = values.map((value) => {
+			const own = PROJECTS.filter(
+				(project) => positionKey(project) === value.id,
+			);
+			return Math.min(...own.map((project) => project.startMonth));
+		});
+		assert.deepEqual(starts, [...starts].sort((a, b) => a - b));
+		assert.equal(values[0]?.label, "Junior Software Developer");
+	});
+
+	it("names a role once per company and disambiguates it across companies", () => {
 		const values = axisValues("position", PROJECTS, config);
 		const labels = values.map((value) => value.label);
-		assert.ok(labels.includes("Full Stack Developer · 2013"));
-		assert.ok(labels.includes("Full Stack Developer · 2020"));
-		assert.ok(labels.includes("Full Stack Developer · jul 2016"));
-		assert.ok(labels.includes("Full Stack Developer · sep 2016"));
+		assert.ok(labels.includes("Full Stack Developer · acd"));
+		assert.ok(labels.includes("Full Stack Developer · basetis"));
 		assert.ok(labels.includes("Senior Technical Team Lead"));
 		assert.equal(new Set(labels).size, labels.length);
+		assert.equal(labels.some((label) => label.includes("jul 2016")), false);
 	});
 
 	it("only offers the values present inside the visible range", () => {
@@ -115,7 +132,7 @@ describe("axes", () => {
 		);
 		assert.deepEqual(
 			axisValues("position", PROJECTS, config, insideQuabu).map((value) => value.id),
-			["quabu-architect"],
+			["quabu::Arquitecto de soluciones de software"],
 		);
 		assert.equal(axisValues("project", PROJECTS, config, insideQuabu).length, 4);
 		assert.equal(axisValues("company", PROJECTS, config).length, 4);
@@ -158,8 +175,11 @@ describe("matching", () => {
 		const project = projectById("love-isdin");
 		assert.equal(matchesValue(project, "company", "basetis"), true);
 		assert.equal(matchesValue(project, "company", "quabu"), false);
-		assert.equal(matchesValue(project, "position", "basetis-lead"), true);
-		assert.equal(matchesValue(project, "position", "basetis-ema"), false);
+		assert.equal(matchesValue(project, "position", positionKey(project)), true);
+		assert.equal(
+			matchesValue(project, "position", "basetis::Full Stack Developer"),
+			false,
+		);
 		assert.equal(matchesValue(project, "project", "love-isdin"), true);
 		assert.equal(matchesValue(project, "domain", "health"), true);
 		assert.equal(matchesValue(project, "pillar", "lead"), true);
@@ -239,13 +259,23 @@ describe("matrix cells", () => {
 
 	it("crosses a position with its projects", () => {
 		assert.deepEqual(
-			cellBars(PROJECTS, "position", "quabu-architect", "project", "coleo").map(
-				(bar) => bar.id,
-			),
+			cellBars(
+				PROJECTS,
+				"position",
+				"quabu::Arquitecto de soluciones de software",
+				"project",
+				"coleo",
+			).map((bar) => bar.id),
 			["coleo"],
 		);
 		assert.deepEqual(
-			cellBars(PROJECTS, "position", "basetis-lead", "project", "coleo"),
+			cellBars(
+				PROJECTS,
+				"position",
+				"basetis::Senior Technical Team Lead",
+				"project",
+				"coleo",
+			),
 			[],
 		);
 	});
@@ -266,10 +296,13 @@ describe("matrix cells", () => {
 	});
 
 	it("builds a timeline row with every project on one Y value", () => {
+		const quabu = rowBars(
+			PROJECTS,
+			"position",
+			"quabu::Arquitecto de soluciones de software",
+		);
 		assert.deepEqual(
-			rowBars(PROJECTS, "position", "quabu-architect")
-				.map((bar) => bar.id)
-				.sort(),
+			[...new Set(quabu.map((bar) => bar.id))].sort(),
 			[
 				"bodega-digital",
 				"coleo",
@@ -281,10 +314,37 @@ describe("matrix cells", () => {
 		);
 		assert.equal(rowBars(PROJECTS, "company", "basetis").length, 6);
 		assert.deepEqual(
-			rowBars(PROJECTS, "pillar", "eda")
-				.map((bar) => bar.id)
-				.sort(),
-			["nakire-tps"],
+			rowBars(PROJECTS, "pillar", "eda").map((bar) => bar.id),
+			["nakire-tps", "nakire-tps"],
+		);
+	});
+
+	it("draws one bar per stint and leaves the gap between them empty", () => {
+		const bars = rowBars(
+			PROJECTS,
+			"position",
+			"quabu::Arquitecto de soluciones de software",
+		);
+
+		const bodega = bars.filter((bar) => bar.id === "bodega-digital");
+		assert.equal(bodega.length, 2);
+		assert.deepEqual(
+			bodega.map((bar) => [bar.startMonth, bar.endMonth]),
+			[
+				[month("2024.03"), month("2024.06") + 1],
+				[month("2024.11"), month("2025.02") + 1],
+			],
+		);
+		assert.ok(
+			bodega[0].leftPct + bodega[0].widthPct < bodega[1].leftPct,
+			"the second phase starts after the first one ends",
+		);
+
+		const nakire = bars.filter((bar) => bar.id === "nakire-tps");
+		assert.equal(nakire.length, 2);
+		assert.deepEqual(
+			[nakire[0].endMonth, nakire[1].startMonth],
+			[month("2025.07") + 1, month("2025.09")],
 		);
 	});
 });

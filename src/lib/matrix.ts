@@ -1,5 +1,4 @@
 import type { Domain, Pillar, Project } from "../data/cv";
-import { monthLabel } from "./period.ts";
 
 /**
  * The timeline is measured in months. The `time` axis still offers years, and
@@ -37,10 +36,10 @@ export const AXIS_ORDER: AxisId[] = [
 export const AXIS_LABEL: Record<AxisId, string> = {
 	time: "año",
 	company: "empresa",
-	position: "puesto",
+	position: "rol",
 	project: "proyecto",
 	domain: "dominio",
-	pillar: "pilar técnico",
+	pillar: "stack",
 };
 
 export interface AxisValue {
@@ -57,6 +56,8 @@ export interface AxisConfig {
 
 export interface Bar {
 	id: string;
+	/** Which stretch of the project this bar draws, when it had several. */
+	span?: number;
 	startMonth: number;
 	endMonth: number;
 	leftPct: number;
@@ -70,6 +71,14 @@ export interface Geometry {
 
 const round = (value: number): number => Number(value.toFixed(2));
 const yearOf = (month: number): number => Math.floor(month / 12);
+
+/** A role only exists inside a company: same title at two places is two rows. */
+export function positionKey(project: {
+	companyId: string;
+	position: string;
+}): string {
+	return `${project.companyId}::${project.position}`;
+}
 
 export function isAxisId(value: string): value is AxisId {
 	return (AXIS_ORDER as string[]).includes(value);
@@ -133,35 +142,31 @@ export function axisValues(
 				}));
 		}
 		case "position": {
+			// One row per role inside a company, however many stints it had: the same
+			// title months or projects apart is still the same stage of the path.
 			const firstMonth = new Map<string, number>();
 			const titles = new Map<string, string>();
+			const companies = new Map<string, string>();
 			for (const project of projects) {
-				const known = firstMonth.get(project.positionId);
+				const key = positionKey(project);
+				const known = firstMonth.get(key);
 				if (known === undefined || project.startMonth < known) {
-					firstMonth.set(project.positionId, project.startMonth);
+					firstMonth.set(key, project.startMonth);
 				}
-				titles.set(project.positionId, project.position);
+				titles.set(key, project.position);
+				companies.set(key, project.companyShort);
 			}
 			const repeats = new Map<string, number>();
 			for (const title of titles.values()) {
 				repeats.set(title, (repeats.get(title) ?? 0) + 1);
 			}
-			const ordered = [...firstMonth.entries()].sort(([, a], [, b]) => a - b);
-			const labels = ordered.map(([positionId, first]) => {
-				const title = titles.get(positionId) ?? positionId;
-				if ((repeats.get(title) ?? 0) === 1) return title;
-				return `${title} · ${yearOf(first)}`;
-			});
-			const clashes = new Map<string, number>();
-			for (const label of labels) {
-				clashes.set(label, (clashes.get(label) ?? 0) + 1);
-			}
-			return ordered.map(([positionId, first], index) => {
-				const label = labels[index] ?? positionId;
-				if ((clashes.get(label) ?? 0) === 1) return { id: positionId, label };
-				const title = titles.get(positionId) ?? positionId;
-				return { id: positionId, label: `${title} · ${monthLabel(first)}` };
-			});
+			return [...firstMonth.entries()]
+				.sort(([, a], [, b]) => a - b)
+				.map(([key]) => {
+					const title = titles.get(key) ?? key;
+					if ((repeats.get(title) ?? 0) === 1) return { id: key, label: title };
+					return { id: key, label: `${title} · ${companies.get(key) ?? key}` };
+				});
 		}
 		case "project":
 			return [...projects]
@@ -196,7 +201,7 @@ export function matchesValue(
 		case "company":
 			return project.companyId === value;
 		case "position":
-			return project.positionId === value;
+			return positionKey(project) === value;
 		case "project":
 			return project.id === value;
 		case "domain":
@@ -272,26 +277,36 @@ export function rowBars(
 }
 
 function toBars(projects: Project[], from: number, to: number): Bar[] {
-	return projects
-		.sort(
-			(a, b) =>
-				a.startMonth - b.startMonth ||
-				a.endMonth - b.endMonth ||
-				a.name.localeCompare(b.name),
-		)
-		.flatMap((project) => {
-			const geometry = barGeometry(project, from, to);
-			return geometry
-				? [
-						{
-							id: project.id,
-							startMonth: project.startMonth,
-							endMonth: project.endMonth,
-							...geometry,
-						},
-					]
-				: [];
-		});
+	const bars: Bar[] = [];
+	const ordered = [...projects].sort(
+		(a, b) =>
+			a.startMonth - b.startMonth ||
+			a.endMonth - b.endMonth ||
+			a.name.localeCompare(b.name),
+	);
+	for (const project of ordered) {
+		// A project worked in two stints draws one bar per stint, with the gap
+		// in between left empty.
+		const spans = project.spans ?? [
+			{ startMonth: project.startMonth, endMonth: project.endMonth },
+		];
+		for (const [index, span] of spans.entries()) {
+			const geometry = barGeometry(
+				{ ...project, startMonth: span.startMonth, endMonth: span.endMonth },
+				from,
+				to,
+			);
+			if (!geometry) continue;
+			bars.push({
+				id: project.id,
+				span: spans.length > 1 ? index : undefined,
+				startMonth: span.startMonth,
+				endMonth: span.endMonth,
+				...geometry,
+			});
+		}
+	}
+	return bars;
 }
 
 /** Assigns each interval the first lane where it does not overlap its neighbour. */

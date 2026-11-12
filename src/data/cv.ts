@@ -83,6 +83,8 @@ export interface ProjectSeed {
 	start?: string;
 	/** Optional: defaults to the months of the position. */
 	end?: string;
+	/** Optional: a project worked in separate stints, when one span would lie. */
+	phases?: { start: string; end: string }[];
 	domain: Domain;
 	pillars: Pillar[];
 	summary: string;
@@ -102,6 +104,8 @@ export interface Project {
 	short: string;
 	startMonth: number;
 	endMonth: number;
+	/** Every stretch the project was actually worked, in order. */
+	spans?: { startMonth: number; endMonth: number }[];
 	domain: Domain;
 	pillars: Pillar[];
 	summary: string;
@@ -652,6 +656,10 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		short: "bodega digital",
 		start: "2024.03",
 		end: "2025.02",
+		phases: [
+			{ start: "2024.03", end: "2024.06" },
+			{ start: "2024.11", end: "2025.02" },
+		],
 		domain: "agrifood",
 		pillars: ["web", "mobile", "data", "integration", "robotics"],
 		summary:
@@ -717,6 +725,10 @@ const PROJECT_SEEDS: ProjectSeed[] = [
 		short: "nakire tps",
 		start: "2025.04",
 		end: "2026.06",
+		phases: [
+			{ start: "2025.04", end: "2025.07" },
+			{ start: "2025.09", end: "2026.06" },
+		],
 		domain: "logistics",
 		pillars: ["data", "micro", "eda", "cloud", "robotics", "security"],
 		summary:
@@ -910,6 +922,19 @@ export function resolveProjects(
 			throw new Error(`project "${seed.id}" ends before it starts`);
 		}
 
+		const stints = (seed.phases ?? []).map((phase) => ({
+			startMonth: parseMonth(phase.start),
+			endMonth: parseMonth(phase.end) + 1,
+		}));
+		for (const stint of stints) {
+			if (stint.startMonth < span.startMonth || stint.endMonth > span.endMonth) {
+				throw new Error(`project "${seed.id}" has a phase outside its span`);
+			}
+			if (stint.endMonth <= stint.startMonth) {
+				throw new Error(`project "${seed.id}" has a phase that ends before it starts`);
+			}
+		}
+
 		return {
 			id: seed.id,
 			positionId: seed.positionId,
@@ -922,6 +947,7 @@ export function resolveProjects(
 			short: seed.short,
 			startMonth: span.startMonth,
 			endMonth: span.endMonth,
+			spans: stints.length > 0 ? stints : undefined,
 			domain: seed.domain,
 			pillars: seed.pillars,
 			summary: seed.summary,
