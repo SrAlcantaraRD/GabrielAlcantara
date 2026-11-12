@@ -12,7 +12,6 @@ import {
 	PILLAR_ORDER,
 } from "../data/cv";
 
-const defaultX: AxisId = "time";
 const defaultY: AxisId = "company";
 
 const payload = {
@@ -30,35 +29,25 @@ const payload = {
 ---
 
 <div class="matrix" id="matriz">
-  <div class="matrix-controls">
-    {
-      (["x", "y"] as const).map((axis) => (
-        <div
-          class="picker"
-          role="group"
-          aria-label={`eje ${axis === "x" ? "horizontal" : "vertical"}`}
-        >
-          <span class="picker-name" aria-hidden="true">
-            {axis === "x" ? "horizontal" : "vertical"}
-          </span>
-          {AXIS_ORDER.map((axisId) => (
+  <div class="matrix-panel">
+    <div class="panel-head">
+      <div class="group-grid" role="group" aria-label="agrupar las filas por">
+        {
+          AXIS_ORDER.filter(
+            (axisId) => axisId !== "time" && axisId !== "project",
+          ).map((axisId) => (
             <button
               type="button"
               class="chip"
-              data-axis={axis}
+              data-axis="y"
               data-value={axisId}
-              aria-pressed={String(axisId === (axis === "x" ? defaultX : defaultY))}
+              aria-pressed={String(axisId === defaultY)}
             >
               {AXIS_LABEL[axisId]}
             </button>
-          ))}
-        </div>
-      ))
-    }
-  </div>
-
-  <div class="matrix-panel">
-    <div class="panel-head">
+          ))
+        }
+      </div>
       <span class="panel-range">
         <span id="matrix-range">{YEAR_LABEL}</span>
         <span class="panel-note" id="matrix-note" hidden>
@@ -66,16 +55,13 @@ const payload = {
         </span>
       </span>
       <div class="window" role="group" aria-label="ventana temporal">
-        <span class="window-name" aria-hidden="true">ventana</span>
-        <button type="button" class="wchip" data-window="all" aria-pressed="true">
-          todo
-        </button>
         {
           COMPANIES.map((company) => (
             <button
               type="button"
               class="wchip"
               data-window={company.id}
+              data-accent={company.accent}
               aria-pressed="false"
             >
               {company.short}
@@ -105,9 +91,6 @@ const payload = {
         ))
       }
     </ul>
-    <p class="matrix-hint">
-      cada barra es un proyecto y su ancho, los meses: haz clic para abrir su ficha
-    </p>
   </div>
 
   <noscript>
@@ -130,6 +113,7 @@ const payload = {
     isAxisId,
     monthPct,
     packLanes,
+    positionKey,
     rowBars,
     type AxisConfig,
     type AxisId,
@@ -151,6 +135,9 @@ const payload = {
 
   const MAX_CELL_LANES = 3;
   const MIN_LABEL_PX = 54;
+  /** Air, in months, kept on both sides of a company window. */
+  const WINDOW_PAD_MONTHS = 9;
+  /** Minimum pixels between two year labels before they are thinned out. */
   const MIN_YEAR_SPACING_PX = 42;
 
   let stop: (() => void) | null = null;
@@ -181,10 +168,19 @@ const payload = {
 
     const payload = JSON.parse(dataScript.textContent ?? "{}") as Payload;
     const projects = payload.projects;
+
+    /** A window on a company hides the rest of the path, not just its years. */
+    function visibleProjects(): Project[] {
+      if (state.window === null) return projects;
+      return projects.filter(
+        (project) => project.companyId === state.window,
+      );
+    }
     const positions = payload.positions;
     const projectById = new Map(projects.map((project) => [project.id, project]));
     const state = readState();
     let lastAxes = { x: "", y: "" };
+    let measureCanvas: CanvasRenderingContext2D | null = null;
 
     bindChips();
     bindWindows();
@@ -198,33 +194,48 @@ const payload = {
       hideTip();
     };
 
-    function readState(): { x: AxisId; y: AxisId; window: string } {
+    function readState(): { x: AxisId; y: AxisId; window: string | null } {
       const params = new URLSearchParams(window.location.search);
-      const rawX = params.get("x") ?? "";
       const rawY = params.get("y") ?? "";
-      const rawWindow = params.get("w") ?? "all";
-      const fallback = { x: "time" as AxisId, y: "company" as AxisId };
-      const x = isAxisId(rawX) ? rawX : fallback.x;
-      const y = isAxisId(rawY) ? rawY : fallback.y;
-      const valid = axesAreValid(x, y);
-      const known = payload.companies.some((company) => company.id === rawWindow);
-      return {
-        x: valid ? x : fallback.x,
-        y: valid ? y : fallback.y,
-        window: rawWindow === "all" || known ? rawWindow : "all",
-      };
+      const rawWindow = params.get("w") ?? "";
+      // The horizontal axis is always time; only the rows can be regrouped.
+      const x: AxisId = "time";
+      // Grouping by project would give one line per project, so it is not offered.
+      const y =
+        isAxisId(rawY) && rawY !== "project" && axesAreValid(x, rawY)
+          ? rawY
+          : "company";
+      // One window at a time; older links may carry a list, so the first wins.
+      const asked = rawWindow.split(",").filter(Boolean);
+      const only =
+        payload.companies.find((company) => asked.includes(company.id))?.id ?? null;
+      return { x, y, window: only };
     }
 
-    /** Zooming to one company gives the short stints room to be read. */
-    function rangeFor(windowId: string): MonthRange {
-      if (windowId === "all") return payload.range;
+    /** The real months of the selected companies, without the breathing room. */
+    function windowSpan(windowId: string | null): MonthRange {
+      if (windowId === null) return payload.range;
       const own = positions.filter(
         (position) => position.companyId === windowId,
       );
       if (own.length === 0) return payload.range;
-      const from = Math.min(...own.map((position) => position.startMonth));
-      const to = Math.max(...own.map((position) => position.endMonth));
-      return { from, to };
+      return {
+        from: Math.min(...own.map((position) => position.startMonth)),
+        to: Math.max(...own.map((position) => position.endMonth)),
+      };
+    }
+
+    /**
+     * Zooming to some companies gives the short stints room to be read, and a
+     * few months on each side so a bar never starts or ends on the table edge.
+     */
+    function rangeFor(windowId: string | null): MonthRange {
+      const span = windowSpan(windowId);
+      if (windowId === null) return span;
+      return {
+        from: Math.max(payload.range.from, span.from - WINDOW_PAD_MONTHS),
+        to: Math.min(payload.range.to, span.to + WINDOW_PAD_MONTHS),
+      };
     }
 
     /** Drawing range: whole years, so every year line lands on a label. */
@@ -252,28 +263,38 @@ const payload = {
     function bindWindows() {
       for (const chip of host.querySelectorAll<HTMLButtonElement>(".wchip")) {
         chip.addEventListener("click", () => {
-          const value = chip.dataset.window ?? "all";
-          if (state.window === value) return;
-          state.window = value;
+          const value = chip.dataset.window ?? "";
+          if (!value) return;
+          // Only one at a time: tapping the active one leaves the whole path.
+          state.window = state.window === value ? null : value;
           render();
         });
       }
     }
 
+
     function render() {
       const before = captureBars();
+      const beforeHeight = surface.getBoundingClientRect().height;
       const axesChanged = lastAxes.x !== state.x || lastAxes.y !== state.y;
+      const shown = visibleProjects();
       const range = rangeFor(state.window);
       const chart = chartRange(range);
       const chartSpan = chart.to - chart.from;
       const xValues = axisValues(state.x, projects, payload.config, range);
-      const yValues = axisValues(state.y, projects, payload.config, range);
+      const yValues = axisValues(state.y, shown, payload.config, range);
 
       grid.dataset.mode = state.x === "time" ? "timeline" : "matrix";
       grid.style.setProperty("--cols", String(xValues.length));
+      // Fixed density: the width comes from the months, never from the panel.
+      grid.style.setProperty("--months", String(chartSpan));
       grid.style.setProperty(
         "--year-step",
         `${((12 / Math.max(1, chartSpan)) * 100).toFixed(4)}%`,
+      );
+      grid.style.setProperty(
+        "--quarter-step",
+        `${((3 / Math.max(1, chartSpan)) * 100).toFixed(4)}%`,
       );
       grid.style.setProperty("--year-offset", "0%");
       grid.style.setProperty("--today", `${monthPct(nowMonth(), chart)}%`);
@@ -281,7 +302,7 @@ const payload = {
       const timeline = state.x === "time";
       grid.replaceChildren(
         timeline
-          ? renderTimeline(yValues, chart)
+          ? renderTimeline(yValues, shown, chart)
           : renderMatrix(xValues, yValues, chart),
       );
       note.hidden = timeline;
@@ -289,19 +310,41 @@ const payload = {
       lastAxes = { x: state.x, y: state.y };
       settle(before, axesChanged);
 
-      rangeLabel.textContent = `${monthLabel(range.from)} — ${monthLabel(range.to - 1)} · ${durationLabel(range.to - range.from)}`;
+      const span = windowSpan(state.window);
+      rangeLabel.textContent = `${monthLabel(span.from)} — ${monthLabel(span.to - 1)} · ${durationLabel(span.to - span.from)}`;
 
       syncChips();
       syncWindows();
       syncUrl();
       measure();
-      requestAnimationFrame(measure);
+      requestAnimationFrame(() => {
+        measure();
+        glideHeight(beforeHeight);
+      });
+    }
+
+    /**
+     * Rows come and go when the grouping or the window changes; the table takes
+     * its new height instead of snapping to it.
+     */
+    function glideHeight(from: number) {
+      if (!from || from < 24) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const to = surface.getBoundingClientRect().height;
+      if (Math.abs(to - from) < 1) return;
+      surface.animate(
+        [{ height: `${from}px` }, { height: `${to}px` }],
+        { duration: 420, easing: "cubic-bezier(.22, 1, .36, 1)" },
+      );
     }
 
     function captureBars(): Map<string, DOMRect> {
       const rects = new Map<string, DOMRect>();
       for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
-        rects.set(bar.dataset.project ?? "", bar.getBoundingClientRect());
+        rects.set(
+          `${bar.dataset.project ?? ""}#${bar.dataset.span ?? "0"}`,
+          bar.getBoundingClientRect(),
+        );
       }
       return rects;
     }
@@ -323,7 +366,9 @@ const payload = {
       }
 
       for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
-        const from = before.get(bar.dataset.project ?? "");
+        const from = before.get(
+          `${bar.dataset.project ?? ""}#${bar.dataset.span ?? "0"}`,
+        );
         if (!from) continue;
         const now = bar.getBoundingClientRect();
         const dx = from.left - now.left;
@@ -363,51 +408,23 @@ const payload = {
       for (const chip of host.querySelectorAll<HTMLButtonElement>(".wchip")) {
         chip.setAttribute(
           "aria-pressed",
-          String((chip.dataset.window ?? "all") === state.window),
+          String(chip.dataset.window === state.window),
         );
       }
     }
+
 
     function syncUrl() {
       const url = new URL(window.location.href);
       url.searchParams.set("x", state.x);
       url.searchParams.set("y", state.y);
-      if (state.window === "all") url.searchParams.delete("w");
+      if (state.window === null) url.searchParams.delete("w");
       else url.searchParams.set("w", state.window);
       // ClientRouter keeps its navigation index in history.state: preserve it,
       // otherwise back/forward stop being handled after a filter change.
       if (url.href !== window.location.href) {
         window.history.replaceState(window.history.state, "", url);
       }
-    }
-
-    /** The months a row actually covers, drawn as a soft band behind its bars. */
-    function bandFor(
-      axis: AxisId,
-      value: string,
-      range: MonthRange,
-    ): { leftPct: number; widthPct: number } | null {
-      let from: number | null = null;
-      let to: number | null = null;
-      if (axis === "position") {
-        const position = positions.find((item) => item.id === value);
-        if (position) {
-          from = position.startMonth;
-          to = position.endMonth;
-        }
-      } else if (axis === "company") {
-        const own = positions.filter((item) => item.companyId === value);
-        if (own.length > 0) {
-          from = Math.min(...own.map((item) => item.startMonth));
-          to = Math.max(...own.map((item) => item.endMonth));
-        }
-      }
-      if (from === null || to === null) return null;
-      const span = Math.max(1, range.to - range.from);
-      return {
-        leftPct: monthPct(from, range),
-        widthPct: ((to - from) / span) * 100,
-      };
     }
 
     function makeBand(band: { leftPct: number; widthPct: number }): HTMLElement {
@@ -421,7 +438,7 @@ const payload = {
     function accentFor(axis: AxisId, value: string): string | null {
       const match = projects.find((project) => {
         if (axis === "company") return project.companyId === value;
-        if (axis === "position") return project.positionId === value;
+        if (axis === "position") return positionKey(project) === value;
         if (axis === "project") return project.id === value;
         return false;
       });
@@ -433,7 +450,7 @@ const payload = {
       return now.getFullYear() * 12 + now.getMonth() + 1;
     }
 
-    function ruler(range: MonthRange): HTMLElement {
+    function ruler(range: MonthRange, shown: Project[]): HTMLElement {
       const track = element("div", "ruler-track");
       track.style.gridColumn = "2 / -1";
 
@@ -442,12 +459,31 @@ const payload = {
 
       for (let year = firstYear; year <= lastYear; year += 1) {
         const boundary = Math.max(year * 12, range.from);
-        const label = element("span", "ruler-year", String(year));
-        label.dataset.year = String(year);
+        const label = element("span", "ruler-tick", String(year));
+        label.dataset.tick = String(year);
         label.style.left = `${monthPct(boundary, range)}%`;
         if (boundary === range.from) label.style.transform = "none";
         track.append(label);
       }
+
+      // The bottom of the ruler carries each company's range, so the years of a
+      // stage are readable without tracing its rows.
+      const spans = element("div", "ruler-spans");
+      spans.setAttribute("aria-hidden", "true");
+      for (const company of payload.companies) {
+        const own = shown.filter((project) => project.companyId === company.id);
+        if (own.length === 0) continue;
+        const from = Math.max(Math.min(...own.map((item) => item.startMonth)), range.from);
+        const to = Math.min(Math.max(...own.map((item) => item.endMonth)), range.to);
+        if (to <= from) continue;
+        const span = element("span", "ruler-span");
+        span.dataset.accent = company.accent;
+        const left = monthPct(from, range);
+        span.style.setProperty("--l", left.toFixed(3));
+        span.style.setProperty("--w", (monthPct(to, range) - left).toFixed(3));
+        spans.append(span);
+      }
+      track.append(spans);
 
       // "hoy" only belongs on a window that reaches the present.
       if (range.to >= chartRange(payload.range).to) {
@@ -462,17 +498,49 @@ const payload = {
 
     function renderTimeline(
       yValues: AxisValue[],
+      shown: Project[],
       range: MonthRange,
     ): DocumentFragment {
       const fragment = document.createDocumentFragment();
-      fragment.append(element("div", "ruler-corner"), ruler(range));
+      fragment.append(element("div", "ruler-corner"), ruler(range, shown));
 
-      for (const yValue of yValues) {
-        const bars = rowBars(projects, state.y, yValue.id, range);
+      const rows = yValues.map((yValue) => ({
+        yValue,
+        bars: rowBars(shown, state.y, yValue.id, range),
+      }));
+
+      // The accent bar belongs to the company, not to the row: an unbroken run of
+      // rows of the same company shares one gradient from its top to its bottom.
+      const companyAt = (index: number) => {
+        const first = rows[index]?.bars[0];
+        return first ? (projectById.get(first.id)?.companyId ?? null) : null;
+      };
+      const runs = rows.map(() => ({ start: 0, length: 1 }));
+      for (let start = 0; start < rows.length; ) {
+        const key = companyAt(start);
+        let end = start;
+        while (key !== null && end + 1 < rows.length && companyAt(end + 1) === key) {
+          end += 1;
+        }
+        for (let index = start; index <= end; index += 1) {
+          runs[index] = { start, length: end - start + 1 };
+        }
+        start = end + 1;
+      }
+
+      for (const [index, { yValue, bars }] of rows.entries()) {
         // One line per project: the name sits outside the bar, so it needs room
-        // of its own instead of being packed into shared lanes.
-        const lanes = bars.map((_, index) => index);
-        const laneCount = Math.max(1, bars.length);
+        // of its own instead of being packed into shared lanes. A project keeps
+        // its line when it draws several stints.
+        const laneByProject = new Map<string, number>();
+        const lanes = bars.map((bar) => {
+          const known = laneByProject.get(bar.id);
+          if (known !== undefined) return known;
+          const lane = laneByProject.size;
+          laneByProject.set(bar.id, lane);
+          return lane;
+        });
+        const laneCount = Math.max(1, laneByProject.size);
 
         const row = element("div", "gantt-row");
         row.style.setProperty("--lanes", String(laneCount));
@@ -484,12 +552,35 @@ const payload = {
         label.title = yValue.label;
         label.append(name);
 
+        const run = runs[index];
+        const from = (index - run.start) / run.length;
+        label.style.setProperty("--fade-a", Math.max(0, 1 - from).toFixed(3));
+        label.style.setProperty(
+          "--fade-b",
+          Math.max(0, 1 - from - 1 / run.length).toFixed(3),
+        );
+
         const track = element("div", "track");
-        const band = bandFor(state.y, yValue.id, range);
-        if (band) track.append(makeBand(band));
-        for (const [index, bar] of bars.entries()) {
+        // The band follows the bars themselves, so a role merged from several
+        // stints covers the whole stretch it spans.
+        const firstBar = bars[0];
+        const lastBar = bars[bars.length - 1];
+        if (firstBar && lastBar) {
+          track.append(
+            makeBand({
+              leftPct: firstBar.leftPct,
+              widthPct: lastBar.leftPct + lastBar.widthPct - firstBar.leftPct,
+            }),
+          );
+        }
+        const named = new Set<string>();
+        for (const [lane, bar] of bars.entries()) {
           const project = projectById.get(bar.id);
-          if (project) track.append(makeBar(project, bar, lanes[index] ?? 0));
+          if (!project) continue;
+          track.append(
+            makeBar(project, bar, lanes[lane] ?? 0, !named.has(bar.id)),
+          );
+          named.add(bar.id);
         }
 
         row.append(label, track);
@@ -584,16 +675,23 @@ const payload = {
       return cell;
     }
 
-    function makeBar(project: Project, bar: Bar, lane: number): HTMLButtonElement {
+    function makeBar(
+      project: Project,
+      bar: Bar,
+      lane: number,
+      named = true,
+    ): HTMLButtonElement {
       const button = element("button", "bar");
       button.type = "button";
       button.dataset.project = project.id;
+      button.dataset.span = String(bar.span ?? 0);
       button.dataset.accent = project.accent;
       button.style.setProperty("--left", String(bar.leftPct));
       button.style.setProperty("--w", String(bar.widthPct));
       button.style.setProperty("--lane", String(lane));
 
-      button.append(element("span", "bar-label", project.short));
+      // The name goes once per project, on its first stint.
+      if (named) button.append(element("span", "bar-label", project.short));
       button.setAttribute("aria-label", ariaFor(project, bar));
 
       button.addEventListener("click", () => {
@@ -684,6 +782,7 @@ const payload = {
     }
 
     function measure() {
+      fitLabelColumn();
       if (grid.dataset.mode === "timeline") {
         measureOutsideLabels();
       } else {
@@ -693,7 +792,7 @@ const payload = {
         }
       }
 
-      // One stride for the ruler labels and the year lines, so they line up.
+      // One stride for the year labels and their lines, so they line up.
       const chart = chartRange(rangeFor(state.window));
       const years = Math.max(1, (chart.to - chart.from) / 12);
       const sample =
@@ -708,6 +807,35 @@ const payload = {
       );
 
       thinRuler(stride);
+    }
+
+    /** The stage column fits its longest name instead of a fixed 13rem. */
+    function fitLabelColumn() {
+      measureCanvas ??= document.createElement("canvas").getContext("2d");
+      const sample = grid.querySelector<HTMLElement>(".row-name");
+      if (!measureCanvas || !sample) return;
+      const style = getComputedStyle(sample);
+      measureCanvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const spacing = Number.parseFloat(style.letterSpacing);
+      if (Number.isFinite(spacing)) {
+        try {
+          measureCanvas.letterSpacing = `${spacing}px`;
+        } catch {
+          // Older engines ignore letter spacing here; the slack below covers it.
+        }
+      }
+      let widest = 0;
+      for (const name of grid.querySelectorAll<HTMLElement>(".row-name")) {
+        const label = name.textContent ?? "";
+        const text = style.textTransform === "uppercase" ? label.toUpperCase() : label;
+        widest = Math.max(widest, measureCanvas.measureText(text).width);
+      }
+      // Label padding on both sides plus a hair of slack, within sane bounds.
+      const column = Math.ceil(widest + 30);
+      host.style.setProperty(
+        "--label-col",
+        `${Math.min(208, Math.max(72, column))}px`,
+      );
     }
 
     /**
@@ -735,7 +863,7 @@ const payload = {
 
     /** Keeps the year ruler readable: drop labels that no longer fit. */
     function thinRuler(stride: number) {
-      const labels = grid.querySelectorAll<HTMLElement>(".ruler-year");
+      const labels = grid.querySelectorAll<HTMLElement>(".ruler-tick");
       if (labels.length === 0) return;
       const last = labels.length - 1;
       for (const [index, label] of [...labels].entries()) {
@@ -750,7 +878,7 @@ const payload = {
       const today = grid.querySelector<HTMLElement>(".ruler-today");
       const limit = today ? today.getBoundingClientRect().left - 4 : Infinity;
       let lastRight = Number.NEGATIVE_INFINITY;
-      for (const label of grid.querySelectorAll<HTMLElement>(".ruler-year")) {
+      for (const label of grid.querySelectorAll<HTMLElement>(".ruler-tick")) {
         if (label.classList.contains("is-hidden")) continue;
         const box = label.getBoundingClientRect();
         if (box.left < lastRight + 4 || box.right > limit) {
@@ -783,6 +911,7 @@ const payload = {
 <style is:global>
   .matrix {
     --label-col: 13rem;
+    --chip-w: 5rem;
     --bar-h: 16px;
     --bar-gap: 5px;
     --lane-h: calc(var(--bar-h) + var(--bar-gap));
@@ -804,33 +933,13 @@ const payload = {
     background: color-mix(in srgb, var(--bar-color) 90%, #000);
   }
 
-  .matrix-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .picker {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .picker-name {
-    margin-inline-end: 0.15rem;
-    font-family: var(--font-mono);
-    font-size: 0.656rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-ink-faint);
-  }
-
   .chip,
   .wchip {
+    /* Every chip is the same size, so both grids read as one block. */
+    inline-size: var(--chip-w);
+    min-block-size: 24px;
     padding: 0.15rem 0.5rem;
+    text-align: center;
     border: 1px solid var(--color-border);
     border-radius: 4px;
     background: transparent;
@@ -870,12 +979,12 @@ const payload = {
     background: color-mix(in srgb, var(--color-paper-warm) 85%, transparent);
   }
 
+  /* Grouping on the left, the range in the exact middle, the window on the right. */
   .panel-head {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1rem;
+    gap: 0.6rem 1rem;
     margin-bottom: 0.9rem;
     padding-bottom: 0.7rem;
     border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
@@ -899,29 +1008,61 @@ const payload = {
     text-transform: none;
   }
 
+  .group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-self: start;
+    gap: 0.3rem;
+  }
+
+  .panel-range {
+    justify-self: center;
+    text-align: center;
+  }
+
   .window {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    justify-self: end;
+  }
+
+  .window {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
     gap: 0.25rem;
   }
 
-  .window-name {
-    margin-inline-end: 0.2rem;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-ink-faint);
+  /* Each stage chip wears its colour, so the filter and the rows speak alike. */
+  .wchip[data-accent] {
+    border-color: color-mix(in srgb, var(--bar-color) 32%, transparent);
+    background: color-mix(in srgb, var(--bar-color) 12%, transparent);
+    color: color-mix(in srgb, var(--bar-color) 70%, var(--color-ink));
   }
 
-  .wchip {
-    font-size: 0.625rem;
-    padding: 0.05rem 0.4rem;
+  .wchip[data-accent]:hover:not([aria-pressed="true"]) {
+    border-color: color-mix(in srgb, var(--bar-color) 55%, transparent);
+    background: color-mix(in srgb, var(--bar-color) 20%, transparent);
+    color: var(--color-ink);
   }
 
+  /* Selected, a window chip wears the same black as the grouping chips. */
+  .wchip[data-accent][aria-pressed="true"] {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /*
+   * The table only scrolls sideways: its height is the page's, so the vertical
+   * scroll of the whole document carries it.
+   */
   .matrix-surface {
     overflow-x: auto;
+    overflow-y: clip;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .matrix-surface::-webkit-scrollbar {
+    display: none;
   }
 
   /*
@@ -929,9 +1070,14 @@ const payload = {
    * per lane. The row's own .band already veils everything of one company.
    */
   .matrix-grid[data-mode="timeline"] {
-    --bar-h: 6px;
+    /* As tall as a chip: the bars are buttons too. */
+    --bar-h: 24px;
     --bar-gap: 17px;
     --lane-h: calc(var(--bar-h) + var(--bar-gap));
+    /* A year is always 72px wide, whatever room the panel has: the drawing
+       never stretches, and the surface scrolls when it does not fit. */
+    --pp-month: 6px;
+    inline-size: calc(var(--label-col) + var(--months, 192) * var(--pp-month));
   }
 
   .matrix-grid[data-mode="timeline"] .bar {
@@ -972,30 +1118,60 @@ const payload = {
       repeat(var(--cols, 1), minmax(6.5rem, 1fr));
   }
 
-  .ruler-corner {
+  .ruler-corner,
+  .ruler-track {
     position: sticky;
+    top: 0;
+    z-index: 7;
+    background: var(--color-paper-warm);
+  }
+
+  .ruler-corner {
     left: 0;
-    z-index: 6;
+    z-index: 8;
     background: color-mix(in srgb, var(--color-paper-warm) 85%, var(--color-paper));
   }
 
   .ruler-track {
-    position: relative;
-    block-size: 1.5rem;
+    block-size: 1.6rem;
     margin-inline-end: 0.4rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
   }
 
-  .ruler-year,
+  .ruler-spans {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    block-size: 4px;
+  }
+
+  /* Soft at both ends, so neighbouring stages blend instead of cutting. */
+  .ruler-span {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--l) * 1%);
+    inline-size: calc(var(--w) * 1%);
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--bar-color, var(--color-ink-faint)) 6%,
+      var(--bar-color, var(--color-ink-faint)) 94%,
+      transparent
+    );
+  }
+
+  .ruler-tick,
   .ruler-today {
     position: absolute;
-    inset-block-end: 0.35rem;
+    inset-block-end: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.625rem;
     color: var(--color-ink-faint);
     white-space: nowrap;
   }
 
-  .ruler-year {
+  .ruler-tick {
     transform: translateX(-50%);
   }
 
@@ -1005,7 +1181,7 @@ const payload = {
     color: var(--color-ink-muted);
   }
 
-  .ruler-year.is-hidden {
+  .ruler-tick.is-hidden {
     display: none;
   }
 
@@ -1025,6 +1201,39 @@ const payload = {
     display: grid;
     grid-template-columns: var(--label-col) minmax(0, 1fr);
     border-block-start: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  }
+
+  /* The sticky column has to cover the row it belongs to, or the bars slide
+     under the gap above and below its text. */
+  .matrix-grid[data-mode="timeline"] .row-label {
+    align-self: stretch;
+    align-items: center;
+    padding-inline-start: 0.75rem;
+  }
+
+  /* The accent marks the whole stage instead of a dot at the start of it. */
+  .matrix-grid[data-mode="timeline"] .row-label::before {
+    position: absolute;
+    inset-block-start: 0;
+    inset-block-end: auto;
+    inset-inline-start: 0;
+    margin: 0;
+    inline-size: 4px;
+    block-size: 100%;
+    border-radius: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(
+        in srgb,
+        var(--bar-color, var(--color-ink-faint)) calc(var(--fade-a, 1) * 100%),
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--bar-color, var(--color-ink-faint)) calc(var(--fade-b, 0) * 100%),
+        transparent
+      )
+    );
   }
 
   .row-label {
@@ -1124,11 +1333,17 @@ const payload = {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background-image: repeating-linear-gradient(
-      to right,
-      color-mix(in srgb, var(--color-border) 80%, transparent) 0 1px,
-      transparent 1px var(--year-step)
-    );
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-border) 85%, transparent) 0 1px,
+        transparent 1px var(--year-step)
+      ),
+      repeating-linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-border) 40%, transparent) 0 1px,
+        transparent 1px var(--quarter-step)
+      );
     background-position-x: var(--year-offset);
   }
 
@@ -1303,6 +1518,21 @@ const payload = {
 
     .matrix-panel {
       padding: 0.85rem;
+    }
+
+    /* One column, or the three blocks squeeze each other. */
+    .panel-head {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+
+    .panel-range {
+      justify-self: start;
+      text-align: start;
+    }
+
+    .window {
+      justify-self: start;
     }
 
     /* A timeline squeezed into 250px is unreadable: let it scroll sideways. */
