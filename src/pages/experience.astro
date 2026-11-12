@@ -32,53 +32,53 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ label: "Experiencia" }]}
 >
-  <header class="page-head">
-    <p class="eyebrow">Experiencia</p>
-    <h1 class="display">Experiencia: producto, consultoría y arquitectura desde 2011.</h1>
-    <p class="lede">
+  <header id="experience-page-head" class="page-head">
+    <p id="experience-page-head-eyebrow" class="eyebrow">Experiencia</p>
+    <h1 id="experience-page-head-display" class="display">Experiencia: producto, consultoría y arquitectura desde 2011.</h1>
+    <p id="experience-page-head-lede" class="lede">
       Desde 2011 he pasado por producto, consultoría y arquitectura. Esta página recorre
       los mismos años de dos formas: como línea temporal navegable y como relación de
       puestos, proyectos y decisiones.
     </p>
-    <div class="meta-row">
-      <span>{COMPANIES.length} etapas</span>
-      <span>{POSITION_VIEWS.length} puestos</span>
-      <span>{PROJECTS.length} proyectos</span>
-      <span>{YEAR_LABEL}</span>
+    <div id="experience-page-head-meta-row" class="meta-row">
+      <span id="experience-meta-row-span">{COMPANIES.length} etapas</span>
+      <span id="experience-meta-row-span-2">{POSITION_VIEWS.length} puestos</span>
+      <span id="experience-meta-row-span-3">{PROJECTS.length} proyectos</span>
+      <span id="experience-meta-row-span-4">{YEAR_LABEL}</span>
     </div>
   </header>
 
   <section class="section" id="trayectoria" aria-labelledby="trayectoria-title">
-    <div class="section-head">
+    <div id="experience-section-head" class="section-head">
       <h2 class="section-title" id="trayectoria-title">
         Trayectoria
       </h2>
-      <span class="section-meta">2011 — presente</span>
+      <span id="experience-section-head-meta" class="section-meta">2011 — presente</span>
     </div>
     <ExperienceMatrix />
   </section>
 
   <section class="section" id="puestos" aria-labelledby="puestos-title">
-    <div class="section-head">
-      <h2 class="section-title" id="puestos-title">Puestos y proyectos</h2>
-      <span class="section-meta">orden cronológico inverso</span>
+    <div id="experience-section-head-2" class="section-head">
+      <h2 class="section-title" id="puestos-title">Proyectos</h2>
+      <span id="experience-section-head-meta-2" class="section-meta">orden cronológico inverso</span>
     </div>
     <RoleTrajectory />
   </section>
 
   <section class="section" id="formacion" aria-labelledby="formacion-title">
-    <div class="section-head">
-      <h2 class="section-title" id="formacion-title">Formación y certificaciones</h2>
-      <span class="section-meta">{EDUCATION.length} registros</span>
+    <div id="experience-section-head-3" class="section-head">
+      <h2 class="section-title" id="formacion-title">Formación</h2>
+      <span id="experience-section-head-meta-3" class="section-meta">{EDUCATION.length} registros</span>
     </div>
-    <ul class="education">
+    <ul id="experience-section-education" class="education">
       {
-        EDUCATION.map((item) => (
-          <li class="education-item">
-            <span class="education-year">{item.year}</span>
-            <span class="education-body">
-              <strong>{item.title}</strong>
-              <span class="education-org">{item.org}</span>
+        EDUCATION.map((item, i) => (
+          <li id={`experience-education-item-${i}`} class="education-item">
+            <span id={`experience-education-item-year-${i}`} class="education-year">{item.year}</span>
+            <span id={`experience-education-item-body-${i}`} class="education-body">
+              <strong id={`experience-education-body-strong-${i}`}>{item.title}</strong>
+              <span id={`experience-education-body-org-${i}`} class="education-org">{item.org}</span>
             </span>
           </li>
         ))
@@ -86,25 +86,76 @@ const jsonLd = [
     </ul>
   </section>
 
-  <section class="closing" aria-labelledby="exp-cierre">
+  <section id="experience-closing" class="closing" aria-labelledby="exp-cierre">
     <h2 class="section-title" id="exp-cierre">Siguiente paso</h2>
-    <p>
+    <p id="experience-closing-p">
       El CV reúne la misma información en un formato pensado para imprimir o guardar en
       PDF. Los proyectos explican el problema, el rol y el resultado de cada caso.
     </p>
-    <div class="actions">
-      <a class="btn" href="/cv/">Ver el CV</a>
-      <a class="btn btn--ghost" href="/projects/">Ver proyectos</a>
-      <a class="btn btn--ghost" href="/contact/">Contactar</a>
+    <div id="experience-closing-actions" class="actions">
+      <a id="experience-actions-btn" class="btn" href="/cv/">Ver el CV</a>
+      <a id="experience-actions-btn-2" class="btn btn--ghost" href="/projects/">Ver proyectos</a>
+      <a id="experience-actions-btn-3" class="btn btn--ghost" href="/contact/">Contactar</a>
     </div>
   </section>
 
   <DetailDrawer />
 </Layout>
 
+<script>
+  // The section titles stick under the site header, so it has to say how tall
+  // it is, at every width and after every client-side navigation.
+  function syncHeaderHeight() {
+    const header = document.querySelector(".site-header");
+    if (!header) return;
+    const height = Math.round(header.getBoundingClientRect().height);
+    document.documentElement.style.setProperty("--header-h", `${height}px`);
+  }
+
+  syncHeaderHeight();
+  window.addEventListener("resize", syncHeaderHeight);
+  document.addEventListener("astro:page-load", syncHeaderHeight);
+</script>
+
 <style>
   .section {
     display: grid;
+  }
+
+  /* No air between sections here: the titles' boxes touch, so the next one
+     takes the free slot the moment it arrives instead of travelling through
+     an empty band first. */
+  :global(.main.main) {
+    gap: 0;
+  }
+
+  /* Each title holds its slot while its section is read, and the next one takes
+     the slot over when it arrives. */
+  /* Solid here: the page slides rows under the header, and at 94% they showed
+     through it as silhouettes. Everywhere else keeps the glass. */
+  :global(.site-header.site-header) {
+    background: var(--color-paper);
+    backdrop-filter: none;
+  }
+
+  .section > .section-head {
+    position: sticky;
+    /* Tucks 1px under the header so no hairline of content shows through. */
+    top: calc(var(--header-h, 6.375rem) - 1px);
+    z-index: 9;
+    /* No air below the box: sticky keeps the margin inside the section, and it
+       would hold the title back from the edge while it hands over. */
+    margin-bottom: 0;
+    /* The air the title needs lives inside its own box, equal above and below,
+       so while it is stuck it does not sit pinned to the header's edge. */
+    padding-block: 0.75rem;
+    background: var(--color-paper);
+  }
+
+  /* The same air, now on the content side, so the title's box reaches the end
+     of its section and the next one takes its place flush. */
+  .section > .section-head + * {
+    margin-top: 1.5rem;
   }
 
   .education {
