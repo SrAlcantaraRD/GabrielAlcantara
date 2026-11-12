@@ -33,8 +33,14 @@ const payload = {
   <div class="matrix-controls">
     {
       (["x", "y"] as const).map((axis) => (
-        <div class="picker" role="group" aria-label={`eje ${axis}`}>
-          <span class="picker-name" aria-hidden="true">{axis}</span>
+        <div
+          class="picker"
+          role="group"
+          aria-label={`eje ${axis === "x" ? "horizontal" : "vertical"}`}
+        >
+          <span class="picker-name" aria-hidden="true">
+            {axis === "x" ? "horizontal" : "vertical"}
+          </span>
           {AXIS_ORDER.map((axisId) => (
             <button
               type="button"
@@ -100,7 +106,7 @@ const payload = {
       }
     </ul>
     <p class="matrix-hint">
-      haz clic en una barra para abrir la ficha del proyecto
+      cada barra es un proyecto y su ancho, los meses: haz clic para abrir su ficha
     </p>
   </div>
 
@@ -178,6 +184,7 @@ const payload = {
     const positions = payload.positions;
     const projectById = new Map(projects.map((project) => [project.id, project]));
     const state = readState();
+    let lastAxes = { x: "", y: "" };
 
     bindChips();
     bindWindows();
@@ -254,6 +261,8 @@ const payload = {
     }
 
     function render() {
+      const before = captureBars();
+      const axesChanged = lastAxes.x !== state.x || lastAxes.y !== state.y;
       const range = rangeFor(state.window);
       const chart = chartRange(range);
       const chartSpan = chart.to - chart.from;
@@ -277,6 +286,9 @@ const payload = {
       );
       note.hidden = timeline;
 
+      lastAxes = { x: state.x, y: state.y };
+      settle(before, axesChanged);
+
       rangeLabel.textContent = `${monthLabel(range.from)} — ${monthLabel(range.to - 1)} · ${durationLabel(range.to - range.from)}`;
 
       syncChips();
@@ -284,6 +296,55 @@ const payload = {
       syncUrl();
       measure();
       requestAnimationFrame(measure);
+    }
+
+    function captureBars(): Map<string, DOMRect> {
+      const rects = new Map<string, DOMRect>();
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        rects.set(bar.dataset.project ?? "", bar.getBoundingClientRect());
+      }
+      return rects;
+    }
+
+    /**
+     * Zooming to a stage moves the same bars into a narrower range, so they glide
+     * from where they were to where they are. Changing an axis replaces what a
+     * row means, so the grid cross-fades instead of pretending it kept its place.
+     */
+    function settle(before: Map<string, DOMRect>, axesChanged: boolean) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      if (axesChanged) {
+        grid.animate([{ opacity: 0.3 }, { opacity: 1 }], {
+          duration: 220,
+          easing: "ease-out",
+        });
+        return;
+      }
+
+      for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
+        const from = before.get(bar.dataset.project ?? "");
+        if (!from) continue;
+        const now = bar.getBoundingClientRect();
+        const dx = from.left - now.left;
+        const dy = from.top - now.top;
+        const sx = from.width / Math.max(1, now.width);
+        const sy = from.height / Math.max(1, now.height);
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.03) {
+          continue;
+        }
+        bar.animate(
+          [
+            {
+              transformOrigin: "0 0",
+              transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
+              opacity: 0.55,
+            },
+            { transformOrigin: "0 0", transform: "none", opacity: 1 },
+          ],
+          { duration: 380, easing: "cubic-bezier(.22, 1, .36, 1)" },
+        );
+      }
     }
 
     function syncChips() {
@@ -512,6 +573,7 @@ const payload = {
             kind: "list",
             label: `${xValue.label} × ${yValue.label}`,
             ids: bars.map((bar) => bar.id),
+            origin: more,
           }),
         );
         cell.append(more);
@@ -535,7 +597,7 @@ const payload = {
       button.addEventListener("click", () => {
         hideTip();
         clearHighlight();
-        openDrawer({ kind: "project", id: project.id });
+        openDrawer({ kind: "project", id: project.id, origin: button });
       });
       button.addEventListener("mouseenter", (event) => {
         highlight(project.id);

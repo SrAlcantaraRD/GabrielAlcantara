@@ -136,7 +136,7 @@ const groups: Group[] = COMPANIES.map((company) => {
     const button = event.target.closest<HTMLButtonElement>(".chip-project");
     if (!button) return;
     const id = button.dataset.project;
-    if (id) openDrawer({ kind: "project", id });
+    if (id) openDrawer({ kind: "project", id, origin: button });
   });
 </script>
 

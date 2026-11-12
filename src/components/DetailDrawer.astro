@@ -20,6 +20,7 @@ const payload = {
   aria-hidden="true"
   tabindex="-1"
 >
+  <div class="drawer-surface">
   <header class="drawer-head">
     <div>
       <p class="drawer-meta" id="drawer-meta"></p>
@@ -45,6 +46,7 @@ const payload = {
     <span class="drawer-hint" id="drawer-hint">presiona esc para cerrar</span>
     <button type="button" class="drawer-ok" data-drawer-close>entendido</button>
   </footer>
+  </div>
 </aside>
 
 <script type="application/json" id="drawer-data" set:html={JSON.stringify(payload)} />
@@ -98,7 +100,7 @@ const payload = {
       const request = (event as CustomEvent<DrawerRequest>).detail;
       if (!request) return;
       render(request);
-      open();
+      open(request.origin ?? null);
     }, { signal: controller.signal });
 
     for (const closer of document.querySelectorAll("[data-drawer-close]")) {
@@ -106,14 +108,20 @@ const payload = {
     }
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") {
+        close();
+        return;
+      }
+      if (event.key === "Tab" && panel.classList.contains("is-open")) {
+        trapFocus(event);
+      }
     }, { signal: controller.signal });
 
     function render(request: DrawerRequest) {
       if (request.kind === "project") {
         const project = projectById.get(request.id);
         if (!project) return;
-        meta.textContent = `proyecto · ${project.role}`;
+        meta.textContent = `proyecto · ${project.position}`;
         title.textContent = project.name;
         role.textContent = `${project.company} · ${project.position} · ${spanLabel(project.startMonth, project.endMonth)} (${durationLabel(project.endMonth - project.startMonth)})`;
         body.replaceChildren(projectBody(project));
@@ -193,16 +201,30 @@ const payload = {
       return list;
     }
 
-    function open() {
+    const EASE_IN = "cubic-bezier(.22, 1, .36, 1)";
+    const EASE_OUT = "cubic-bezier(.4, 0, .2, 1)";
+    const MORPH_MS = 460;
+    const SHRINK_MS = 320;
+
+    let origin: HTMLElement | null = null;
+    let originRect: DOMRect | null = null;
+    let morph: Animation | null = null;
+    let closing: (() => void) | null = null;
+
+    function open(from: Element | null) {
+      closing?.();
       if (panel.classList.contains("is-open")) return;
       restoreFocus =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
+      origin = from instanceof HTMLElement ? from : null;
+      originRect = origin?.getBoundingClientRect() ?? null;
       panel.classList.add("is-open");
       panel.setAttribute("aria-hidden", "false");
       backdrop?.classList.add("is-open");
       document.body.style.overflow = "hidden";
+      morphIn();
       requestAnimationFrame(focusPanel);
     }
 
@@ -210,17 +232,128 @@ const payload = {
       panel.focus({ preventScroll: true });
     }
 
+    function prefersReducedMotion(): boolean {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    /** The bar's own colour, so the card grows out of that row, not out of nowhere. */
+    function originColor(): string | null {
+      if (!origin) return null;
+      const color = getComputedStyle(origin).backgroundColor;
+      return /rgba?\([^)]*,\s*0\s*\)/.test(color) ? null : color;
+    }
+
+    /** The bar expands into the card: one transform, so it never leaves the compositor. */
+    function morphIn() {
+      if (!originRect || prefersReducedMotion() || typeof panel.animate !== "function") {
+        return;
+      }
+      const to = panel.getBoundingClientRect();
+      if (!to.width || !to.height) return;
+      const sx = Math.max(0.02, originRect.width / to.width);
+      const sy = Math.max(0.02, originRect.height / to.height);
+      const shell = getComputedStyle(panel).backgroundColor;
+      const from = originColor() ?? shell;
+      morph?.cancel();
+      morph = panel.animate(
+        [
+          {
+            transformOrigin: "0 0",
+            transform: `translate(${originRect.left - to.left}px, ${originRect.top - to.top}px) scale(${sx}, ${sy})`,
+            borderRadius: "4px",
+            backgroundColor: from,
+          },
+          {
+            transformOrigin: "0 0",
+            transform: "none",
+            borderRadius: "14px",
+            backgroundColor: shell,
+          },
+        ],
+        { duration: MORPH_MS, easing: EASE_IN },
+      );
+      morph.finished.then(() => {
+        morph = null;
+      }).catch(() => {});
+    }
+
     function close() {
-      if (!panel.classList.contains("is-open")) return;
+      if (!panel.classList.contains("is-open") || closing) return;
+      const target =
+        origin && origin.isConnected ? origin.getBoundingClientRect() : originRect;
+      if (prefersReducedMotion() || !target || typeof panel.animate !== "function") {
+        finishClose();
+        return;
+      }
+      const from = panel.getBoundingClientRect();
+      const sx = Math.max(0.02, target.width / from.width);
+      const sy = Math.max(0.02, target.height / from.height);
+      const shell = getComputedStyle(panel).backgroundColor;
+      const to = originColor() ?? shell;
+      panel.dataset.closing = "true";
+      backdrop?.classList.remove("is-open");
+      morph?.cancel();
+      morph = panel.animate(
+        [
+          {
+            transformOrigin: "0 0",
+            transform: "none",
+            borderRadius: "14px",
+            backgroundColor: shell,
+          },
+          {
+            transformOrigin: "0 0",
+            transform: `translate(${target.left - from.left}px, ${target.top - from.top}px) scale(${sx}, ${sy})`,
+            borderRadius: "4px",
+            backgroundColor: to,
+          },
+        ],
+        { duration: SHRINK_MS, easing: EASE_OUT },
+      );
+      closing = finishClose;
+      morph.finished.then(finishClose).catch(() => {});
+    }
+
+    function finishClose() {
+      const animation = morph;
+      morph = null;
+      closing = null;
+      animation?.cancel();
+      delete panel.dataset.closing;
       panel.classList.remove("is-open");
       panel.setAttribute("aria-hidden", "true");
       backdrop?.classList.remove("is-open");
       document.body.style.overflow = "";
-      restoreFocus?.focus();
+      restoreFocus?.focus({ preventScroll: true });
+    }
+
+    function trapFocus(event: KeyboardEvent) {
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((node) => node.getClientRects().length > 0);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || active === panel)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
 
     return () => {
       controller.abort();
+      morph?.cancel();
+      morph = null;
+      closing = null;
       if (panel.classList.contains("is-open")) {
         panel.classList.remove("is-open");
         panel.setAttribute("aria-hidden", "true");
@@ -252,8 +385,8 @@ const payload = {
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: rgb(26 26 26 / 0.18);
-    backdrop-filter: blur(2px);
+    background: rgb(26 26 26 / 0.28);
+    backdrop-filter: blur(6px);
     opacity: 0;
     visibility: hidden;
     transition:
@@ -269,30 +402,74 @@ const payload = {
       visibility 0s;
   }
 
+  /*
+   * A centred card, not a side panel: the bar it comes from expands into this
+   * box, so the dialog has to be a rectangle the bar can grow into.
+   */
   .drawer {
     position: fixed;
-    inset-block: 0;
-    inset-inline-end: 0;
+    inset: 0;
     z-index: 50;
     display: flex;
     flex-direction: column;
-    inline-size: min(28rem, 100vw);
-    background: var(--color-paper);
-    border-inline-start: 1px solid var(--color-border);
-    box-shadow: -16px 0 40px var(--shadow);
-    transform: translateX(101%);
+    margin: auto;
+    inline-size: min(42rem, calc(100vw - 1.5rem));
+    block-size: fit-content;
+    max-block-size: min(86vh, 46rem);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-card);
+    box-shadow:
+      0 32px 72px -16px rgb(26 26 26 / 0.4),
+      0 2px 8px rgb(26 26 26 / 0.08);
     visibility: hidden;
-    transition:
-      transform 240ms ease,
-      visibility 0s 240ms;
+    opacity: 0;
   }
 
   .drawer.is-open {
-    transform: none;
     visibility: visible;
+    opacity: 1;
+  }
+
+  /*
+   * The shell moves on its own clock; the copy settles after it: fade, blur and
+   * a touch of scale, so the card is already in place when the words arrive.
+   */
+  .drawer-surface {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-block-size: 0;
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(0.984);
     transition:
-      transform 240ms ease,
-      visibility 0s;
+      opacity 240ms ease 240ms,
+      filter 320ms ease 240ms,
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 220ms;
+  }
+
+  .drawer.is-open .drawer-surface {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .drawer[data-closing="true"] .drawer-surface {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.99);
+    transition-duration: 140ms;
+    transition-delay: 0ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-surface {
+      filter: none;
+      transform: none;
+      transition: opacity 140ms ease;
+    }
   }
 
   .drawer:focus {
@@ -304,9 +481,9 @@ const payload = {
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 2rem 2rem 1.5rem;
+    padding: 1.75rem 1.9rem 1.35rem;
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-paper);
+    background: var(--color-card);
   }
 
   .drawer-meta {
@@ -359,9 +536,10 @@ const payload = {
   }
 
   .drawer-body {
-    flex: 1;
+    flex: 1 1 auto;
+    min-block-size: 0;
     overflow-y: auto;
-    padding: 1.75rem 2rem 2rem;
+    padding: 1.5rem 1.9rem 1.75rem;
   }
 
   .drawer-stack {
@@ -449,9 +627,9 @@ const payload = {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 2rem;
+    padding: 0.9rem 1.9rem;
     border-top: 1px solid var(--color-border);
-    background: var(--color-paper);
+    background: var(--color-card);
   }
 
   .drawer-hint {
@@ -477,10 +655,16 @@ const payload = {
   }
 
   @media (max-width: 640px) {
+    .drawer {
+      inline-size: calc(100vw - 1.25rem);
+      max-block-size: 88vh;
+      border-radius: 12px;
+    }
+
     .drawer-head,
     .drawer-body,
     .drawer-foot {
-      padding-inline: 1.25rem;
+      padding-inline: 1.15rem;
     }
   }
 </style>
