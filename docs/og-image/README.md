@@ -19,10 +19,11 @@ the standfirst.
 | 2 | eyebrow | sans | 34 px | 34 | tracked, in the faint ink: category, `Caso de estudio · Company`, place |
 | 3 | title | serif 300 | 96 px | 96 | the name or the headline |
 | 4 | sub | sans | 34 px | 34 | tracked, in the accent: role or standfirst |
-| 5 | foot | mono | 34 px | 34 | stack or tags on the left, years or date on the right |
+| 5 | foot | mono | 34 px | 40 | stack or tags on the left, years or date on the right |
 
 The masthead row is 40 px so the mark fits inside it instead of leaking over the
-hairline; the mark is 40 px, with a 16 px gap to the domain.
+hairline; the mark is 40 px, with a 16 px gap to the domain. The foot row is
+also 40 px, which is what lets the two hairlines mirror about the canvas.
 
 All five slots are filled on every card. There is no auto-fit and no second
 line — the copy is edited until it fits, which is why the articles carry their own
@@ -32,7 +33,7 @@ foot: at 34 px a fourth one runs into the margin.
 
 `export.mjs` enforces it. It measures the rendered card and refuses to write a
 PNG when a slot is empty, wraps to a second line, overflows its width, invades
-the 80 px gutter, drops below 34 px, or breaks the rhythm. The lead is the only
+the 42 px gutter, drops below 34 px, or breaks the rhythm. The lead is the only
 slot allowed past that line, and only by 2 px: a round or pointed capital has to
 hang for its curve to look flush (see below). It also refuses an image that is
 not exactly 1200×630 or heavier than `--max-kb`.
@@ -50,26 +51,26 @@ the card carries no badge and no second colour.
 The five heights and two gaps derive all five tops in `card.html`:
 
 ```
---space       68px   from the three-line block to the two label rows
+--space      127px   from the three-line block to the two label rows
 --space-tight 24px   inside the block: eyebrow, lead and standfirst
---margin     104px   above the first row and below the last, whatever is left
+--margin      42px   above the first row and below the last, whatever is left
 ```
 
-The six spaces are therefore `104 / 68 / 24 / 24 / 68 / 104`, identical on all
+The six spaces are therefore `42 / 127 / 24 / 24 / 127 / 42`, identical on all
 eight cards. `export.mjs` reads `--space`, `--space-tight` and `--margin` from the
 stylesheet, re-derives the six spaces from the slot boxes, and refuses the card
 when any of them is off by more than half a pixel. Change a gap or a height and
 the four tops follow; there are no hand-tuned numbers to forget.
 
-The two hairlines are attached to the outer rows, each 24 px from the block it
-closes, so the body sits between two equal gaps: 24 px to its rule above, 44 px
-from that rule, and the same mirrored below. That is what closes the three
-blocks without adding a line of text.
+The two hairlines are attached to the outer rows, each 42 px from the block it
+closes — the padding again: 42 px to its block, 85 px to the body, mirrored
+above and below, and 124 px from each edge of the canvas.
 
-The safe zone is the 5% inset some feeds crop to — 60 × 31.5 px on this canvas,
-the same guide the card editor draws. The column starts 20 px inside it (`--x:
-80px`) and the first and last rows sit 104 px from the edges, so no slot is ever
-close to the crop.
+The frame is the padding: 42 px on all four sides (`--x: 42px`). That is inside
+the 5% band some feeds crop to — 60 × 31.5 px on this canvas, the same guide the
+card editor draws — so a crop can shave 18 px of the white frame and reach the
+ink at about 45 px. The card takes that trade on purpose: the padding comes
+first, and the ink still starts 45 px from the edge.
 
 The rhythm is measured on the slot boxes, not on ink. A `Q` tail, an accent over
 a capital or the descender of a `g` dips into the space below without moving it;

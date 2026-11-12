@@ -48,17 +48,19 @@
 	--slot-label: 34px;
 	--slot-title: 96px;
 
-	/* The masthead row is 40 so the mark fits inside it, not over the rule. */
+	/* The masthead row is 40 so the mark fits inside it, not over the rule. The
+	   foot row matches it so the two hairlines mirror about the canvas centre. */
 	--h-domain: 40px;
 	--h-eyebrow: 34px;
 	--h-title: 96px;
 	--h-sub: 34px;
-	--h-foot: 34px;
+	--h-foot: 40px;
 
-	/* Three blocks, three distances: 24px inside the lead group, 68px between
-	   blocks, 104px to the frame. Multiplying by ~2.8 at each step is what makes
-	   the groups read as groups and the frame read as a frame. */
-	--space: 68px;
+	/* The frame is the padding, and the padding is the module: 42px to the edge,
+	   42px from each block to its hairline, 24px inside the lead group. The
+	   blocks take what is left (127px), so the three-line body sits dead centre
+	   without a hand-tuned number. */
+	--space: 127px;
 	--space-tight: 24px;
 
 	--margin: calc(
@@ -72,22 +74,23 @@
 	--y-sub: calc(var(--y-title) + var(--h-title) + var(--space-tight));
 	--y-foot: calc(var(--y-sub) + var(--h-sub) + var(--space));
 
-	/* Each hairline sits the same 24px from the block it closes, so the body is
-	   framed by equal gaps instead of one tight rule and one loose one. */
-	--rule-gap-top: 24px;
-	--rule-gap-foot: 24px;
+	/* Each hairline sits the same 42px from the block it closes — the padding
+	   again — so the two rules mirror about the canvas centre. */
+	--rule-gap-top: 42px;
+	--rule-gap-foot: 42px;
 
 	/* The two halves of one row never touch. */
 	--foot-gap: 40px;
 
 	/*
 	 * The 5% safe zone some feeds crop to — 60 × 31.5px on this canvas, the same
-	 * guide the card editor draws. Everything lives inside it: the column starts
-	 * 20px in, and the first and last rows sit 104px from the edges. The gutter
-	 * stays a plain length because the exporter reads it with parseFloat.
+	 * guide the card editor draws. The frame is the padding (42px), which is
+	 * inside that band on purpose: a feed that crops 5% shaves 18px of the white
+	 * frame and reaches the ink at ~45px. The gutter stays a plain length
+	 * because the exporter reads it with parseFloat.
 	 */
-	--x: 80px;
-	--width: 1040px;
+	--x: 42px;
+	--width: 1116px;
 
 	--logo-size: 40px;
 	--logo-gap: 16px;
@@ -158,6 +161,9 @@ html, body { background: var(--paper); }
 	align-items: center;
 	gap: var(--logo-gap);
 	flex: none;
+	/* The A's base is its left-most ink: hanging the lockup 4px lines the mark
+	   up with the ink of the three text rows instead of sitting inside them. */
+	margin-left: -4px;
 }
 
 .mark {
@@ -196,7 +202,7 @@ html, body { background: var(--paper); }
 	display: inline-block;
 }
 
-.eyebrow span { transform: translate(1px, -2px); }
+.eyebrow span { transform: translate(0, -2px); }
 
 .lead {
 	top: var(--y-title);
@@ -235,7 +241,7 @@ html, body { background: var(--paper); }
 	 */
 .sub span {
 	display: inline-block;
-	transform: translate(2px, 0);
+	transform: translate(0, 0);
 }
 
 .foot {
