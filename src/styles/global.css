@@ -19,6 +19,9 @@
 	--color-available: #059669;
 	--color-selection: #eae3d5;
 	--shadow: 0 12px 32px rgb(26 26 26 / 0.1);
+	/* Card fill: the sheet tinted towards the paper, so the grain still shows
+	   through in light. Dark overrides it with a solid sheet. */
+	--card-surface: color-mix(in srgb, var(--color-card) 72%, transparent);
 
 	--font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 	--font-sans:
@@ -36,14 +39,14 @@
 :root[data-theme="dark"] {
 	color-scheme: dark;
 	--color-paper: #141311;
-	--color-paper-warm: #1c1a17;
-	--color-card: #211f1b;
+	--color-paper-warm: #221f1a;
+	--color-card: #29251f;
 	--color-ink: #f1ede6;
 	--color-ink-hover: #d9d3c9;
 	--color-ink-muted: #c3bdb3;
 	--color-ink-faint: #968f84;
-	--color-border: #3a3630;
-	--color-border-subtle: #2a2723;
+	--color-border: #4a433a;
+	--color-border-subtle: #322d26;
 	--color-cobalt: #9fc3d9;
 	--color-cobalt-tint: #1b2a33;
 	--color-sage: #a9c9b2;
@@ -53,6 +56,8 @@
 	--color-available: #34d399;
 	--color-selection: #3b342b;
 	--shadow: 0 12px 32px rgb(0 0 0 / 0.32);
+	/* On this paper the tinted fill is invisible, so the card is its own sheet. */
+	--card-surface: var(--color-card);
 }
 
 @media (min-width: 1024px) {
@@ -279,9 +284,10 @@ svg {
 	grid-template-columns: minmax(0, 1fr);
 }
 
-/* The header is sticky, so an anchor target needs room above it. */
+/* The header is sticky and its height depends on what the strip holds, so the
+   offset is measured at runtime; 7rem is the pre-script fallback. */
 .main [id] {
-	scroll-margin-top: 7rem;
+	scroll-margin-top: var(--header-offset, 7rem);
 }
 
 .section-head {
@@ -295,19 +301,33 @@ svg {
 	border-bottom: 1px solid var(--color-border);
 }
 
+/*
+ * The section title is the page's real voice, so it takes the serif and a size
+ * that outranks the cards under it. The mono stays where it belongs: the meta
+ * on the right of the rule, which is data, not a heading.
+ */
 .section-title {
-	font-family: var(--font-mono);
-	font-size: 0.6875rem;
-	font-weight: 400;
-	letter-spacing: 0.18em;
-	text-transform: uppercase;
-	color: var(--color-ink-faint);
+	font-family: var(--font-serif);
+	font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+	font-weight: 500;
+	line-height: 1.2;
+	letter-spacing: -0.012em;
+	color: var(--color-ink);
+	text-wrap: balance;
 }
 
 .section-meta {
 	font-family: var(--font-mono);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
+	line-height: 1.5;
 	color: var(--color-ink-faint);
+}
+
+/* An action inside the rule keeps its baseline but gets a thumb-sized box. */
+.section-meta a {
+	display: inline-block;
+	padding-block: 0.7rem;
+	margin-block: -0.7rem;
 }
 
 .pill {
@@ -320,15 +340,16 @@ svg {
 	background: var(--color-paper-warm);
 	color: var(--color-ink-muted);
 	font-family: var(--font-mono);
-	font-size: 0.6875rem;
+	font-size: 0.75rem;
 	line-height: 1.5;
 }
 
 .eyebrow {
 	font-family: var(--font-mono);
-	font-size: 0.656rem;
+	font-size: 0.75rem;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
+	text-wrap: balance;
 	color: var(--color-ink-faint);
 }
 
@@ -391,6 +412,7 @@ svg {
 	align-items: center;
 	justify-content: center;
 	gap: 0.4rem;
+	min-block-size: 2.75rem;
 	padding: 0.55rem 1.05rem;
 	border: 1px solid var(--color-ink);
 	border-radius: 5px;
@@ -426,6 +448,7 @@ svg {
 }
 
 .btn--link {
+	min-block-size: 2.5rem;
 	padding-inline: 0.2rem;
 	border-color: transparent;
 	background: transparent;
@@ -449,10 +472,10 @@ svg {
 	align-items: center;
 	gap: 0.4rem 0.9rem;
 	font-family: var(--font-mono);
-	font-size: 0.656rem;
+	font-size: 0.75rem;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
-	color: var(--color-ink-faint);
+	color: var(--color-ink-muted);
 }
 
 .meta-row > * + *::before {
@@ -487,10 +510,11 @@ svg {
 		gap: 0.35rem 0.7rem;
 	}
 
+	/* Keep the separator but tighten it: without it, "Disponible Barcelona"
+	   reads as one phrase instead of two facts. */
 	.meta-row > * + *::before,
 	.meta-row .is-available + *::before {
-		content: none;
-		margin: 0;
+		margin-inline-end: 0.35rem;
 	}
 }
 
@@ -528,7 +552,7 @@ svg {
 	}
 
 	.grid--2.is-aligned > .project-card > .project-facts > div {
-		grid-template-columns: 4.25rem minmax(0, 1fr);
+		grid-template-columns: 5.25rem minmax(0, 1fr);
 		column-gap: 0.75rem;
 		align-content: start;
 		align-items: start;
@@ -584,18 +608,13 @@ svg {
 	}
 
 	/*
-	 * Inside each shared row the label and its value sit in two columns, so the
-	 * block reads as one table: every label starts on the same x (the width is
-	 * fixed, not fitted per card) and every value starts on the same x. A taller
-	 * row must not spread the copy that is shorter, and the value keeps the
-	 * baseline of its label.
+	 * In three columns the card is too narrow for a label column: a 4.9rem label
+	 * leaves the value about 20 characters per line. The label sits above its
+	 * value instead, so the value keeps the whole card and both still start on
+	 * the same x in all three, because the rows come from the shared grid.
 	 */
 	.grid--3.is-aligned > .project-card > .project-facts > div {
-		grid-template-columns: 4.25rem minmax(0, 1fr);
-		column-gap: 0.75rem;
 		align-content: start;
-		/* Top, not baseline: the 13 px of air under the rule must not move. */
-		align-items: start;
 	}
 
 	.grid--3.is-aligned > .project-card > .project-facts > div:first-child {
@@ -622,7 +641,7 @@ svg {
 	padding: 1.35rem 1.4rem 1.4rem;
 	border: 1px solid var(--color-border);
 	border-radius: 10px;
-	background: color-mix(in srgb, var(--color-card) 72%, transparent);
+	background: var(--card-surface);
 }
 
 .card h3 {
@@ -778,7 +797,7 @@ svg {
 
 .facts dt {
 	font-family: var(--font-mono);
-	font-size: 0.625rem;
+	font-size: 0.75rem;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 	color: var(--color-ink-faint);

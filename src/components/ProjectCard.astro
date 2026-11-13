@@ -73,22 +73,23 @@ const labels =
   )}
 
   {href && (
-    <a id={`project-card-link${suffix}`} class="project-link" href={href}>
+    <span id={`project-card-link${suffix}`} class="project-link">
       {labels.case}
       <span id={`project-card-link-span${suffix}`} aria-hidden="true">→</span>
-    </a>
+    </span>
   )}
 </article>
 
 <style>
   .project-card {
+    position: relative;
     display: grid;
     gap: 0.7rem;
     align-content: start;
     padding: 1.4rem 1.5rem 1.5rem;
     border: 1px solid var(--color-border);
     border-radius: 10px;
-    background: color-mix(in srgb, var(--color-card) 70%, transparent);
+    background: var(--card-surface);
     transition:
       border-color 160ms ease,
       background 160ms ease;
@@ -101,7 +102,7 @@ const labels =
 
   .project-area {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-terracotta);
@@ -119,15 +120,37 @@ const labels =
     text-decoration: none;
   }
 
-  .project-name a:hover {
+  /*
+   * One target for the whole card. The title link's cover makes the surface
+   * clickable at any size, instead of a 20 px text box plus a second link at
+   * the foot pointing at the same case study.
+   */
+  .project-name a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+  }
+
+  .project-card:hover .project-name a {
     text-decoration: underline;
     text-decoration-color: var(--color-border);
     text-underline-offset: 4px;
   }
 
+  /* The whole card wears the focus ring, so it reads as the thing that opens. */
+  .project-card:has(.project-name a:focus-visible) {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
+
+  .project-card:has(.project-name a:focus-visible) .project-name a {
+    outline: none;
+  }
+
   .project-meta {
     font-family: var(--font-mono);
-    font-size: 0.656rem;
+    font-size: 0.75rem;
     color: var(--color-ink-faint);
   }
 
@@ -152,7 +175,7 @@ const labels =
 
   .project-facts dt {
     font-family: var(--font-mono);
-    font-size: 0.594rem;
+    font-size: 0.75rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-ink-faint);
@@ -165,14 +188,17 @@ const labels =
     color: var(--color-ink-muted);
   }
 
+  /* Not a link any more: it names what the card does, the card is the target. */
   .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     justify-self: start;
-    font-size: 0.75rem;
-    color: var(--color-ink);
-    text-decoration: none;
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
   }
 
-  .project-link:hover {
+  .project-card:hover .project-link {
     text-decoration: underline;
     text-underline-offset: 4px;
   }

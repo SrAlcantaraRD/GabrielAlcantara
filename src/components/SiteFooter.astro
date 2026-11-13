@@ -4,6 +4,7 @@ import { SITE } from "../data/site";
 import type { Locale } from "../i18n/routing";
 import { navItems } from "../i18n/ui";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import AskAiLinks from "./AskAiLinks.astro";
 
 interface Props {
 	lang?: Locale;
@@ -73,6 +74,10 @@ const pachangaHref = localized ? "#proyectos" : "/projects/pachanga-community/";
 				}
 			</ul>
 		</div>
+	</div>
+
+	<div id="site-footer-container-ask" class="container footer-ask">
+		<AskAiLinks lang={locale} />
 	</div>
 
 	<div id="site-footer-container-2" class="container footer-bottom">
@@ -188,6 +193,21 @@ const pachangaHref = localized ? "#proyectos" : "/projects/pachanga-community/";
 		color: var(--color-ink);
 		text-decoration: underline;
 		text-underline-offset: 3px;
+	}
+
+	/* From 768px up the ask links live here: a utility about the site, not
+	   navigation. Below that they stay in the menu, where the thumb reaches
+	   them without crossing ten screens of page. */
+	.footer-ask {
+		display: none;
+		justify-content: flex-end;
+		padding-block-end: 1rem;
+	}
+
+	@media (min-width: 768px) {
+		.footer-ask {
+			display: flex;
+		}
 	}
 
 	.footer-bottom {

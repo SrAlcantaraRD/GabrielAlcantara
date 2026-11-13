@@ -1,10 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
 import AutoPreviews from "../components/AutoPreviews.astro";
 import HeroWheel from "../components/HeroWheel.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import PostCard from "../components/PostCard.astro";
-import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
+import { COMPANIES, POSITION_VIEWS } from "../data/cv";
 import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
 import { FEATURED_POST, OTHER_POSTS, postHref } from "../data/blog";
 import { SERVICES, SITE, SPECIALTIES } from "../data/site";
@@ -75,16 +76,17 @@ const jsonLd = [
       <AutoPreviews inline id="home-statement-prose" text={SITE.statement} />
     </p>
     <div id="home-hero-actions" class="actions">
-      <a id="home-actions-btn" class="btn" href="/projects/">Ver proyectos</a>
-      <a id="home-actions-btn-2" class="btn btn--ghost" href="/cv/">Descargar CV</a>
-      <a id="home-actions-btn-3" class="btn btn--link" href="/contact/">Contactar conmigo</a>
-      <a id="home-actions-btn-4" class="btn btn--link" href="/about/">Ver el perfil completo</a>
+      <a id="home-actions-btn" class="btn" href="/contact/">Contactar conmigo</a>
+      <a id="home-actions-btn-2" class="btn btn--ghost" href="/projects/">Ver proyectos</a>
     </div>
+    <p id="home-hero-secondary" class="hero-secondary">
+      <a id="home-actions-btn-3" href="/cv/">Descargar CV</a>
+      <span id="home-hero-secondary-span" aria-hidden="true">·</span>
+      <a id="home-actions-btn-4" href="/about/">Ver el perfil completo</a>
+    </p>
     <div id="home-hero-meta-row" class="meta-row">
       <span id="home-meta-row-is-available" class="is-available">{SITE.availability}</span>
       <span id="home-meta-row-span">{SITE.location}</span>
-      <span id="home-meta-row-span-2">{PROJECTS.length} proyectos en la trayectoria</span>
-      <span id="home-meta-row-span-3">desde {SITE.careerStart}</span>
     </div>
   </section>
 
@@ -114,7 +116,7 @@ const jsonLd = [
     </div>
     <div id="home-section-featured-grid" class="featured-grid">
       <div id="home-featured-grid-body" class="featured-body">
-        <p id="home-featured-body-eyebrow" class="eyebrow">Sistemas Distribuidos en almacenes industriales robotizados</p>
+        <p id="home-featured-body-eyebrow" class="eyebrow">Sistemas distribuidos · almacenes robotizados</p>
         <h3 id="home-featured-body-name" class="featured-name">
           <a id="home-featured-name-a" href={FEATURED_CASE.caseStudyHref}>{FEATURED_CASE.name}</a>
         </h3>
@@ -146,6 +148,9 @@ const jsonLd = [
           </span>
         </dd>
       </dl>
+    </div>
+    <div id="home-section-featured-figure" class="featured-figure">
+      <ArchitectureDiagram />
     </div>
   </section>
 
@@ -228,7 +233,7 @@ const jsonLd = [
     </div>
     <div id="home-section-grid-3" class="grid grid--4">
       {
-        SERVICES.map((service, i4) => (
+        SERVICES.slice(0, 4).map((service, i4) => (
           <div id={`home-grid-card-2-${i4}`} class="card">
             <h3 id={`home-card-h3-2-${i4}`}>{service.title}</h3>
             <p id={`home-card-p-2-${i4}`}>{service.body}</p>
@@ -237,7 +242,7 @@ const jsonLd = [
       }
     </div>
     <div id="home-section-actions-2" class="actions">
-      <a id="home-actions-btn-9" class="btn btn--ghost" href="/services/">Ver todos los servicios</a>
+      <a id="home-actions-btn-9" class="btn btn--ghost" href="/services/">Ver los {SERVICES.length} servicios</a>
     </div>
   </section>
 
@@ -266,10 +271,39 @@ const jsonLd = [
 
   .hero-eyebrow {
     font-family: var(--font-mono);
-    font-size: 0.656rem;
+    font-size: 0.75rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-terracotta);
+  }
+
+  /* The wide tracking fits one line down to 390px; below that it may wrap. */
+  @media (max-width: 480px) {
+    .hero-eyebrow {
+      letter-spacing: 0.06em;
+    }
+  }
+
+  /* The two quiet doors out of the hero: present, reachable, not competing. */
+  .hero-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-ink-faint);
+  }
+
+  .hero-secondary a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.5rem;
+    color: var(--color-ink-muted);
+  }
+
+  .hero-secondary a:hover {
+    color: var(--color-ink);
   }
 
   .section {
@@ -339,6 +373,11 @@ const jsonLd = [
     padding-top: 0.1rem;
   }
 
+  /* The featured case shows its architecture: the one artifact on the home. */
+  .featured-figure {
+    margin-top: 1.75rem;
+  }
+
   .career {
     display: grid;
     gap: 0;
@@ -371,7 +410,7 @@ const jsonLd = [
 
   .career-span {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: var(--color-ink-faint);
   }
 
@@ -383,7 +422,7 @@ const jsonLd = [
 
   .career-focus {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.04em;
     color: var(--accent);
   }

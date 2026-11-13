@@ -17,7 +17,6 @@ const { post, compact = false, lang = "es" } = Astro.props;
 const suffix = `-${post.slug}`;
 const category = categoryOf(post.category);
 const localized = lang === "es" ? undefined : PROFILE[lang].posts[post.slug];
-const editorial = lang === "es" ? undefined : EDITORIAL[lang];
 const title = localized?.title ?? post.title;
 const description = localized?.description ?? post.description;
 const categoryLabel = localized?.category ?? category.label;
@@ -25,7 +24,6 @@ const tags = tagsFor(lang, post);
 const href = postHrefIn(lang, post.slug);
 const categoryHref =
   lang === "es" ? `/blog/categoria/${category.slug}/` : undefined;
-const readingLabel = editorial?.article.readingTime ?? "min de lectura";
 
 function tagsFor(locale: Locale, item: PostMeta): string[] {
   if (locale === "es") return item.tags;
@@ -41,9 +39,12 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
       <span id={`post-card-kicker-span${suffix}`}>{categoryLabel}</span>
     )}
     <span id={`post-card-kicker-span-2${suffix}`} aria-hidden="true">·</span>
+    {/*
+      Two facts, not three: category and date. The reading time is the one that
+      gives way —it still heads the article— so the kicker stays on one line in
+      a 427px column and the titles of a row keep their baseline.
+    */}
     <time id={`post-card-kicker-time${suffix}`} datetime={post.date}>{formatDateIn(post.date, lang)}</time>
-    <span id={`post-card-kicker-span-3${suffix}`} aria-hidden="true">·</span>
-    <span id={`post-card-kicker-span-4${suffix}`}>{post.readingMinutes} {readingLabel}</span>
   </p>
 
   <h3 id={`post-card-title${suffix}`} class="post-title">
@@ -61,11 +62,43 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
 
 <style>
   .post-card {
+    position: relative;
     display: grid;
     gap: 0.55rem;
     align-content: start;
     padding-block: 0.2rem 1.15rem;
     border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  /*
+   * The whole card opens the article: the title's cover is the target, so the
+   * top of the card is not a 25 px text box. The category keeps its own link,
+   * lifted above the cover so it still reaches its page.
+   */
+  .post-title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .post-kicker a {
+    position: relative;
+    z-index: 1;
+  }
+
+  .post-card:hover .post-title a {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 4px;
+  }
+
+  .post-card:has(.post-title a:focus-visible) {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
+
+  .post-card:has(.post-title a:focus-visible) .post-title a {
+    outline: none;
   }
 
   .post-kicker {
@@ -74,7 +107,7 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
     align-items: baseline;
     gap: 0.4rem;
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.04em;
     color: var(--color-ink-faint);
   }
@@ -99,12 +132,6 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
 
   .post-title a {
     text-decoration: none;
-  }
-
-  .post-title a:hover {
-    text-decoration: underline;
-    text-decoration-color: var(--color-border);
-    text-underline-offset: 4px;
   }
 
   .post-description {

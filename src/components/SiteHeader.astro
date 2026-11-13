@@ -120,9 +120,6 @@ const contactHref = localized ? "#contacto" : "/contact/";
       hidden={!showBreadcrumbs}
       lang={locale}
     />
-    <div id="site-header-container-ask" class="header-ask">
-      <AskAiLinks lang={locale} />
-    </div>
   </div>
 </header>
 
@@ -246,13 +243,30 @@ const contactHref = localized ? "#contacto" : "/contact/";
     }
   }
 
+  /**
+   * Every in-page anchor scrolls clear of the sticky header, whose height now
+   * depends on what the strip holds: breadcrumbs, or nothing on the home.
+   */
+  function setHeaderOffset() {
+    if (!header) return;
+    const height = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty(
+      "--header-offset",
+      `${Math.round(height + 12)}px`,
+    );
+  }
+
   function sync() {
     closeMenu();
     syncNav();
     syncCrumbs();
+    setHeaderOffset();
     // ClientRouter applies the new hash after the page-load event; run once
     // more on the next frame so the active section is never one step behind.
-    requestAnimationFrame(syncNav);
+    requestAnimationFrame(() => {
+      syncNav();
+      setHeaderOffset();
+    });
   }
 
   sync();
@@ -261,6 +275,7 @@ const contactHref = localized ? "#contacto" : "/contact/";
   document.addEventListener("click", markClicked, true);
   window.addEventListener("hashchange", syncNav);
   window.addEventListener("popstate", syncNav);
+  window.addEventListener("resize", setHeaderOffset);
 </script>
 
 <style>
@@ -294,12 +309,11 @@ const contactHref = localized ? "#contacto" : "/contact/";
     block-size: calc(var(--header-space) * 2 + var(--crumbs-line));
   }
 
-  /* The strip is empty on mobile, but the ask links still need a full menu
-     with names, so below 768px they live inside the menu panel instead. */
-  .header-ask {
-    display: none;
-    flex: none;
-    margin-inline-start: auto;
+  /* The strip exists for breadcrumbs. On the home there are none, so it drops
+     to a breathing space instead of holding an empty band under the brand. The
+     ask links moved to the footer (and the menu below 768px). */
+  .header-crumbs:not(:has(.breadcrumbs:not([hidden]))) {
+    block-size: 0.85rem;
   }
 
   .menu-ask {
@@ -307,10 +321,6 @@ const contactHref = localized ? "#contacto" : "/contact/";
   }
 
   @media (min-width: 768px) {
-    .header-ask {
-      display: block;
-    }
-
     .menu-ask {
       display: none;
     }
@@ -552,6 +562,35 @@ const contactHref = localized ? "#contacto" : "/contact/";
 
     .header-inner {
       gap: 0.6rem;
+    }
+  }
+
+  /*
+   * On a 320-class phone the row is 272px and the full name needs 138: the word
+   * «Menú» gives up its 17px of slack (the icon already says it, and the label
+   * stays in the accessible name) and the gaps tighten. The name is the one
+   * thing on this row that must never be cut.
+   */
+  @media (max-width: 359px) {
+    .header-inner {
+      gap: 0.25rem;
+    }
+
+    .mobile-menu summary {
+      justify-content: center;
+      min-inline-size: 2.75rem;
+      min-block-size: 1.875rem;
+      padding-inline: 0;
+    }
+
+    .mobile-menu summary > span {
+      position: absolute;
+      overflow: hidden;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: -1px;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 </style>
