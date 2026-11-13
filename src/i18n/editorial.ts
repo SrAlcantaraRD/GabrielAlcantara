@@ -17,6 +17,8 @@ interface CasePageCopy {
 interface EditorialCopy {
 	article: {
 		readingTime: string;
+		/** The same unit where a card shares the line with the category and date. */
+		readingTimeShort: string;
 		updated: string;
 		relatedProject: string;
 		relatedArticles: string;
@@ -77,6 +79,7 @@ export const EDITORIAL: Record<TranslatedLocale, EditorialCopy> = {
 	en: {
 		article: {
 			readingTime: "min read",
+			readingTimeShort: "min",
 			updated: "Updated",
 			relatedProject: "Related project",
 			relatedArticles: "Related articles",
@@ -214,6 +217,7 @@ export const EDITORIAL: Record<TranslatedLocale, EditorialCopy> = {
 	ca: {
 		article: {
 			readingTime: "min de lectura",
+			readingTimeShort: "min",
 			updated: "Actualitzat",
 			relatedProject: "Projecte relacionat",
 			relatedArticles: "Articles relacionats",

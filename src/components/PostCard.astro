@@ -1,6 +1,6 @@
 ---
 import type { PostMeta } from "../data/blog";
-import { categoryOf, formatDateIn, postHref, postHrefIn } from "../data/blog";
+import { categoryOf, formatShortDateIn, postHrefIn } from "../data/blog";
 import { PROFILE } from "../i18n/profile";
 import type { Locale } from "../i18n/routing";
 import { EDITORIAL } from "../i18n/editorial";
@@ -17,6 +17,7 @@ const { post, compact = false, lang = "es" } = Astro.props;
 const suffix = `-${post.slug}`;
 const category = categoryOf(post.category);
 const localized = lang === "es" ? undefined : PROFILE[lang].posts[post.slug];
+const editorial = lang === "es" ? undefined : EDITORIAL[lang];
 const title = localized?.title ?? post.title;
 const description = localized?.description ?? post.description;
 const categoryLabel = localized?.category ?? category.label;
@@ -24,6 +25,7 @@ const tags = tagsFor(lang, post);
 const href = postHrefIn(lang, post.slug);
 const categoryHref =
   lang === "es" ? `/blog/categoria/${category.slug}/` : undefined;
+const readingLabel = editorial?.article.readingTimeShort ?? "min";
 
 function tagsFor(locale: Locale, item: PostMeta): string[] {
   if (locale === "es") return item.tags;
@@ -40,11 +42,13 @@ function tagsFor(locale: Locale, item: PostMeta): string[] {
     )}
     <span id={`post-card-kicker-span-2${suffix}`} aria-hidden="true">·</span>
     {/*
-      Two facts, not three: category and date. The reading time is the one that
-      gives way —it still heads the article— so the kicker stays on one line in
-      a 427px column and the titles of a row keep their baseline.
+      Three facts on one line: the date is the one that shortens, because the
+      card shares its column with the category and the reading time. The article
+      itself keeps the long form.
     */}
-    <time id={`post-card-kicker-time${suffix}`} datetime={post.date}>{formatDateIn(post.date, lang)}</time>
+    <time id={`post-card-kicker-time${suffix}`} datetime={post.date}>{formatShortDateIn(post.date, lang)}</time>
+    <span id={`post-card-kicker-span-3${suffix}`} aria-hidden="true">·</span>
+    <span id={`post-card-kicker-span-4${suffix}`}>{post.readingMinutes} {readingLabel}</span>
   </p>
 
   <h3 id={`post-card-title${suffix}`} class="post-title">

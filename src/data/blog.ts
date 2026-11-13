@@ -188,8 +188,37 @@ const DATE_FORMATS = {
 	}),
 } as const;
 
+/**
+ * The compact register, for places where the date shares a line with the
+ * category and the reading time: the day, the short month and the year.
+ */
+const DATE_FORMATS_SHORT = {
+	es: new Intl.DateTimeFormat("es-ES", {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+	en: new Intl.DateTimeFormat("en-GB", {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+	ca: new Intl.DateTimeFormat("ca-ES", {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+		timeZone: "UTC",
+	}),
+} as const;
+
 export function formatDate(iso: string): string {
 	return DATE_FORMATS.es.format(new Date(`${iso}T00:00:00Z`));
+}
+
+export function formatShortDateIn(iso: string, lang: "es" | "en" | "ca"): string {
+	return DATE_FORMATS_SHORT[lang].format(new Date(`${iso}T00:00:00Z`));
 }
 
 export function formatDateIn(iso: string, lang: "es" | "en" | "ca"): string {
