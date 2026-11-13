@@ -466,8 +466,13 @@ async function checkPersistentChrome(page, viewport) {
 	await waitCrumbs(["Inicio", "Sobre mí"]);
 	check(`${label} · header persiste`, await sameNode(".site-header", "__persistedHeader"));
 	check(`${label} · footer persiste`, await sameNode(".site-footer", "__persistedFooter"));
-	await waitActive("Sobre mí");
-	check(`${label} · nav activo`, (await activeLabel()) === "Sobre mí");
+	// About is deliberately out of the nav (the brand and the footer reach it),
+	// so no nav link claims the page: the breadcrumb is what says where you are.
+	check(
+		`${label} · sin nav activo en una página fuera de la nav`,
+		(await page.locator(activeSelector).count()) === 0,
+		await activeLabel(),
+	);
 	check(
 		`${label} · migas actualizadas`,
 		JSON.stringify(await crumbLabels()) === JSON.stringify(["Inicio", "Sobre mí"]),
@@ -805,8 +810,9 @@ async function checkMobileMenu(browser, base) {
 			headerActionsDisplay: getComputedStyle(
 				document.querySelector(".header-actions"),
 			).display,
-			headerAskDisplay: getComputedStyle(
-				document.querySelector(".header-ask"),
+			// The ask links left the header strip: desktop reads them in the footer.
+			footerAskDisplay: getComputedStyle(
+				document.querySelector(".footer-ask"),
 			).display,
 			menuAskDisplay: getComputedStyle(
 				document.querySelector(".menu-ask"),
@@ -827,7 +833,7 @@ async function checkMobileMenu(browser, base) {
 			desktop.menuRoleVisible === false &&
 			desktop.siteNavDisplay === "flex" &&
 			desktop.headerActionsDisplay === "flex" &&
-			desktop.headerAskDisplay === "block" &&
+			desktop.footerAskDisplay === "flex" &&
 			desktop.menuAskDisplay === "none",
 		JSON.stringify(desktop),
 	);
@@ -1838,6 +1844,75 @@ async function checkPreviewCards(browser, base) {
 	console.log(`preview cards → ${join(OUT, "preview-cards.json")}`);
 }
 
+/**
+ * The matrix draws a fixed-width timeline (a year is 72px, whatever room there
+ * is) inside a surface that scrolls sideways, and its first column sticks over
+ * the bars. A bar at the far end of the timeline is therefore off screen, and a
+ * hover would land on the sticky label column instead of the bar: bring the bar
+ * into the visible strip, clear of the labels and of the sticky header.
+ */
+async function revealBar(page, projectId) {
+	const point = await page.evaluate((id) => {
+		const bar = document.querySelector(`.bar[data-project="${id}"]`);
+		const surface = bar?.closest(".matrix-surface");
+		if (!(bar instanceof HTMLElement) || !(surface instanceof HTMLElement)) {
+			throw new Error(`no encuentro la barra ${id} en la matriz`);
+		}
+
+		{
+			// The bar has to end up wholly inside the surface, or Playwright's own
+			// scrollIntoView drags it back under the sticky labels.
+			const box = surface.getBoundingClientRect();
+			const barBox = bar.getBoundingClientRect();
+			if (barBox.width + 8 <= box.width) {
+				surface.scrollLeft +=
+					barBox.left + barBox.width / 2 - (box.left + box.width / 2);
+			} else {
+				const label = surface.querySelector(".row-label");
+				const labelWidth = label ? label.getBoundingClientRect().width : 0;
+				surface.scrollLeft += barBox.left - (box.left + labelWidth + 16);
+			}
+		}
+
+		const header = document.querySelector(".site-header");
+		const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+		const barBox = bar.getBoundingClientRect();
+		if (barBox.top < headerBottom + 24 || barBox.bottom > innerHeight - 24) {
+			window.scrollBy({
+				top: barBox.top - headerBottom - 96,
+				behavior: "instant",
+			});
+		}
+
+		// The sticky column covers the left end of the timeline: aim at the middle
+		// of what is actually visible of the bar.
+		const box = surface.getBoundingClientRect();
+		const label = surface.querySelector(".row-label");
+		const labelWidth = label ? label.getBoundingClientRect().width : 0;
+		const shown = bar.getBoundingClientRect();
+		const top = Math.max(shown.top, headerBottom + 2);
+		const bottom = Math.min(shown.bottom, innerHeight - 2);
+		const left = Math.max(shown.left, box.left + labelWidth + 2);
+		const right = Math.min(shown.right, box.right - 2);
+		return {
+			x: Math.round((left + right) / 2 - shown.left),
+			y: Math.round((top + bottom) / 2 - shown.top),
+			visibleWidth: Math.round(right - left),
+			visibleHeight: Math.round(bottom - top),
+		};
+	}, projectId);
+
+	if (point.visibleWidth < 6 || point.visibleHeight < 2) {
+		throw new Error(
+			`la barra ${projectId} deja ${point.visibleWidth}×${point.visibleHeight}px visibles en la matriz`,
+		);
+	}
+
+	await page.locator(`.bar[data-project="${projectId}"]`).first().hover({
+		position: { x: point.x, y: point.y },
+	});
+}
+
 const { server, port } = await serve();
 const base = `http://127.0.0.1:${port}/`;
 await mkdir(OUT, { recursive: true });
@@ -1858,10 +1933,7 @@ for (const viewport of VIEWPORTS) {
 		);
 
 		if (scenario.hover) {
-			await page
-				.locator(`.bar[data-project="${scenario.hover}"]`)
-				.first()
-				.hover();
+			await revealBar(page, scenario.hover);
 			await page.waitForSelector("#matrix-tip:not([hidden])");
 		}
 		if (scenario.click) {
