@@ -840,11 +840,17 @@ const payload = {
         const text = style.textTransform === "uppercase" ? label.toUpperCase() : label;
         widest = Math.max(widest, measureCanvas.measureText(text).width);
       }
-      // Label padding on both sides plus a hair of slack, within sane bounds.
+      // Label padding on both sides plus a hair of slack, within the room each
+      // breakpoint grants the column: on a phone every pixel it keeps is a pixel
+      // the timeline loses.
+      const cap =
+        Number.parseFloat(
+          getComputedStyle(host).getPropertyValue("--label-col-max"),
+        ) || 208;
       const column = Math.ceil(widest + 30);
       host.style.setProperty(
         "--label-col",
-        `${Math.min(208, Math.max(72, column))}px`,
+        `${Math.min(cap, Math.max(72, column))}px`,
       );
     }
 
@@ -871,14 +877,16 @@ const payload = {
       }
     }
 
-    /** Keeps the year ruler readable: drop labels that no longer fit. */
+    /**
+     * Keeps the year ruler readable: drop labels that no longer fit. The stride
+     * counts from the first year, so the ones that stay are evenly spaced —
+     * anchoring it at the last year left gaps of seven and four on a phone.
+     */
     function thinRuler(stride: number) {
       const labels = grid.querySelectorAll<HTMLElement>(".ruler-tick");
       if (labels.length === 0) return;
-      const last = labels.length - 1;
       for (const [index, label] of [...labels].entries()) {
-        const keep = index === 0 || (last - index) % stride === 0;
-        label.classList.toggle("is-hidden", !keep);
+        label.classList.toggle("is-hidden", index % stride !== 0);
       }
       dropCollisions();
     }
@@ -942,6 +950,9 @@ const payload = {
 <style is:global>
   .matrix {
     --label-col: 13rem;
+  /* What the column may take at most; the measured width never exceeds it.
+     In px: the script reads it with parseFloat, which cannot resolve rem. */
+  --label-col-max: 208px;
     --chip-w: 5rem;
     --bar-h: 16px;
     --bar-gap: 5px;
@@ -1537,8 +1548,14 @@ const payload = {
 
   @media (max-width: 640px) {
     .matrix {
-      --label-col: 8rem;
-      --bar-h: 15px;
+      --label-col: 6.5rem;
+      --label-col-max: 104px;
+    }
+
+    /* Narrower column: the position and its company need the third line. */
+    .row-name {
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
     }
 
     .row-label {
@@ -1565,9 +1582,29 @@ const payload = {
       justify-self: start;
     }
 
-    /* A timeline squeezed into 250px is unreadable: let it scroll sideways. */
+    /*
+     * The bars are placed in percentages of their track, so a grid that fills
+     * the panel draws the whole career at once: every bar on screen, no sideways
+     * scroll, and the years compress together instead of half the drawing hiding
+     * behind the stage column.
+     */
     .matrix-grid[data-mode="timeline"] {
-      min-inline-size: 32rem;
+      /* The bar height lives on the grid, not on the panel: the row's own
+         variables would win over anything set further up. */
+      --bar-h: 16px;
+      --bar-gap: 10px;
+      inline-size: 100%;
+      min-inline-size: 0;
+    }
+
+    /* At thirteen pixels a year the quarter lines are texture, not a scale. */
+    .track::before,
+    .cell::before {
+      background-image: repeating-linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-border) 85%, transparent) 0 1px,
+        transparent 1px var(--year-step)
+      );
     }
 
     .matrix-grid[data-mode="matrix"] {
