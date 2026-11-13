@@ -17,6 +17,7 @@ const load = (relative: string) =>
 const { sitemapEntries, STATIC_PAGES } = await load("src/lib/seo.ts");
 const { indexableRoutes } = await load("src/lib/routes.ts");
 const { SITE } = await load("src/data/site.ts");
+const { PROFILE } = await load("src/i18n/profile.ts");
 const {
 	ACTIVE_CATEGORIES,
 	POSTS,
@@ -173,5 +174,36 @@ describe("llms.txt", () => {
 				`llms.txt is missing the case study "${item.name}"`,
 			);
 		}
+	});
+});
+
+describe("home meta descriptions", () => {
+	const MIN = 110;
+	const MAX = 160;
+	const homes: [string, string][] = [
+		["es", SITE.metaDescription],
+		["en", PROFILE.en.metaDescription],
+		["ca", PROFILE.ca.metaDescription],
+	];
+
+	it("fits the window search engines and social cards display", () => {
+		for (const [lang, description] of homes) {
+			const length = [...description].length;
+
+			assert.ok(
+				length >= MIN && length <= MAX,
+				`${lang} home description is ${length} characters, outside ${MIN}-${MAX}`,
+			);
+		}
+	});
+
+	it("keeps the editorial lede out of the meta tags", () => {
+		assert.notEqual(SITE.metaDescription, SITE.description);
+	});
+
+	it("still feeds the editorial lede to llms.txt", async () => {
+		const response = await getLlmsTxt({} as never);
+
+		assert.ok((await response.text()).includes(SITE.description));
 	});
 });

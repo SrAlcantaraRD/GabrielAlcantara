@@ -99,7 +99,7 @@ export const PROFILE: Record<TranslatedLocale, ProfileCopy> = {
 	en: {
 		metaTitle: "Gabriel Alcántara | Solutions Architect & Software Engineer",
 		metaDescription:
-			"Solutions Architect and software engineer specialising in distributed systems, event-driven architectures, backend engineering and connected industrial solutions.",
+			"Solutions Architect specialising in distributed systems, event-driven architecture, backend engineering and connected industrial systems.",
 		eyebrow: "Software Engineer · Solutions Architect",
 		heroTitle:
 			"Fifteen years of evolution, from junior developer to Solutions Architect: requirements, data, backend, frontend, mobile and architecture.",
@@ -312,7 +312,7 @@ export const PROFILE: Record<TranslatedLocale, ProfileCopy> = {
 	ca: {
 		metaTitle: "Gabriel Alcántara | Solutions Architect & Software Engineer",
 		metaDescription:
-			"Arquitecte de programari i enginyer de programari especialitzat en sistemes distribuïts, arquitectures orientades a esdeveniments, backend i solucions industrials connectades.",
+			"Arquitecte de programari especialitzat en sistemes distribuïts, arquitectures orientades a esdeveniments, backend i solucions industrials connectades.",
 		eyebrow: "Enginyer de programari · Arquitecte de solucions",
 		heroTitle:
 			"Quinze anys d'evolució, de júnior a enginyer: requisits, base de dades, backend, frontend, mòbil i arquitectura.",

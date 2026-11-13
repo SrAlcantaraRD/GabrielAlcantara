@@ -43,6 +43,12 @@ export const SITE = {
 	headline: HEADLINE_LINES.join(" "),
 	description:
 		"Me llamo Gabriel Alcántara. Llevo quince años diseñando y construyendo soluciones de software: desde entender el problema hasta definir la arquitectura y llevarla a producción, convirtiendo requisitos, a veces ambiguos, en soluciones robustas. He liderado equipos técnicos y gestionado proyectos.",
+	/**
+	 * What search engines and social cards show, not what the page reads: the
+	 * lede runs to 296 characters and every platform cuts it at 160.
+	 */
+	metaDescription:
+		"Arquitecto de soluciones e ingeniero de software: quince años diseñando sistemas distribuidos, arquitectura orientada a eventos y backend en producción.",
 	statement:
 		"Disfruto construyendo soluciones que reduzcan la complejidad de las personas que los usan, sin crear otra en el proceso.",
 	email: "gabriel@alcantaramoreno.com",
