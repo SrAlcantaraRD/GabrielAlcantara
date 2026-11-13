@@ -201,8 +201,25 @@ const payload = {
     const observer = new ResizeObserver(() => measure());
     observer.observe(surface);
 
+    /*
+     * The surface scrolls, so a name placed beside a bar has to know which part
+     * of the track is on screen: on a phone the track is wider than the panel
+     * and a label placed by the track edge ends up cut in half by the viewport.
+     */
+    let scrollFrame = 0;
+    const onScroll = () => {
+      if (scrollFrame) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        if (grid.dataset.mode === "timeline") measureOutsideLabels();
+      });
+    };
+    surface.addEventListener("scroll", onScroll, { passive: true });
+
     return () => {
       observer.disconnect();
+      surface.removeEventListener("scroll", onScroll);
+      if (scrollFrame) cancelAnimationFrame(scrollFrame);
       hideTip();
     };
 
@@ -860,6 +877,8 @@ const payload = {
      */
     function measureOutsideLabels() {
       const GAP = 6;
+      const narrow = window.matchMedia("(max-width: 640px)").matches;
+      const surfaceBox = surface.getBoundingClientRect();
       for (const bar of grid.querySelectorAll<HTMLElement>(".bar")) {
         const label = bar.querySelector<HTMLElement>(".bar-label");
         const track = bar.closest(".track");
@@ -868,12 +887,32 @@ const payload = {
         const width = label.offsetWidth;
         const barBox = bar.getBoundingClientRect();
         const trackBox = track.getBoundingClientRect();
-        if (barBox.right + GAP + width <= trackBox.right) continue;
-        if (barBox.left - GAP - width >= trackBox.left) {
-          label.classList.add("is-flipped");
-        } else {
-          label.classList.add("is-hidden");
+        // On a phone the limit is what the reader can see, not where the track
+        // ends; the stage column covers the left end, so it counts as a wall.
+        const stage =
+          narrow
+            ? (bar.closest(".gantt-row")?.querySelector(".row-label")
+                ?.getBoundingClientRect().width ?? 0)
+            : 0;
+        const leftLimit = narrow
+          ? Math.max(trackBox.left, surfaceBox.left + stage + 4)
+          : trackBox.left;
+        const rightLimit = narrow
+          ? Math.min(trackBox.right, surfaceBox.right - 4)
+          : trackBox.right;
+        /* Pick a side, then check the label lands whole inside what is visible:
+           a bar beyond the right edge leaves no room for either side. */
+        let side: "right" | "left" | null = null;
+        if (barBox.right + GAP + width <= rightLimit) side = "right";
+        else if (barBox.left - GAP - width >= leftLimit) side = "left";
+
+        if (side) {
+          const start = side === "right" ? barBox.right + GAP : barBox.left - GAP - width;
+          if (start < leftLimit || start + width > rightLimit) side = null;
         }
+
+        if (side === "right") continue;
+        label.classList.add(side === "left" ? "is-flipped" : "is-hidden");
       }
     }
 
@@ -1593,8 +1632,25 @@ const payload = {
          variables would win over anything set further up. */
       --bar-h: 16px;
       --bar-gap: 10px;
-      inline-size: 100%;
+      /*
+       * Two pixels a month is the least a phone can draw without turning every
+       * project shorter than ten months into the same seven-pixel dot: at 390px
+       * a month was one pixel and 24 of the 28 bars sat on the floor. Below that
+       * density the drawing keeps its scale and scrolls instead.
+       */
+      inline-size: max(100%, calc(var(--label-col) + var(--months) * 2px));
       min-inline-size: 0;
+    }
+
+    /*
+     * A five-pixel bar still has to be hittable: the box grows around it for the
+     * thumb while the drawing stays exact. Lanes are 26px apart, so five up and
+     * down fills the lane without stealing the row next door.
+     */
+    .matrix-grid[data-mode="timeline"] .bar::after {
+      content: "";
+      position: absolute;
+      inset: -5px -6px;
     }
 
     /* At thirteen pixels a year the quarter lines are texture, not a scale. */
