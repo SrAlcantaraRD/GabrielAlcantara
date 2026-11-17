@@ -1,27 +1,34 @@
-/* Design tokens — editorial paper, taken from the owner's mockup */
+/* Design tokens — editorial paper, taken from the owner's mockup.
+ *
+ * Every colour is a light/dark pair, so the palette follows the used
+ * `color-scheme` instead of a class on <html>: the base stays `light dark`, so
+ * a reader without JavaScript still gets the system's scheme, and a pinned one
+ * is the <meta>, mapped back below. */
 :root {
-	color-scheme: light;
-	--color-paper: #faf8f5;
-	--color-paper-warm: #f5f1ea;
-	--color-card: #fff;
-	--color-ink: #1a1a1a;
-	--color-ink-hover: #333;
-	--color-ink-muted: #4f4b47;
-	--color-ink-faint: #6f6960;
-	--color-border: #e6e0d6;
-	--color-border-subtle: #eeeae3;
-	--color-cobalt: #294c60;
-	--color-cobalt-tint: #eef3f7;
-	--color-sage: #3e5c49;
-	--color-sage-tint: #eff4f0;
-	--color-terracotta: #9e4e36;
-	--color-terracotta-tint: #f8efea;
-	--color-available: #059669;
-	--color-selection: #eae3d5;
-	--shadow: 0 12px 32px rgb(26 26 26 / 0.1);
+	color-scheme: light dark;
+	--color-paper: light-dark(#faf8f5, #141311);
+	--color-paper-warm: light-dark(#f5f1ea, #221f1a);
+	--color-card: light-dark(#fff, #29251f);
+	--color-ink: light-dark(#1a1a1a, #f1ede6);
+	--color-ink-hover: light-dark(#333, #d9d3c9);
+	--color-ink-muted: light-dark(#4f4b47, #c3bdb3);
+	--color-ink-faint: light-dark(#6f6960, #968f84);
+	--color-border: light-dark(#e6e0d6, #4a433a);
+	--color-border-subtle: light-dark(#eeeae3, #322d26);
+	--color-cobalt: light-dark(#294c60, #9fc3d9);
+	--color-cobalt-tint: light-dark(#eef3f7, #1b2a33);
+	--color-sage: light-dark(#3e5c49, #a9c9b2);
+	--color-sage-tint: light-dark(#eff4f0, #1d2a21);
+	--color-terracotta: light-dark(#9e4e36, #e0a08a);
+	--color-terracotta-tint: light-dark(#f8efea, #2e211c);
+	--color-available: light-dark(#059669, #34d399);
+	--color-selection: light-dark(#eae3d5, #3b342b);
+	--shadow-color: light-dark(rgb(26 26 26 / 0.1), rgb(0 0 0 / 0.32));
+	--shadow: 0 12px 32px var(--shadow-color);
 	/* Card fill: the sheet tinted towards the paper, so the grain still shows
-	   through in light. Dark overrides it with a solid sheet. */
-	--card-surface: color-mix(in srgb, var(--color-card) 72%, transparent);
+	   through in light. On dark paper the tint is invisible, so the card is its
+	   own sheet. */
+	--card-surface: light-dark(color-mix(in srgb, #fff 72%, transparent), #29251f);
 
 	--font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 	--font-sans:
@@ -36,28 +43,17 @@
 	--gutter: 1.5rem;
 }
 
-:root[data-theme="dark"] {
+/*
+ * The <meta> is only a presentational hint: author CSS wins over it, so the
+ * override has to be mapped back into the property. With `light dark` in the
+ * meta neither rule matches and the root keeps following the OS.
+ */
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+	color-scheme: light;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
 	color-scheme: dark;
-	--color-paper: #141311;
-	--color-paper-warm: #221f1a;
-	--color-card: #29251f;
-	--color-ink: #f1ede6;
-	--color-ink-hover: #d9d3c9;
-	--color-ink-muted: #c3bdb3;
-	--color-ink-faint: #968f84;
-	--color-border: #4a433a;
-	--color-border-subtle: #322d26;
-	--color-cobalt: #9fc3d9;
-	--color-cobalt-tint: #1b2a33;
-	--color-sage: #a9c9b2;
-	--color-sage-tint: #1d2a21;
-	--color-terracotta: #e0a08a;
-	--color-terracotta-tint: #2e211c;
-	--color-available: #34d399;
-	--color-selection: #3b342b;
-	--shadow: 0 12px 32px rgb(0 0 0 / 0.32);
-	/* On this paper the tinted fill is invisible, so the card is its own sheet. */
-	--card-surface: var(--color-card);
 }
 
 @media (min-width: 1024px) {
@@ -934,20 +930,13 @@ svg {
 }
 
 @media print {
-	:root,
-	:root[data-theme="dark"] {
+	/* Paper is always the light scheme, whatever was pinned: every pair above then
+	   resolves to its light half. `!important` is what beats the meta mapping. */
+	:root {
+		color-scheme: light !important;
 		--color-paper: #fff;
 		--color-paper-warm: #f5f1ea;
 		--color-card: #fff;
-		--color-ink: #1a1a1a;
-		--color-ink-hover: #333;
-		--color-ink-muted: #4f4b47;
-		--color-ink-faint: #6f6960;
-		--color-border: #e6e0d6;
-		--color-border-subtle: #eeeae3;
-		--color-cobalt: #294c60;
-		--color-sage: #3e5c49;
-		--color-terracotta: #9e4e36;
 	}
 
 	.skip-link,

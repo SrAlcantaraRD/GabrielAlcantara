@@ -19,33 +19,33 @@
 }
 
 .pd-box {
-  fill: #fff;
-  stroke: #e6e0d6;
+  fill: light-dark(#fff, var(--color-card));
+  stroke: light-dark(#e6e0d6, var(--color-border));
   stroke-width: 1;
 }
 
 .pd-box--soft {
-  fill: #fbf9f5;
+  fill: light-dark(#fbf9f5, var(--color-paper-warm));
 }
 
 .pd-box--core {
-  fill: #eef3f7;
-  stroke: #cfdde6;
+  fill: light-dark(#eef3f7, var(--color-cobalt-tint));
+  stroke: light-dark(#cfdde6, var(--color-cobalt));
 }
 
 .pd-pill {
-  fill: #fff;
-  stroke: #e6e0d6;
+  fill: light-dark(#fff, var(--color-card));
+  stroke: light-dark(#e6e0d6, var(--color-border));
   stroke-width: 1;
 }
 
 .pd-pill--screens {
-  fill: #294c60;
-  stroke: #294c60;
+  fill: light-dark(#294c60, var(--color-cobalt));
+  stroke: light-dark(#294c60, var(--color-cobalt));
 }
 
 .pd-pill-text {
-  fill: #4f4b47;
+  fill: light-dark(#4f4b47, var(--color-ink-muted));
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 12px;
   text-anchor: middle;
@@ -53,24 +53,24 @@
 }
 
 .pd-pill-text--screens {
-  fill: #f7f4ef;
+  fill: light-dark(#f7f4ef, var(--color-paper));
 }
 
 .pd-title {
-  fill: #1a1a1a;
+  fill: light-dark(#1a1a1a, var(--color-ink));
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 13px;
   font-weight: 600;
 }
 
 .pd-sub {
-  fill: #6f6960;
+  fill: light-dark(#6f6960, var(--color-ink-muted));
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 10.5px;
 }
 
 .pd-panel {
-  fill: #1a1a1a;
+  fill: light-dark(#1a1a1a, var(--color-ink));
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -79,76 +79,34 @@
 }
 
 .pd-note {
-  fill: #6f6960;
+  fill: light-dark(#6f6960, var(--color-ink-muted));
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 10.5px;
 }
 
 .pd-line {
-  stroke: #b8b0a3;
+  stroke: light-dark(#b8b0a3, var(--color-ink-faint));
   stroke-width: 1.2;
 }
 
 .pd-arrowhead {
-  fill: #b8b0a3;
+  fill: light-dark(#b8b0a3, var(--color-ink-faint));
 }
 
 .pd-boundary {
-  stroke: #c9c1b4;
+  stroke: light-dark(#c9c1b4, var(--color-ink-faint));
   stroke-width: 1;
   stroke-dasharray: 5 4;
 }
 
-[data-theme="dark"] .pd-box,
-[data-theme="dark"] .pd-pill {
-  fill: var(--color-card);
-  stroke: var(--color-border);
-}
-
-[data-theme="dark"] .pd-box--soft {
-  fill: var(--color-paper-warm);
-}
-
-[data-theme="dark"] .pd-box--core {
-  fill: var(--color-cobalt-tint);
-  stroke: var(--color-cobalt);
-}
-
-[data-theme="dark"] .pd-pill--screens {
-  fill: var(--color-cobalt);
-  stroke: var(--color-cobalt);
-}
-
-[data-theme="dark"] .pd-pill-text,
-[data-theme="dark"] .pd-sub,
-[data-theme="dark"] .pd-note {
-  fill: var(--color-ink-muted);
-}
-
-[data-theme="dark"] .pd-pill-text--screens {
-  fill: var(--color-paper);
-}
-
-[data-theme="dark"] .pd-title,
-[data-theme="dark"] .pd-panel {
-  fill: var(--color-ink);
-}
-
-[data-theme="dark"] .pd-line,
-[data-theme="dark"] .pd-boundary {
-  stroke: var(--color-ink-faint);
-}
-
-[data-theme="dark"] .pd-arrowhead {
-  fill: var(--color-ink-faint);
-}
-
-[data-theme="dark"] .pd-boundary-label {
-  fill: var(--color-ink-faint);
-}
+/*
+ * No dark block here on purpose: every colour above is a light-dark() pair, so
+ * the diagram follows the page's used `color-scheme` whether that comes from the
+ * OS (no JS), a pinned scheme, or a print sheet.
+ */
 
 .pd-boundary-label {
-  fill: #9b9388;
+  fill: light-dark(#9b9388, var(--color-ink-faint));
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 9.5px;
   letter-spacing: 0.04em;

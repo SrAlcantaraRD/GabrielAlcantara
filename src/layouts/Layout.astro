@@ -44,20 +44,38 @@ const t = useTranslations(locale);
 	<head id="layout-head">
 		<meta id="layout-meta" charset="UTF-8" />
 		<meta id="layout-meta-2" name="viewport" content="width=device-width, initial-scale=1" />
+		<meta id="layout-meta-theme-light" name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)" />
+		<meta id="layout-meta-theme-dark" name="theme-color" content="#141311" media="(prefers-color-scheme: dark)" />
+		<meta id="layout-meta-color-scheme" name="color-scheme" content="light dark" />
 		<script is:inline>
 			(() => {
-				const root = document.documentElement;
+				// The <meta> is the state and global.css maps it back with :has(), so
+				// this runs inline, after the tag, and the first paint is already in the
+				// stored scheme. `light dark` (no stored value) follows the OS on its own.
+				let stored = null;
 				try {
-					const stored = localStorage.getItem("theme");
-					const system = matchMedia("(prefers-color-scheme: dark)").matches
-						? "dark"
-						: "light";
-					const theme = stored === "light" || stored === "dark" ? stored : system;
-					root.dataset.theme = theme;
-					root.style.colorScheme = theme;
+					stored = localStorage.getItem("theme");
 				} catch {
-					root.dataset.theme = "light";
+					// Storage can be blocked; the site then simply follows the system.
 				}
+				const pinned =
+					stored === "light" || stored === "dark" ? stored : null;
+				const meta = document.querySelector('meta[name="color-scheme"]');
+				if (meta) meta.content = pinned ?? "light dark";
+				if (!pinned) return;
+				// The colour is the pair the head already ships; read it, do not repeat it.
+				const source = document.querySelector(
+					`meta[name="theme-color"][media*="prefers-color-scheme: ${pinned}"]`,
+				);
+				if (!source) return;
+				// A theme-color tag without media always matches and, placed first, is
+				// the one the browser reads; the pair above covers the system's case.
+				const first = document.querySelector('meta[name="theme-color"]');
+				const tag = document.createElement("meta");
+				tag.name = "theme-color";
+				tag.dataset.themeOverride = "";
+				tag.content = source.content;
+				document.head.insertBefore(tag, first ?? document.head.firstChild);
 			})();
 		</script>
 
@@ -69,9 +87,6 @@ const t = useTranslations(locale);
 		<link rel="icon" sizes="32x32" href="/favicon.ico" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="manifest" href="/manifest.json" />
-		<meta name="theme-color" content="#faf8f5" />
-		<meta name="color-scheme" content="light dark" />
-
 		<meta name="generator" content={Astro.generator} />
 	</head>
 	<body>

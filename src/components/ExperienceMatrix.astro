@@ -1003,17 +1003,6 @@ const payload = {
     --cobalt: var(--color-cobalt);
   }
 
-  [data-theme="dark"] .bar {
-    color: #fdfbf8;
-    background: color-mix(in srgb, var(--bar-color) 82%, #000);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 92%, #000);
-  }
-
-  [data-theme="dark"] .bar:hover,
-  [data-theme="dark"] .bar:focus-visible {
-    background: color-mix(in srgb, var(--bar-color) 90%, #000);
-  }
-
   .chip,
   .wchip {
     /* Every chip is the same size, so both grids read as one block. */
@@ -1455,7 +1444,10 @@ const payload = {
     line-height: 1;
     white-space: nowrap;
     color: #fdfbf8;
-    background: color-mix(in srgb, var(--bar-color) 86%, #fff);
+    background: light-dark(
+      color-mix(in srgb, var(--bar-color) 86%, #fff),
+      color-mix(in srgb, var(--bar-color) 82%, #000)
+    );
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bar-color) 92%, #000);
     cursor: pointer;
     transition:
@@ -1466,7 +1458,10 @@ const payload = {
 
   .bar:hover,
   .bar:focus-visible {
-    background: var(--bar-color);
+    background: light-dark(
+      var(--bar-color),
+      color-mix(in srgb, var(--bar-color) 90%, #000)
+    );
   }
 
   .bar.is-dim {

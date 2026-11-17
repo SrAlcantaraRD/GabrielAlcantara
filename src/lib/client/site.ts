@@ -19,28 +19,63 @@ function storedTheme(): Theme | null {
 	}
 }
 
-function preferredTheme(): Theme {
-	const stored = storedTheme();
-	if (stored) return stored;
+/**
+ * The colours are the `theme-color` pair the head ships (see Layout.astro); this
+ * only reads the one for the scheme instead of repeating the hex here.
+ */
+function themeColor(theme: Theme): string {
+	const meta = document.querySelector<HTMLMetaElement>(
+		`meta[name="theme-color"][media*="prefers-color-scheme: ${theme}"]`,
+	);
+	return meta?.content ?? "";
+}
+
+function systemTheme(): Theme {
 	return window.matchMedia("(prefers-color-scheme: dark)").matches
 		? "dark"
 		: "light";
 }
 
-function applyTheme(theme: Theme) {
-	const root = document.documentElement;
-	root.dataset.theme = theme;
-	root.style.colorScheme = theme;
+/** What is on screen: the pinned scheme, or the system's. */
+function renderedTheme(): Theme {
+	return storedTheme() ?? systemTheme();
+}
 
-	const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-	if (meta) meta.content = theme === "dark" ? "#141311" : "#faf8f5";
+/**
+ * `null` means "follow the system". The <meta> carries the state — `light dark`
+ * for the system, `light`/`dark` for a pin — and global.css turns it into CSS
+ * with `:root:has(…)`. The head ships a theme-color pair for the system, so a
+ * pin only has to add the tag that wins over both.
+ */
+function applyTheme(theme: Theme | null) {
+	const meta = document.querySelector<HTMLMetaElement>(
+		'meta[name="color-scheme"]',
+	);
+	if (meta) meta.content = theme ?? "light dark";
 
+	const pinned = document.querySelector<HTMLMetaElement>(
+		'meta[name="theme-color"][data-theme-override]',
+	);
+	if (theme) {
+		const tag = pinned ?? document.createElement("meta");
+		tag.name = "theme-color";
+		tag.dataset.themeOverride = "";
+		tag.content = themeColor(theme);
+		if (!pinned) {
+			const first = document.querySelector('meta[name="theme-color"]');
+			document.head.insertBefore(tag, first ?? document.head.firstChild);
+		}
+	} else {
+		pinned?.remove();
+	}
+
+	const current = theme ?? systemTheme();
+	const next = current === "dark" ? "light" : "dark";
 	for (const button of document.querySelectorAll<HTMLButtonElement>(
 		"[data-theme-toggle]",
 	)) {
-		const next = theme === "dark" ? "light" : "dark";
-		button.setAttribute("aria-pressed", String(theme === "dark"));
-		button.dataset.themeState = theme;
+		button.setAttribute("aria-pressed", String(current === "dark"));
+		button.dataset.themeState = current;
 		const label =
 			next === "dark"
 				? button.dataset.themeLabelDark
@@ -101,17 +136,20 @@ function bindLocaleLinks() {
 }
 
 function toggleTheme(button: HTMLButtonElement, event: MouseEvent) {
-	const next: Theme =
-		(document.documentElement.dataset.theme as Theme) === "dark"
-			? "light"
-			: "dark";
+	// The target is the opposite of what is rendered, so the click always does
+	// what the label says. When it matches the system, the pin is dropped:
+	// storing it would hold the site against a later OS change.
+	const target: Theme = renderedTheme() === "dark" ? "light" : "dark";
+	const system = systemTheme();
+
 	const apply = () => {
-		applyTheme(next);
 		try {
-			localStorage.setItem(STORAGE_KEY, next);
+			if (target === system) localStorage.removeItem(STORAGE_KEY);
+			else localStorage.setItem(STORAGE_KEY, target);
 		} catch {
 			// Storage can be unavailable in private contexts; the theme still works.
 		}
+		applyTheme(target === system ? null : target);
 	};
 
 	const reduceMotion = window.matchMedia(
@@ -143,9 +181,9 @@ function initThemeToggles() {
 		button.dataset.bound = "true";
 		button.addEventListener("click", (event) => toggleTheme(button, event));
 	}
-	applyTheme(
-		(document.documentElement.dataset.theme as Theme) || preferredTheme(),
-	);
+	// The inline script already set the <meta> before the first paint; this only
+	// puts the buttons in the state that matches it.
+	applyTheme(storedTheme());
 }
 
 function initLocaleLabels() {
@@ -173,6 +211,13 @@ window.addEventListener("hashchange", syncLocaleLinks);
 
 window
 	.matchMedia("(prefers-color-scheme: dark)")
-	.addEventListener("change", (event) => {
-		if (!storedTheme()) applyTheme(event.matches ? "dark" : "light");
+	.addEventListener("change", () => {
+		// A site that follows the system moves with it; a pinned scheme ignores it.
+		if (!storedTheme()) applyTheme(null);
 	});
+
+// Another tab pinned or un-pinned a scheme: follow it.
+window.addEventListener("storage", (event) => {
+	if (event.key !== STORAGE_KEY) return;
+	applyTheme(storedTheme());
+});
