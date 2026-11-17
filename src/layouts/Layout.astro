@@ -44,8 +44,8 @@ const t = useTranslations(locale);
 	<head id="layout-head">
 		<meta id="layout-meta" charset="UTF-8" />
 		<meta id="layout-meta-2" name="viewport" content="width=device-width, initial-scale=1" />
-		<meta id="layout-meta-theme-light" name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)" />
-		<meta id="layout-meta-theme-dark" name="theme-color" content="#141311" media="(prefers-color-scheme: dark)" />
+		<meta id="layout-meta-theme-light" name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)" data-theme-scheme="light" />
+		<meta id="layout-meta-theme-dark" name="theme-color" content="#141311" media="(prefers-color-scheme: dark)" data-theme-scheme="dark" />
 		<meta id="layout-meta-color-scheme" name="color-scheme" content="light dark" />
 		<script is:inline>
 			(() => {
@@ -65,7 +65,7 @@ const t = useTranslations(locale);
 				if (!pinned) return;
 				// The colour is the pair the head already ships; read it, do not repeat it.
 				const source = document.querySelector(
-					`meta[name="theme-color"][media*="prefers-color-scheme: ${pinned}"]`,
+					`meta[name="theme-color"][data-theme-scheme="${pinned}"]`,
 				);
 				if (!source) return;
 				// A theme-color tag without media always matches and, placed first, is

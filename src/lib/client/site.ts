@@ -25,7 +25,7 @@ function storedTheme(): Theme | null {
  */
 function themeColor(theme: Theme): string {
 	const meta = document.querySelector<HTMLMetaElement>(
-		`meta[name="theme-color"][media*="prefers-color-scheme: ${theme}"]`,
+		`meta[name="theme-color"][data-theme-scheme="${theme}"]`,
 	);
 	return meta?.content ?? "";
 }

@@ -19,8 +19,8 @@
 }
 
 .pd-box {
-  fill: light-dark(#fff, var(--color-card));
-  stroke: light-dark(#e6e0d6, var(--color-border));
+  fill: var(--color-card);
+  stroke: var(--color-border);
   stroke-width: 1;
 }
 
@@ -29,23 +29,23 @@
 }
 
 .pd-box--core {
-  fill: light-dark(#eef3f7, var(--color-cobalt-tint));
+  fill: var(--color-cobalt-tint);
   stroke: light-dark(#cfdde6, var(--color-cobalt));
 }
 
 .pd-pill {
-  fill: light-dark(#fff, var(--color-card));
-  stroke: light-dark(#e6e0d6, var(--color-border));
+  fill: var(--color-card);
+  stroke: var(--color-border);
   stroke-width: 1;
 }
 
 .pd-pill--screens {
-  fill: light-dark(#294c60, var(--color-cobalt));
-  stroke: light-dark(#294c60, var(--color-cobalt));
+  fill: var(--color-cobalt);
+  stroke: var(--color-cobalt);
 }
 
 .pd-pill-text {
-  fill: light-dark(#4f4b47, var(--color-ink-muted));
+  fill: var(--color-ink-muted);
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 12px;
   text-anchor: middle;
@@ -57,20 +57,20 @@
 }
 
 .pd-title {
-  fill: light-dark(#1a1a1a, var(--color-ink));
+  fill: var(--color-ink);
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 13px;
   font-weight: 600;
 }
 
 .pd-sub {
-  fill: light-dark(#6f6960, var(--color-ink-muted));
+  fill: var(--color-ink-muted);
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 10.5px;
 }
 
 .pd-panel {
-  fill: light-dark(#1a1a1a, var(--color-ink));
+  fill: var(--color-ink);
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -79,7 +79,7 @@
 }
 
 .pd-note {
-  fill: light-dark(#6f6960, var(--color-ink-muted));
+  fill: var(--color-ink-muted);
   font-family: "Plus Jakarta Sans Variable", ui-sans-serif, sans-serif;
   font-size: 10.5px;
 }
@@ -100,9 +100,9 @@
 }
 
 /*
- * No dark block here on purpose: every colour above is a light-dark() pair, so
- * the diagram follows the page's used `color-scheme` whether that comes from the
- * OS (no JS), a pinned scheme, or a print sheet.
+ * Only the colours that have no token of their own stay as light-dark() pairs;
+ * the rest are palette tokens, so the diagram follows the used `color-scheme`
+ * (OS, pinned scheme or print sheet) without a dark block.
  */
 
 .pd-boundary-label {

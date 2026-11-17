@@ -934,9 +934,9 @@ svg {
 	   resolves to its light half. `!important` is what beats the meta mapping. */
 	:root {
 		color-scheme: light !important;
+		/* The rest of the pairs already resolve to their light half; only the
+		   sheet goes true white. */
 		--color-paper: #fff;
-		--color-paper-warm: #f5f1ea;
-		--color-card: #fff;
 	}
 
 	.skip-link,
