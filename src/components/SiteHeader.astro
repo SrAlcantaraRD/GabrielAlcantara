@@ -362,22 +362,29 @@ const contactHref = localized ? "#contacto" : "/contact/";
   }
 
   .site-nav .nav-link {
+    /*
+     * The underline is the native one from the global `a` rule (1px, 4px
+     * offset, colour transition): it hangs off the text, so hover or active
+     * only change its colour and can never resize or shift the row. The extra
+     * bottom padding replaces the 1px border this link used to carry, keeping
+     * the box — and therefore the header row — exactly where it was.
+     */
     padding-block: 0.25rem;
+    padding-block-end: calc(0.25rem + 1px);
     font-size: 0.75rem;
     white-space: nowrap;
     color: var(--color-ink-muted);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
+    text-decoration-color: transparent;
   }
 
   .site-nav .nav-link:hover {
     color: var(--color-ink);
-    border-bottom-color: var(--color-border);
+    text-decoration-color: var(--color-border);
   }
 
   .site-nav .nav-link.is-active {
     color: var(--color-ink);
-    border-bottom-color: var(--color-ink);
+    text-decoration-color: var(--color-ink);
   }
 
   .header-tools {
