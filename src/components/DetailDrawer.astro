@@ -131,18 +131,77 @@ const payload = {
     let currentId: string | null = null;
     const controller = new AbortController();
 
+    /*
+     * The URL owns the open card, so it can be linked and the back button can
+     * close it. Astro's router swaps the page on any stateful popstate that
+     * lands on a different URL, which would take the morph and the focus with
+     * it: while the card is open its own entry is on top and the page entry is
+     * left stateless (the router ignores those), restored when we come back.
+     */
+    const PROJECT_PARAM = "project";
+    let pageState: { value: unknown } | null = null;
+
+    function projectInUrl(): string | null {
+      const id = new URL(window.location.href).searchParams.get(PROJECT_PARAM);
+      return id && projectById.has(id) ? id : null;
+    }
+
+    function urlWithProject(id: string | null): string {
+      const url = new URL(window.location.href);
+      if (id) url.searchParams.set(PROJECT_PARAM, id);
+      else url.searchParams.delete(PROJECT_PARAM);
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+
+    /** A click gets its own entry; a link straight to a card already has one. */
+    function pushProjectEntry(id: string) {
+      if (pageState || projectInUrl() === id) return;
+      pageState = { value: history.state };
+      history.replaceState(null, "", window.location.href);
+      history.pushState(pageState.value, "", urlWithProject(id));
+    }
+
+    /** Closing by button, Esc or the backdrop drops the URL first, then lets
+        the popstate that follows do the animated exit. */
+    function requestClose() {
+      if (!panel.open || closing) return;
+      if (projectInUrl()) {
+        if (pageState) {
+          history.back();
+          return;
+        }
+        history.replaceState(history.state, "", urlWithProject(null));
+      }
+      close();
+    }
+
+    window.addEventListener("popstate", () => {
+      if (pageState && !projectInUrl()) {
+        history.replaceState(pageState.value, "", window.location.href);
+        pageState = null;
+        close();
+        return;
+      }
+      const linked = projectInUrl();
+      if (linked && !panel.open) {
+        render({ kind: "project", id: linked });
+        open(null);
+      }
+    }, { signal: controller.signal });
+
     // Esc, the backdrop (`closedby="any"`) and focus containment are the native
     // dialog's; the fallback only covers the engines without the attribute.
-    enableLightDismiss(panel, { signal: controller.signal, onDismiss: close });
+    enableLightDismiss(panel, { signal: controller.signal, onDismiss: requestClose });
 
     window.addEventListener("cv:open", (event) => {
       const request = (event as CustomEvent<DrawerRequest>).detail;
       if (!request) return;
       render(request);
       open(request.origin ?? null);
+      if (request.kind === "project") pushProjectEntry(request.id);
     }, { signal: controller.signal });
 
-    must<HTMLButtonElement>("#drawer-close").addEventListener("click", close, {
+    must<HTMLButtonElement>("#drawer-close").addEventListener("click", requestClose, {
       signal: controller.signal,
     });
 
@@ -152,7 +211,7 @@ const payload = {
       "cancel",
       (event) => {
         event.preventDefault();
-        close();
+        requestClose();
       },
       { signal: controller.signal },
     );
@@ -195,6 +254,11 @@ const payload = {
         currentId = project.id;
         syncNav(project);
         settleSize(before);
+        // Stepping through the career rewrites the same entry, so back still
+        // closes the card instead of walking every project.
+        if (panel.open) {
+          history.replaceState(history.state, "", urlWithProject(project.id));
+        }
         return;
       }
 
@@ -474,8 +538,9 @@ const payload = {
 
     /*
      * One cleanup for every way out: the close button, Esc, the backdrop and
-     * anything else that closes the dialog. The focus is the browser's too — it
-     * goes back to the element that opened the modal.
+     * anything else that closes the dialog. Chromium also hands the focus back
+     * to the element that opened the modal; WebKit drops it on <body>, so the
+     * chip (or the row, for a list) gets it here when the browser left it loose.
      */
     panel.addEventListener("close", () => {
       morph?.cancel();
@@ -484,7 +549,17 @@ const payload = {
       size = null;
       closing = false;
       delete panel.dataset.closing;
+      if (document.activeElement === document.body && origin?.isConnected) {
+        origin.focus({ preventScroll: true });
+      }
     }, { signal: controller.signal });
+
+    // A link straight to a card opens it on load; the URL already owns the entry.
+    const linkedId = projectInUrl();
+    if (linkedId) {
+      render({ kind: "project", id: linkedId });
+      open(null);
+    }
 
     return () => {
       controller.abort();
