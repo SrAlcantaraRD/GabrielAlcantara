@@ -1,7 +1,6 @@
 ---
 import { DOMAIN_LABEL, PILLAR_LABEL, PROJECTS } from "../data/cv";
 import { PROJECT_CASES } from "../data/projects";
-import { openDrawer } from "../lib/open-drawer";
 
 const payload = {
 	projects: PROJECTS,
@@ -17,16 +16,11 @@ const payload = {
 };
 ---
 
-<div id="detail-drawer-backdrop" class="drawer-backdrop" data-drawer-close></div>
-
-<aside
+<dialog
   class="drawer"
   id="project-drawer"
-  role="dialog"
-  aria-modal="true"
   aria-labelledby="drawer-title"
-  aria-hidden="true"
-  tabindex="-1"
+  closedby="any"
 >
   <div id="detail-drawer-surface" class="drawer-surface">
   <header id="detail-drawer-surface-head" class="drawer-head">
@@ -40,7 +34,6 @@ const payload = {
       class="drawer-close"
       id="drawer-close"
       aria-label="cerrar ficha"
-      data-drawer-close
     >
       <svg id="detail-drawer-close-svg" viewBox="0 0 24 24" aria-hidden="true">
         <path id="detail-drawer-close-path" d="M6 18L18 6M6 6l12 12" />
@@ -71,7 +64,7 @@ const payload = {
     </button>
   </footer>
   </div>
-</aside>
+</dialog>
 
 <script type="application/json" id="drawer-data" set:html={JSON.stringify(payload)} />
 
@@ -79,6 +72,7 @@ const payload = {
   import type { DrawerRequest } from "../lib/open-drawer";
   import type { Project } from "../data/cv";
   import { durationLabel, spanLabel } from "../lib/period";
+  import { enableLightDismiss } from "../lib/client/light-dismiss";
 
   interface Payload {
     projects: Project[];
@@ -95,19 +89,17 @@ const payload = {
   document.addEventListener("astro:before-swap", () => {
     stop?.();
     stop = null;
-    document.body.style.overflow = "";
   });
 
   function boot() {
-    const panel = document.querySelector<HTMLElement>("#project-drawer");
+    const panel = document.querySelector<HTMLDialogElement>("#project-drawer");
     if (!panel || panel.dataset.drawerReady === "true") return;
     stop?.();
     panel.dataset.drawerReady = "true";
     stop = init(panel);
   }
 
-  function init(panel: HTMLElement): () => void {
-    const backdrop = document.querySelector<HTMLElement>(".drawer-backdrop");
+  function init(panel: HTMLDialogElement): () => void {
     const meta = must<HTMLElement>("#drawer-meta");
     const title = must<HTMLElement>("#drawer-title");
     const role = must<HTMLElement>("#drawer-role");
@@ -138,7 +130,10 @@ const payload = {
       .map((project) => project.id);
     let currentId: string | null = null;
     const controller = new AbortController();
-    let restoreFocus: HTMLElement | null = null;
+
+    // Esc, the backdrop (`closedby="any"`) and focus containment are the native
+    // dialog's; the fallback only covers the engines without the attribute.
+    enableLightDismiss(panel, { signal: controller.signal, onDismiss: close });
 
     window.addEventListener("cv:open", (event) => {
       const request = (event as CustomEvent<DrawerRequest>).detail;
@@ -147,24 +142,30 @@ const payload = {
       open(request.origin ?? null);
     }, { signal: controller.signal });
 
-    for (const closer of document.querySelectorAll("[data-drawer-close]")) {
-      closer.addEventListener("click", close, { signal: controller.signal });
-    }
+    must<HTMLButtonElement>("#drawer-close").addEventListener("click", close, {
+      signal: controller.signal,
+    });
+
+    // Esc and the browser's own light dismiss only *request* a close. Taking the
+    // request through the same exit keeps the shrink into the row on every path.
+    panel.addEventListener(
+      "cancel",
+      (event) => {
+        event.preventDefault();
+        close();
+      },
+      { signal: controller.signal },
+    );
 
     prevBtn.addEventListener("click", () => step(-1), { signal: controller.signal });
     nextBtn.addEventListener("click", () => step(1), { signal: controller.signal });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        close();
-        return;
-      }
-      if (event.key === "Tab" && panel.classList.contains("is-open")) {
-        trapFocus(event);
-      }
-      // Keys walk the career too, unless a text field owns them.
+      // Keys walk the career too, unless a text field owns them. Esc and Tab stay
+      // the browser's: a modal dialog closes on a close request and already
+      // keeps the focus inside.
       if (
-        panel.classList.contains("is-open") &&
+        panel.open &&
         !(event.target instanceof Element &&
           event.target.closest("input, textarea, select, [contenteditable='true']"))
       ) {
@@ -182,9 +183,7 @@ const payload = {
 
     function render(request: DrawerRequest) {
       // The card is centred, so a longer body would snap both edges at once.
-      const before = panel.classList.contains("is-open")
-        ? panel.getBoundingClientRect()
-        : null;
+      const before = panel.open ? panel.getBoundingClientRect() : null;
 
       if (request.kind === "project") {
         const project = projectById.get(request.id);
@@ -384,23 +383,16 @@ const payload = {
     let originRect: DOMRect | null = null;
     let morph: Animation | null = null;
     let size: Animation | null = null;
-    let closing: (() => void) | null = null;
+    let closing = false;
 
     function open(from: Element | null) {
-      closing?.();
-      if (panel.classList.contains("is-open")) return;
-      restoreFocus =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
+      if (panel.open) return;
       origin = from instanceof HTMLElement ? from : null;
       originRect = origin?.getBoundingClientRect() ?? null;
-      panel.classList.add("is-open");
-      panel.setAttribute("aria-hidden", "false");
-      backdrop?.classList.add("is-open");
-      document.body.style.overflow = "hidden";
+      // The browser owns the rest: top layer, inert page, focus and Esc. It also
+      // returns the focus to the trigger when the dialog closes.
+      panel.showModal();
       morphIn();
-      requestAnimationFrame(focusPanel);
     }
 
     function focusPanel() {
@@ -460,16 +452,16 @@ const payload = {
     }
 
     function close() {
-      if (!panel.classList.contains("is-open") || closing) return;
+      if (!panel.open || closing) return;
       // Measured without the entrance still running, or the reverse would start
       // from wherever that morph had got to.
       morph?.cancel();
       morph = null;
+      closing = true;
       panel.dataset.closing = "true";
-      backdrop?.classList.remove("is-open");
       const frames = morphFrames();
       if (!frames) {
-        finishClose();
+        panel.close();
         return;
       }
       morph = panel.animate(frames, {
@@ -477,46 +469,22 @@ const payload = {
         easing: EASE_IN,
         direction: "reverse",
       });
-      closing = finishClose;
-      morph.finished.then(finishClose).catch(() => {});
+      morph.finished.then(() => panel.close(), () => {});
     }
 
-    function finishClose() {
-      const animation = morph;
+    /*
+     * One cleanup for every way out: the close button, Esc, the backdrop and
+     * anything else that closes the dialog. The focus is the browser's too — it
+     * goes back to the element that opened the modal.
+     */
+    panel.addEventListener("close", () => {
+      morph?.cancel();
       morph = null;
-      closing = null;
-      animation?.cancel();
       size?.cancel();
       size = null;
+      closing = false;
       delete panel.dataset.closing;
-      panel.classList.remove("is-open");
-      panel.setAttribute("aria-hidden", "true");
-      backdrop?.classList.remove("is-open");
-      document.body.style.overflow = "";
-      restoreFocus?.focus({ preventScroll: true });
-    }
-
-    function trapFocus(event: KeyboardEvent) {
-      const focusable = Array.from(
-        panel.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((node) => node.getClientRects().length > 0);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        return;
-      }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey && (active === first || active === panel)) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
+    }, { signal: controller.signal });
 
     return () => {
       controller.abort();
@@ -524,12 +492,8 @@ const payload = {
       morph = null;
       size?.cancel();
       size = null;
-      closing = null;
-      if (panel.classList.contains("is-open")) {
-        panel.classList.remove("is-open");
-        panel.setAttribute("aria-hidden", "true");
-        backdrop?.classList.remove("is-open");
-      }
+      closing = false;
+      if (panel.open) panel.close();
     };
   }
 
@@ -552,25 +516,32 @@ const payload = {
 </script>
 
 <style is:global>
-  .drawer-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
+  /*
+   * The backdrop is the dialog's own, not a div: the browser paints it in the
+   * top layer with the card. It has to be a scroll container for
+   * `overscroll-behavior` to keep the gesture off the page behind.
+   */
+  .drawer::backdrop {
     background: rgb(26 26 26 / 0.28);
     backdrop-filter: blur(6px);
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 200ms ease,
-      visibility 0s 200ms;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    opacity: 1;
+    transition: opacity 200ms ease;
   }
 
-  .drawer-backdrop.is-open {
-    opacity: 1;
-    visibility: visible;
-    transition:
-      opacity 200ms ease,
-      visibility 0s;
+  /* The backdrop only exists while the dialog is open, so its fade has to start
+     from the style it gets the moment it appears. */
+  @starting-style {
+    .drawer[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Leaving: `close()` only runs when the morph ends, so the backdrop can fade
+     while the card travels back to its row. */
+  .drawer[data-closing="true"]::backdrop {
+    opacity: 0;
   }
 
   /*
@@ -581,13 +552,17 @@ const payload = {
     --drawer-pad: 30px;
     position: fixed;
     inset: 0;
-    z-index: 50;
-    display: flex;
     flex-direction: column;
     margin: auto;
+    /* The UA gives a dialog 1em of padding; the card owns its own. */
+    padding: 0;
     inline-size: min(42rem, calc(100vw - 1.5rem));
     block-size: fit-content;
     max-block-size: min(86vh, 46rem);
+    /* The UA caps a dialog at `100% - 2em - 6px` and paints it with CanvasText;
+       both would narrow the card on a phone and change the inherited ink. */
+    max-inline-size: none;
+    color: var(--color-ink);
     overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: 14px;
@@ -595,13 +570,18 @@ const payload = {
     box-shadow:
       0 32px 72px -16px rgb(26 26 26 / 0.4),
       0 2px 8px rgb(26 26 26 / 0.08);
-    visibility: hidden;
-    opacity: 0;
   }
 
-  .drawer.is-open {
-    visibility: visible;
-    opacity: 1;
+  /* Scoped to the open state: an unconditional display would override the UA's
+     rule that hides a closed dialog. */
+  .drawer[open] {
+    display: flex;
+  }
+
+  /* A modal dialog is a scroll container; without this, a scroll gesture over
+     the card chains to the page underneath. */
+  .drawer:modal {
+    overscroll-behavior: contain;
   }
 
   /*
@@ -622,7 +602,7 @@ const payload = {
       transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 220ms;
   }
 
-  .drawer.is-open .drawer-surface {
+  .drawer[open] .drawer-surface {
     opacity: 1;
     filter: none;
     transform: none;
@@ -714,6 +694,7 @@ const payload = {
     flex: 1 1 auto;
     min-block-size: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: var(--drawer-pad);
   }
 

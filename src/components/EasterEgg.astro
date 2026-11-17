@@ -44,6 +44,7 @@ const LEGEND = [
   id="gabriel-egg"
   aria-labelledby="egg-title"
   aria-describedby="egg-intro"
+  closedby="any"
 >
   <div id="easter-egg-panel" class="egg-panel">
     <header id="easter-egg-panel-head" class="egg-head">
@@ -51,7 +52,7 @@ const LEGEND = [
         <p id="easter-egg-head-eyebrow" class="eyebrow">Easter egg · el porqué</p>
         <h2 class="egg-title" id="egg-title">Cuatro motores y sus manías</h2>
       </div>
-      <button id="easter-egg-head-close" type="button" class="egg-close" data-egg-close aria-label="Cerrar">
+      <button id="easter-egg-head-close" type="button" class="egg-close" commandfor="gabriel-egg" command="close" aria-label="Cerrar">
         <svg id="easter-egg-close-svg" viewBox="0 0 24 24" aria-hidden="true">
           <path id="easter-egg-close-path" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -139,16 +140,17 @@ const LEGEND = [
 
     <footer id="easter-egg-panel-foot" class="egg-foot">
       <span id="easter-egg-foot-hint" class="egg-foot-hint">esc para cerrar</span>
-      <button id="easter-egg-foot-ok" type="button" class="egg-ok" data-egg-close>volver</button>
+      <button id="easter-egg-foot-ok" type="button" class="egg-ok" commandfor="gabriel-egg" command="close">volver</button>
     </footer>
   </div>
 </dialog>
 
 <script>
+  import { enableLightDismiss } from "../lib/client/light-dismiss";
+
   const TRIGGER = "gabriel";
   const canHover = window.matchMedia("(hover: hover)").matches;
   let typed = "";
-  let previousOverflow = "";
   let boundDialog: HTMLDialogElement | null = null;
 
   bind();
@@ -157,7 +159,6 @@ const LEGEND = [
   document.addEventListener("astro:before-swap", () => {
     const dialog = currentDialog();
     if (dialog?.open) dialog.close();
-    document.body.style.overflow = "";
     boundDialog = null;
     typed = "";
   });
@@ -179,18 +180,10 @@ const LEGEND = [
     if (!dialog || dialog === boundDialog) return;
     boundDialog = dialog;
 
-    for (const closer of dialog.querySelectorAll<HTMLElement>("[data-egg-close]")) {
-      closer.addEventListener("click", () => dialog.close());
-    }
-
-    dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) dialog.close();
-    });
-
-    dialog.addEventListener("close", () => {
-      document.body.style.overflow = previousOverflow;
-      typed = "";
-    });
+    // Esc and the backdrop close it: `closedby="any"` in the markup, plus the
+    // pointer-position fallback for the engines that lack it.
+    enableLightDismiss(dialog);
+    bindInvokerFallback(dialog);
 
     for (const card of dialog.querySelectorAll<HTMLButtonElement>(".engine")) {
       card.addEventListener("click", () => {
@@ -206,9 +199,25 @@ const LEGEND = [
 
   function openDialog(dialog: HTMLDialogElement | null) {
     if (!dialog || dialog.open) return;
-    previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // The browser makes the page inert; the CSS contains the scroll, so the
+    // body never gets locked.
     dialog.showModal();
+  }
+
+  /**
+   * The close buttons are declarative (`commandfor`/`command="close"`). Where
+   * Invoker Commands is missing, those same buttons get the listener instead of
+   * a dependency.
+   */
+  function bindInvokerFallback(dialog: HTMLDialogElement) {
+    if ("commandForElement" in HTMLButtonElement.prototype) return;
+
+    const closers = dialog.querySelectorAll<HTMLButtonElement>(
+      'button[command="close"]',
+    );
+    for (const button of closers) {
+      button.addEventListener("click", () => dialog.close());
+    }
   }
 
   function isEditable(target: EventTarget | null): boolean {
@@ -237,6 +246,15 @@ const LEGEND = [
   .egg::backdrop {
     background: rgb(26 26 26 / 0.34);
     backdrop-filter: blur(3px);
+    /* ::backdrop is overflow: visible by default and would ignore the
+       containment below; as a scroll container it traps the gesture instead of
+       letting it scroll the page behind. */
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  .egg:modal {
+    overscroll-behavior: contain;
   }
 
   .egg[open] .egg-panel {
@@ -302,6 +320,9 @@ const LEGEND = [
     display: grid;
     gap: 1.4rem;
     overflow-y: auto;
+    /* The dialog itself is overflow: visible, so the card's own scroller is
+       what has to stop the chain at its edge. */
+    overscroll-behavior: contain;
     padding: 1.5rem 1.75rem 1.75rem;
   }
 
