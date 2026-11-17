@@ -19,7 +19,7 @@ interface ProfileCopy {
 	metaDescription: string;
 	eyebrow: string;
 	heroTitle: string;
-	/** The fixed lead-in and the words the headline wheel plays. */
+	/** The fixed lead-in and the words the headline morphs through. */
 	heroStem: string;
 	heroWords: string[];
 	heroLede: string;

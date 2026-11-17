@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AutoPreviews from "./AutoPreviews.astro";
-import HeroWheel from "./HeroWheel.astro";
+import HeroMorph from "./HeroMorph.astro";
 import { COMPANIES, POSITION_VIEWS, PROJECTS } from "../data/cv";
 import { FEATURED_CASE, SELECTED_CASES } from "../data/projects";
 import { SORTED_POSTS, postHrefIn } from "../data/blog";
@@ -72,7 +72,7 @@ const formatDate = (iso: string) =>
 >
   <header id="localized-profile-hero" class="profile-hero" aria-labelledby="profile-title">
     <p id="localized-profile-hero-eyebrow" class="eyebrow">{copy.eyebrow}</p>
-    <HeroWheel
+    <HeroMorph
       titleId="profile-title"
       stem={copy.heroStem}
       lines={[copy.heroTitle]}

@@ -9,7 +9,7 @@
 /**
  * The home H1: three beats with the same stem. `headlineLines` is what the
  * heading actually says (assistive technology, metadata); the home paints it
- * once, hidden, and plays the wheel underneath.
+ * once, hidden, and morphs the words underneath.
  */
 const HEADLINE_LINES = [
 	"15 años construyendo.",
@@ -18,8 +18,9 @@ const HEADLINE_LINES = [
 ] as const;
 
 /**
- * The words the wheel can stop on, in order. Adding one is enough: the reel
- * wraps around the list and only ever shows the words next to the centre.
+ * The words the headline morphs through, in order. Adding one is enough: the
+ * morph walks the list and wraps around to the first. Each swap travels the
+ * letters two neighbours share, so a pair that shares more morphs more.
  */
 const HEADLINE_WORDS = [
 	"construyendo",

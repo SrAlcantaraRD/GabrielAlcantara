@@ -1,0 +1,165 @@
+---
+/**
+ * The home H1: a fixed stem (`15 años`) and one word that becomes the next.
+ *
+ * Every swap is a Shared Letter Morph, copied from the Pachanga hero: the
+ * letters both words share travel (FLIP) from where they stand to where they
+ * are needed, the ones only the old word has sink into the baseline, and the
+ * new ones rise out of it a beat behind. Matching is a longest common
+ * subsequence, so the most letters that can travel do travel and they keep
+ * their order.
+ *
+ * The words below are the source of truth: they are the served markup and the
+ * no-JS fallback (the first one, alone). The morph layers are built from them at
+ * runtime, so a swap never ships letter markup.
+ */
+interface Props {
+	/** Accessible text of the heading, unchanged per locale. */
+	lines: readonly string[];
+	/** The words the headline morphs through, in order. */
+	words: readonly string[];
+	/** Fixed lead-in: "15 años", "15 years", "15 anys". */
+	stem?: string;
+	/** The hero section labels itself with this id. */
+	titleId?: string;
+}
+
+const {
+	lines,
+	words,
+	stem = "15 años",
+	titleId = "hero-title",
+} = Astro.props;
+---
+
+<h1 class="display hero-title" id={titleId}>
+  <span id="hero-morph-a11y" class="visually-hidden">{lines.join(" ")}</span>
+  <span id="hero-morph-title" class="hero-morph-title" aria-hidden="true">
+    <span id="hero-morph-stem" class="hero-morph-stem">{stem}</span>
+    <span id="hero-morph-slot" class="hero-morph-slot" data-hero-morph>
+      {
+        words.map((word, index) => (
+          <span id={`hero-morph-word-${index}`} class="hero-morph-word">{word}</span>
+        ))
+      }
+    </span>
+  </span>
+</h1>
+
+<script>
+  import "../lib/client/hero-morph";
+</script>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .hero-title {
+    /* The step between two letters: the morph's boxes are flex items, so the
+       space between them is a margin and never a trailing space — the word stays
+       on the h1's guide, and a swap measures the same boxes it animates. The
+       static word carries the same step as letter-spacing, so the fallback and
+       the armed hero are the same width. */
+    --hero-track: -0.025em;
+    --hero-line: 1.14;
+    font-family: var(--font-serif);
+    /*
+     * One line at every viewport, like desktop. The longest possible heading
+     * ("15 years taking on challenges") measures about 11.4em, so dividing the
+     * space left by the gutter by that keeps the stem and the word on the same
+     * guide from 320px up, without a separate mobile composition.
+     */
+    font-size: clamp(1.15rem, calc((100vw - 3rem) / 11.6), 3.7rem);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: var(--hero-track);
+    color: var(--color-ink);
+  }
+
+  .hero-morph-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.22em;
+    row-gap: 0.12em;
+  }
+
+  .hero-morph-stem {
+    /* Same line box as a word, so the two baselines line up. */
+    line-height: var(--hero-line);
+    white-space: nowrap;
+  }
+
+  .hero-morph-slot {
+    position: relative;
+    display: grid;
+    flex: none;
+    grid-template-rows: 1fr;
+    grid-template-columns: max-content;
+    /* Every word shares the one cell, so the slot is exactly the widest word and
+       arming the morph never changes the line's width; one line of height is the
+       whole vertical budget of a swap. */
+    block-size: calc(var(--hero-line) * 1em);
+  }
+
+  .hero-morph-word {
+    grid-area: 1 / 1;
+    align-self: center;
+    justify-self: start;
+    line-height: var(--hero-line);
+    white-space: nowrap;
+    /* Sized, never painted: the words are the morph's source strings. */
+    visibility: hidden;
+  }
+
+  /* Static hero — no JS, reduced motion, no Web Animations — is the first word
+     alone, exactly the one the morph would be holding. */
+  .hero-morph-slot:not([data-hero-live]) .hero-morph-word:first-child {
+    visibility: visible;
+  }
+
+  /* Armed (the client module): a layer is the word split into one box per
+     character and laid over the slot, so a swap is transforms alone. Both layers
+     are laid out by these same rules — same face, same tracking, same centring —
+     and that identity is the whole contract the FLIP measurement relies on. The
+     classes are written by the script, so they are global. */
+  :global(.hero-morph-layer) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    line-height: var(--hero-line);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  :global(.hero-letter) {
+    display: inline-block;
+    /* The box is a single character, so its tracking is the gap to the next box
+       and inherited letter-spacing would add a trailing one. */
+    letter-spacing: 0;
+    /* A label can contain a space, and its box has to keep the width. */
+    white-space: pre;
+    /* Reproduces the title's tight tracking: the layer and the static word must
+       measure the same, or a swap would open a gap on the first frame. */
+    margin-inline-start: var(--hero-track);
+    /* Every letter is anchored at its foot: it grows out of the baseline and
+       collapses back into it, so the type is never resized — only revealed — and
+       no descender is ever clipped. */
+    transform-origin: 50% 100%;
+  }
+
+  :global(.hero-letter:first-child) {
+    margin-inline-start: 0;
+  }
+</style>
