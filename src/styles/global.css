@@ -6,7 +6,9 @@
  * is the <meta>, mapped back below. */
 :root {
 	color-scheme: light dark;
-	--color-paper: light-dark(#faf8f5, #141311);
+	/* Hexes live in src/lib/theme-colors.ts, because a theme-color meta can only
+	   hold a literal; the head writes them back as these two halves. */
+	--color-paper: light-dark(var(--paper-light), var(--paper-dark));
 	--color-paper-warm: light-dark(#f5f1ea, #221f1a);
 	--color-card: light-dark(#fff, #29251f);
 	--color-ink: light-dark(#1a1a1a, #f1ede6);
@@ -54,6 +56,20 @@
 
 :root:has(> head > meta[name="color-scheme"][content="dark"]) {
 	color-scheme: dark;
+}
+
+/*
+ * The system's contrast preference is the same palette with its borders and
+ * secondary text pushed up; ink is already near black and white. Both halves of
+ * every pair move together, so the scheme still decides which one applies.
+ */
+@media (prefers-contrast: more) {
+	:root {
+		--color-ink-muted: light-dark(#33302c, #ded8ce);
+		--color-ink-faint: light-dark(#4f4b47, #c3bdb3);
+		--color-border: light-dark(#b8b0a3, #8a8277);
+		--color-border-subtle: light-dark(#cfc7b9, #6f6960);
+	}
 }
 
 @media (min-width: 1024px) {

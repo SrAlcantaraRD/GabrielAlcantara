@@ -544,6 +544,13 @@ const payload = {
     opacity: 0;
   }
 
+  /* The system asked for less transparency: the veil stays, the blur goes. */
+  @media (prefers-reduced-transparency: reduce) {
+    .drawer::backdrop {
+      backdrop-filter: none;
+    }
+  }
+
   /*
    * A centred card, not a side panel: the bar it comes from expands into this
    * box, so the dialog has to be a rectangle the bar can grow into.

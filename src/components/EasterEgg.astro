@@ -257,6 +257,13 @@ const LEGEND = [
     overscroll-behavior: contain;
   }
 
+  /* The system asked for less transparency: the veil stays, the blur goes. */
+  @media (prefers-reduced-transparency: reduce) {
+    .egg::backdrop {
+      backdrop-filter: none;
+    }
+  }
+
   .egg[open] .egg-panel {
     animation: egg-in 220ms ease-out;
   }
