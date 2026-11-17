@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * UI check for the trajectory matrix.
+ * UI check for the site: the trajectory matrix, the persisted chrome, the
+ * locale transition, the preview cards, the theme model and the two dialogs
+ * (the last two live in checks/theme-dialogs.mjs, same report and exit code).
  *
  * Serves the built site, drives it with Playwright over the system Chrome and
  * writes screenshots to ui-artifacts/. Run `pnpm build` first.
@@ -15,6 +17,7 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "playwright-core";
+import { checkDialogs, checkThemeModel } from "./checks/theme-dialogs.mjs";
 
 const ROOT = new URL("../dist/", import.meta.url).pathname;
 const OUT = new URL("../ui-artifacts/", import.meta.url).pathname;
@@ -1070,7 +1073,7 @@ async function checkLocaleFrames(browser, base) {
 					lastTop: bars.at(-1)?.getBoundingClientRect().top ?? 0,
 					height: window.innerHeight,
 					lang: document.documentElement.lang,
-					theme: document.documentElement.dataset.theme,
+					theme: document.querySelector('meta[name="color-scheme"]')?.content,
 					barBackground: bar ? getComputedStyle(bar).backgroundColor : "transparent",
 					htmlClass: document.documentElement.classList.contains("locale-transition"),
 				};
@@ -1125,7 +1128,7 @@ async function checkLocaleFrames(browser, base) {
 					lastTop: bars.at(-1)?.getBoundingClientRect().top ?? 0,
 					firstLeft: bar?.getBoundingClientRect().left ?? 0,
 					height: window.innerHeight,
-					theme: document.documentElement.dataset.theme,
+					theme: document.querySelector('meta[name="color-scheme"]')?.content,
 					barBackground: bar ? getComputedStyle(bar).backgroundColor : "transparent",
 					htmlClass: document.documentElement.classList.contains("locale-transition"),
 				};
@@ -1273,7 +1276,7 @@ async function checkLocaleContinuity(browser, base) {
 			const final = await page.evaluate(() => ({
 				path: location.pathname,
 				lang: document.documentElement.lang,
-				theme: document.documentElement.dataset.theme,
+				theme: document.querySelector('meta[name="color-scheme"]')?.content,
 				active:
 					document
 						.querySelector("[data-locale-transition]")
@@ -1756,7 +1759,7 @@ async function checkPreviewCards(browser, base) {
 				};
 				const style = getComputedStyle(open);
 				const value = {
-					theme: document.documentElement.dataset.theme ?? null,
+					theme: document.querySelector('meta[name="color-scheme"]')?.content ?? null,
 					reduced: matchMedia("(prefers-reduced-motion: reduce)").matches,
 					background: style.backgroundColor,
 					expectedBackground: resolved("--color-card"),
@@ -1938,7 +1941,7 @@ for (const viewport of VIEWPORTS) {
 		}
 		if (scenario.click) {
 			await page.locator(`.bar[data-project="${scenario.click}"]`).first().click();
-			await page.waitForSelector("#project-drawer.is-open");
+			await page.waitForSelector("#project-drawer[open]");
 		}
 
 		const label = `${viewport.name}/${scenario.name}`;
@@ -1953,9 +1956,7 @@ for (const viewport of VIEWPORTS) {
 				ruler: document.querySelectorAll(".ruler-year").length,
 				range: document.getElementById("matrix-range")?.textContent ?? "",
 				tipVisible: tip ? !tip.hidden : false,
-				drawerOpen: document
-					.getElementById("project-drawer")
-					?.classList.contains("is-open"),
+				drawerOpen: Boolean(document.getElementById("project-drawer")?.open),
 				overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
 				surfaceScroll: surface ? surface.scrollWidth > surface.clientWidth : null,
 			};
@@ -2007,6 +2008,8 @@ await checkLocaleFrames(browser, base);
 await checkLocaleContinuity(browser, base);
 await checkMobileMenu(browser, base);
 await checkPreviewCards(browser, base);
+await checkThemeModel(browser, base, check);
+await checkDialogs(browser, base, check);
 
 await browser.close();
 server.close();
